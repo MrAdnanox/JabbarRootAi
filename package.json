@@ -36,7 +36,13 @@
         "command": "jabbaRoot.refreshContextView",
         "title": "JabbarRoot: Rafraîchir les Contextes",
         "icon": "$(refresh)"
+      },
+      {
+        "command": "jabbaRoot.compileAndCopyContext",
+        "title": "Compiler et Copier le Contexte",
+        "icon": "$(symbol-string)"
       }
+
     ],
     "viewsContainers": {
       "activitybar": [
@@ -71,6 +77,11 @@
         }
       ],
       "view/item/context": [
+        {
+          "command": "jabbaRoot.compileAndCopyContext",
+          "when": "view == jabbaRoot.contextView && viewItem == jabbaRootContext",
+          "group": "inline"
+        },
         {
           "command": "jabbaRoot.deleteContext",
           "when": "view == jabbaRoot.contextView && viewItem == jabbaRootContext",
