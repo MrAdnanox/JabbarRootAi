@@ -1,160 +1,162 @@
 // src/extension.ts
+
 import * as vscode from 'vscode';
-import * as path from 'path';
+import { ConfigurationService } from './services/configuration.service';
 import { ContextService } from './services/contextService';
 import { CompactionService } from './services/compactionService';
 import { StatisticsService } from './services/statistics/statistics.service';
 import { ContextTreeDataProvider } from './providers/contextTreeDataProvider';
 import { ContextItem } from './providers/context.tree-item-factory';
+import { FileContentService } from './services/fileContent.service';
+import { StructureGenerationService } from './services/structureGeneration';
+import { ContextConstructorService } from './services/contextConstructor.service';
 
-/**
- * Prend une liste d'URIs (fichiers ou dossiers) et la résout en une liste plate d'URIs de fichiers.
- * Les dossiers sont explorés récursivement.
- * @param uris - Les URIs à résoudre.
- * @returns Une promesse qui se résout en une liste d'URIs de fichiers.
- */
 async function resolveUrisToFiles(uris: vscode.Uri[]): Promise<vscode.Uri[]> {
     const fileUris: Set<string> = new Set();
-
     async function processUri(uri: vscode.Uri) {
         try {
             const stat = await vscode.workspace.fs.stat(uri);
             if (stat.type === vscode.FileType.Directory) {
-                // Si c'est un dossier, lire son contenu récursivement
                 const entries = await vscode.workspace.fs.readDirectory(uri);
                 for (const [name, type] of entries) {
                     const newUri = vscode.Uri.joinPath(uri, name);
                     if (type === vscode.FileType.File) {
                         fileUris.add(newUri.toString());
                     } else if (type === vscode.FileType.Directory) {
-                        await processUri(newUri); // Appel récursif pour les sous-dossiers
+                        await processUri(newUri);
                     }
                 }
             } else if (stat.type === vscode.FileType.File) {
-                // Si c'est un fichier, l'ajouter directement
                 fileUris.add(uri.toString());
             }
         } catch (error) {
-            console.error(`JabbaRoot: Erreur lors du traitement de l'URI ${uri.fsPath}`, error);
-            vscode.window.showWarningMessage(`Impossible de traiter ${uri.fsPath}.`);
+            console.error(`JabbaRoot: Error processing URI ${uri.fsPath}`, error);
+            vscode.window.showWarningMessage(`Could not process ${uri.fsPath}.`);
         }
     }
-
-    // Traiter tous les URIs de manière asynchrone
     await Promise.all(uris.map(uri => processUri(uri)));
-
-    // Convertir le Set de chaînes en un tableau d'URIs
     return Array.from(fileUris).map(uriStr => vscode.Uri.parse(uriStr));
 }
 
 export function activate(context: vscode.ExtensionContext) {
-    // 1. Initialisation des services
-    const contextService = new ContextService(context.workspaceState);
-    const compactionService = new CompactionService();
-    const statisticsService = new StatisticsService(compactionService); 
 
-    // 2. Création et enregistrement de la Tree View
+    // 1. Couche 1 : Instanciation des Outils
+    const configurationService = new ConfigurationService();
+    const structureGenerationService = new StructureGenerationService();
+    const fileContentService = new FileContentService();
+    const compactionService = new CompactionService();
+    const contextService = new ContextService(context.workspaceState);
+
+    // 2. Couche 2 : Instanciation des Superviseurs (avec injection des outils)
+    const contextConstructor = new ContextConstructorService(
+        structureGenerationService,
+        fileContentService,
+        compactionService,
+        configurationService
+    );
+    const statisticsService = new StatisticsService(contextConstructor);
+
+    // 3. Couche 3 : Instanciation de l'Interface Utilisateur (avec injection des superviseurs)
     const contextTreeDataProvider = new ContextTreeDataProvider(
-        contextService,
-        statisticsService
-      );
-      
-      vscode.window.createTreeView('jabbaRoot.contextView', {
-          treeDataProvider: contextTreeDataProvider
-      });
+      contextService,
+      statisticsService,
+      configurationService
+    );
+    vscode.window.createTreeView('jabbaRoot.contextView', { treeDataProvider: contextTreeDataProvider });
     
-    // 3. Enregistrement des commandes
+    // 4. Enregistrement des commandes qui délèguent aux superviseurs
     const createCommand = vscode.commands.registerCommand('jabbaRoot.createContext', async () => {
-        const contextName = await vscode.window.showInputBox({ prompt: 'Entrez le nom du nouveau contexte' });
+        const contextName = await vscode.window.showInputBox({ prompt: 'Enter the name for the new context' });
         if (!contextName) { return; }
 
         const selectedUris = await vscode.window.showOpenDialog({
             canSelectFiles: true,
-            canSelectFolders: true, // On garde la possibilité de sélectionner des dossiers
+            canSelectFolders: true,
             canSelectMany: true,
-            title: 'Sélectionnez les fichiers et dossiers pour le contexte'
+            title: 'Select files and folders for the context'
         });
         if (!selectedUris || selectedUris.length === 0) { return; }
         
-        // --- CORRECTION MAJEURE ICI ---
-        // Résoudre les dossiers en une liste de fichiers avant de continuer
         const resolvedFileUris = await resolveUrisToFiles(selectedUris);
 
         if (resolvedFileUris.length === 0) {
-            vscode.window.showWarningMessage("Aucun fichier trouvé dans les dossiers sélectionnés.");
+            vscode.window.showWarningMessage("No files found in the selected directories.");
             return;
         }
         
-        // La suite de la logique reste la même, mais utilise `resolvedFileUris`
-        const compressionLevel = await vscode.window.showQuickPick(['none', 'standard', 'extreme'], { title: 'Niveau de compression' }) as "none" | "standard" | "extreme" | undefined;
+        const compressionLevel = await vscode.window.showQuickPick(['none', 'standard', 'extreme'], { title: 'Compression Level' }) as "none" | "standard" | "extreme" | undefined;
         if (!compressionLevel) { return; }
 
-        const includeTreeChoice = await vscode.window.showQuickPick(['Oui', 'Non'], { title: 'Inclure l\'arborescence du projet ?' });
+        const includeTreeChoice = await vscode.window.showQuickPick(['Yes', 'No'], { title: 'Include project tree?' });
         if (!includeTreeChoice) { return; }
 
         try {
-            // On passe la liste de fichiers résolue au service
             await contextService.createContext(contextName, resolvedFileUris, {
                 compression_level: compressionLevel,
-                include_project_tree: includeTreeChoice === 'Oui'
+                include_project_tree: includeTreeChoice === 'Yes'
             });
-            vscode.window.showInformationMessage(`Contexte "${contextName}" créé avec ${resolvedFileUris.length} fichier(s).`);
+            vscode.window.showInformationMessage(`Context "${contextName}" created with ${resolvedFileUris.length} file(s).`);
         } catch (error) {
-            vscode.window.showErrorMessage(`Erreur lors de la création du contexte: ${error}`);
+            vscode.window.showErrorMessage(`Error creating context: ${error}`);
         }
     });
 
     const deleteCommand = vscode.commands.registerCommand('jabbaRoot.deleteContext', async (contextItem: ContextItem) => {
-        if (!contextItem || !contextItem.context.id) {
-            vscode.window.showWarningMessage('Aucun contexte sélectionné pour la suppression.');
+        if (!contextItem?.context?.id) {
+            vscode.window.showWarningMessage('No context selected for deletion.');
             return;
         }
-
         const confirmation = await vscode.window.showWarningMessage(
-            `Êtes-vous sûr de vouloir supprimer le contexte "${contextItem.context.name}" ?`,
+            `Are you sure you want to delete the context "${contextItem.context.name}"?`,
             { modal: true },
-            'Supprimer'
+            'Delete'
         );
-
-        if (confirmation === 'Supprimer') {
+        if (confirmation === 'Delete') {
             await contextService.deleteContext(contextItem.context.id);
-            vscode.window.showInformationMessage(`Contexte "${contextItem.context.name}" supprimé.`);
+            vscode.window.showInformationMessage(`Context "${contextItem.context.name}" deleted.`);
         }
     });
 
     const compileCommand = vscode.commands.registerCommand('jabbaRoot.compileAndCopyContext', async (item: ContextItem) => {
-        if (!item || !item.context) {
-            vscode.window.showErrorMessage("Aucun contexte à compiler.");
+        if (!item?.context) {
+            vscode.window.showErrorMessage("No context to compile.");
             return;
         }
-
         await vscode.window.withProgress({
             location: vscode.ProgressLocation.Notification,
-            title: `JabbaRoot: Compilation de "${item.context.name}"`,
+            title: `JabbaRoot: Compiling "${item.context.name}"`,
             cancellable: false
         }, async (progress) => {
-            progress.report({ increment: 0, message: "Préparation..." });
-            
-            const originalContext = await compactionService.compileContext({ ...item.context, options: { ...item.context.options, compression_level: 'none' }});
-            progress.report({ increment: 50, message: "Compression..." });
-            
-            const finalContext = await compactionService.compileContext(item.context);
-            
+            progress.report({ increment: 20, message: "Assembling context..." });
+            const finalContext = await contextConstructor.compileContext(item.context);
+            progress.report({ increment: 90, message: "Copying to clipboard..." });
             await vscode.env.clipboard.writeText(finalContext);
-
-            const reduction = originalContext.length - finalContext.length;
-            const reductionPercent = originalContext.length > 0 ? Math.round((reduction / originalContext.length) * 100) : 0;
-
+            const stats = item.stats;
             progress.report({ increment: 100 });
-            vscode.window.showInformationMessage(`Contexte "${item.context.name}" copié ! Réduction: ${reductionPercent}%`);
+            vscode.window.showInformationMessage(`Context "${item.context.name}" copied! Reduction: ${stats.reductionPercent}%`);
         });
     });
     
     const refreshCommand = vscode.commands.registerCommand('jabbaRoot.refreshContextView', () => {
-        contextService.refresh();
+        contextTreeDataProvider.refresh();
     });
 
-    context.subscriptions.push(createCommand, deleteCommand, compileCommand, refreshCommand);
+    const generateTreeCommand = vscode.commands.registerCommand('jabbaRoot.generateProjectTree', async () => {
+        if (!vscode.workspace.workspaceFolders?.length) {
+            vscode.window.showWarningMessage("JabbaRoot: No project folder open.");
+            return;
+        }
+        const rootUri = vscode.workspace.workspaceFolders[0].uri;
+        const report = await structureGenerationService.generate(rootUri);
+        if (report?.tree) {
+            await vscode.env.clipboard.writeText(report.tree);
+            vscode.window.showInformationMessage("JabbaRoot: Project tree copied to clipboard.");
+        } else {
+            vscode.window.showErrorMessage("JabbaRoot: Could not generate project tree.");
+        }
+    });
+
+    context.subscriptions.push(createCommand, deleteCommand, compileCommand, generateTreeCommand, refreshCommand);
 }
 
 export function deactivate() {}
