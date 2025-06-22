@@ -3,7 +3,9 @@ import * as vscode from 'vscode';
 import * as path from 'path';
 import { ContextService } from './services/contextService';
 import { CompactionService } from './services/compactionService';
-import { ContextTreeDataProvider, ContextTreeItem } from './providers/contextTreeDataProvider';
+import { StatisticsService } from './services/statistics/statistics.service';
+import { ContextTreeDataProvider } from './providers/contextTreeDataProvider';
+import { ContextItem } from './providers/context.tree-item-factory';
 
 /**
  * Prend une liste d'URIs (fichiers ou dossiers) et la résout en une liste plate d'URIs de fichiers.
@@ -49,12 +51,17 @@ export function activate(context: vscode.ExtensionContext) {
     // 1. Initialisation des services
     const contextService = new ContextService(context.workspaceState);
     const compactionService = new CompactionService();
+    const statisticsService = new StatisticsService(compactionService); 
 
     // 2. Création et enregistrement de la Tree View
-    const contextTreeDataProvider = new ContextTreeDataProvider(contextService);
-    vscode.window.createTreeView('jabbaRoot.contextView', {
-        treeDataProvider: contextTreeDataProvider
-    });
+    const contextTreeDataProvider = new ContextTreeDataProvider(
+        contextService,
+        statisticsService
+      );
+      
+      vscode.window.createTreeView('jabbaRoot.contextView', {
+          treeDataProvider: contextTreeDataProvider
+      });
     
     // 3. Enregistrement des commandes
     const createCommand = vscode.commands.registerCommand('jabbaRoot.createContext', async () => {
@@ -97,7 +104,7 @@ export function activate(context: vscode.ExtensionContext) {
         }
     });
 
-    const deleteCommand = vscode.commands.registerCommand('jabbaRoot.deleteContext', async (contextItem: ContextTreeItem) => {
+    const deleteCommand = vscode.commands.registerCommand('jabbaRoot.deleteContext', async (contextItem: ContextItem) => {
         if (!contextItem || !contextItem.context.id) {
             vscode.window.showWarningMessage('Aucun contexte sélectionné pour la suppression.');
             return;
@@ -115,7 +122,7 @@ export function activate(context: vscode.ExtensionContext) {
         }
     });
 
-    const compileCommand = vscode.commands.registerCommand('jabbaRoot.compileAndCopyContext', async (item: ContextTreeItem) => {
+    const compileCommand = vscode.commands.registerCommand('jabbaRoot.compileAndCopyContext', async (item: ContextItem) => {
         if (!item || !item.context) {
             vscode.window.showErrorMessage("Aucun contexte à compiler.");
             return;
