@@ -1,4 +1,4 @@
-// src/services/compactionService.ts
+// packages/core/src/services/compactionService.ts
 
 // Les imports de vscode, ProgrammableContext, path, etc. sont supprimés.
 

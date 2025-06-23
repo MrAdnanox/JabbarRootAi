@@ -1,8 +1,8 @@
 // src/providers/context.tree-item-factory.ts
 
 import * as vscode from 'vscode';
-import { ProgrammableContext } from '../models/programmableContext';
-import { ContextStats } from '../models/contextStats';
+import { ProgrammableContext } from '@jabbarroot/core';
+import { ContextStats } from '@jabbarroot/core';
 
 // Création de types pour les items afin de les différencier.
 export type ContextTreeItem = ContextItem | StatItem;

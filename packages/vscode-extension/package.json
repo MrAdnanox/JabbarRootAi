@@ -1,0 +1,158 @@
+{
+  "name": "@jabbarroot/vscode-extension",
+  "displayName": "JabbarRoot",
+  "description": "JabbarRoot, the context protector",
+  "version": "0.1.0",
+  "publisher": "jabbarroot",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mradnanox/JabbarRoot.git"
+  },
+  "engines": {
+    "vscode": "^1.70.0"
+  },
+"main": "./dist/extension.js",
+"contributes": {
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "jabba-explorer",
+          "title": "JabbarRoot",
+          "icon": "resources/JabbarRoot-icon.png"
+        }
+      ]
+    },
+    "views": {
+      "jabba-explorer": [
+        {
+          "id": "jabbaRoot.contextView",
+          "name": "Contextes Programmables",
+          "icon": "resources/JabbarRoot-icon.png",
+          "contextualTitle": "JabbarRoot"
+        }
+      ]
+    },
+    "commands": [
+      {
+        "command": "jabbaRoot.generateProjectTree",
+        "title": "JabbaRoot: Générer l'arborescence du projet vers le presse-papiers",
+        "category": "JabbaRoot"
+      },
+      {
+        "command": "jabbaRoot.createContext",
+        "title": "Créer un Contexte Programmable",
+        "icon": "$(add)"
+      },
+      {
+        "command": "jabbaRoot.deleteContext",
+        "title": "Supprimer le Contexte",
+        "icon": "$(trash)"
+      },
+      {
+        "command": "jabbaRoot.refreshContextView",
+        "title": "Rafraîchir les Contextes",
+        "icon": "$(refresh)"
+      },
+      {
+        "command": "jabbaRoot.compileAndCopyContext",
+        "title": "Compiler et Copier le Contexte",
+        "icon": "$(symbol-string)"
+      },
+      {
+        "command": "jabbaRoot.createIgnoreFile",
+        "title": "JabbaRoot: Créer un fichier .JabbarRootIgnore",
+        "category": "JabbaRoot"
+      }
+    ],
+    "menus": {
+      "view/title": [
+        {
+          "command": "jabbaRoot.createContext",
+          "when": "view == jabbaRoot.contextView",
+          "group": "navigation"
+        },
+        {
+          "command": "jabbaRoot.refreshContextView",
+          "when": "view == jabbaRoot.contextView",
+          "group": "navigation"
+        }
+      ],
+      "view/item/context": [
+        {
+          "command": "jabbaRoot.compileAndCopyContext",
+          "when": "view == jabbaRoot.contextView && viewItem == jabbaRootContext",
+          "group": "inline"
+        },
+        {
+          "command": "jabbaRoot.deleteContext",
+          "when": "view == jabbaRoot.contextView && viewItem == jabbaRootContext",
+          "group": "inline"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "JabbaRoot",
+      "properties": {
+        "jabbaRoot.compilation.includeProjectTree": {
+          "type": "boolean",
+          "default": true,
+          "description": "Inclure l'arborescence du projet dans le contexte compilé si l'option est cochée pour ce contexte."
+        },
+        "jabbaRoot.view.statistics.enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "[Master Switch] Affiche ou masque globalement les statistiques pour tous les contextes."
+        },
+        "jabbaRoot.view.statistics.showSize": {
+          "type": "boolean",
+          "default": true,
+          "description": "Si les statistiques sont activées, afficher la ligne 'Taille (chars)'."
+        },
+        "jabbaRoot.view.statistics.showTokens": {
+          "type": "boolean",
+          "default": true,
+          "description": "Si les statistiques sont activées, afficher la ligne 'Jetons (est.)'."
+        },
+        "jabbaRoot.view.statistics.showReduction": {
+          "type": "boolean",
+          "default": true,
+          "description": "Si les statistiques sont activées, afficher la ligne 'Réduction'."
+        },
+        "jabbaRoot.view.statistics.showMotivation": {
+          "type": "boolean",
+          "default": true,
+          "description": "Si les statistiques sont activées, afficher la ligne 'Efficacité'."
+        }
+      }
+    }
+  },
+  "activationEvents": [
+    "onView:jabbaRoot.contextView"
+  ],
+  "scripts": {
+    "vscode:prepublish": "npm run package",
+    "build": "webpack --mode development",
+    "package": "webpack --mode production",
+    "watch": "webpack --watch",
+    "pretest": "npm run build",
+    "test": "vscode-test"
+  },
+  "dependencies": {
+    "@jabbarroot/core": "workspace:^",
+    "minimatch": "^10.0.3"
+  },
+  "devDependencies": {
+    "@types/minimatch": "^5.1.2",
+    "@types/mocha": "^10.0.10",
+    "@types/node": "^20.19.1",
+    "@types/sinon": "^17.0.4",
+    "@types/vscode": "^1.70.0",
+    "@vscode/test-cli": "^0.0.10",
+    "@vscode/test-electron": "^2.5.2",
+    "chai": "^5.2.0",
+    "sinon": "^21.0.0",
+    "ts-loader": "^9.5.2",
+    "webpack": "^5.99.7",
+    "webpack-cli": "^6.0.1"
+  }
+}

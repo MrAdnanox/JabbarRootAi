@@ -1,0 +1,3 @@
+packages:
+  # tous les packages dans le dossier 'packages'
+  - 'packages/*'

@@ -1,89 +1,81 @@
-# JabbarRoot - Extension VS Code
+# JabbarRoot - Le Gardien du Contexte
 
-JabbarRoot est une extension VS Code conçue pour améliorer la productivité des développeurs en fournissant des fonctionnalités avancées de gestion de contexte et d'assistance au développement.
+**Vision :** Transformer la complexité du développement en clarté, en protégeant le "flow" créatif de l'opérateur.
+
+---
+
+## 📜 La Philosophie JabbarRoot
+
+Ce projet est né d'une frustration : les outils modernes, y compris les IA, bien que puissants, introduisent souvent une charge cognitive qui brise l'élan créatif. On passe plus de temps à "gérer" l'outil qu'à créer de la valeur.
+
+**JabbarRoot est notre réponse.** C'est un méta-outil conçu autour de trois piliers fondamentaux :
+
+1.  **La Quête des 3 Gains :** Chaque fonctionnalité doit apporter un gain mesurable en **Temps**, en **Argent** (ex: tokens économisés), ou en **Clarté**.
+2.  **La Souveraineté de l'Opérateur :** L'humain pilote, l'outil exécute. Le système doit offrir contrôle, prévisibilité et transparence, et non agir comme une boîte noire.
+3.  **La Protection du Flow :** Une solution techniquement parfaite qui interrompt la concentration est un échec. L'objectif est de créer une interaction fluide et intuitive qui amplifie la productivité.
+
+## 🏛️ Architecture : Le Cerveau et le Corps
+
+Pour honorer ces principes, JabbarRoot est conçu comme un **écosystème découplé** (monorepo `pnpm`), et non comme une simple extension VSCode monolithique.
+
+*   🧠 **`@jabbarroot/core` (Le Cerveau)**
+    *   Un package TypeScript pur, sans aucune dépendance à une plateforme spécifique (ni VSCode, ni Node.js).
+    *   Il contient toute la logique métier, les modèles de données et les services d'orchestration.
+    *   C'est le moteur agnostique et réutilisable de JabbarRoot.
+
+*   🦾 **`@jabbarroot/vscode-extension` (Le Corps)**
+    *   Une "coquille" qui rend le cerveau utilisable dans l'environnement VSCode.
+    *   Elle gère l'interface utilisateur (vues, commandes), les interactions avec l'API VSCode, et implémente les contrats (interfaces) définis par le `core` via des adaptateurs.
+
+Cette architecture nous garantit de ne jamais être prisonniers d'une seule plateforme et de pouvoir, à l'avenir, créer d'autres "corps" (un CLI, une web app...) autour du même cerveau.
 
 ## ✨ Fonctionnalités
 
-- **Gestion de contexte** : Créez et gérez des contextes de programmation personnalisés
-- **Arborescence interactive** : Visualisez et naviguez dans vos contextes
-- **Intégration native** : S'intègre parfaitement à l'interface de VS Code
-- **Personnalisation** : Adaptez le comportement à vos besoins spécifiques
+### État Actuel (v0.1.0 - "La Fondation")
 
-## 🚀 Installation
+La version actuelle est le résultat d'un refactoring architectural majeur. La base est solide, et les fonctionnalités suivantes sont opérationnelles :
 
-1. Téléchargez le fichier `.vsix` depuis les releases
-2. Dans VS Code, ouvrez la palette de commandes (Ctrl+Shift+P)
-3. Tapez "Extensions: Install from VSIX..."
-4. Sélectionnez le fichier téléchargé
+*   **Génération d'Arborescence de Projet :** Une commande pour scanner le projet, en respectant les règles `.gitignore`, et copier une arborescence textuelle propre dans le presse-papiers.
+*   **Compilation de Contexte (Moteur) :** Le service de compilation est fonctionnel. Il peut agréger une arborescence et le contenu de fichiers multiples en un seul prompt textuel.
+*   **Système de Compression :** Des niveaux de compression (`standard`, `extreme`) pour réduire la taille du contexte final et économiser des tokens.
 
-## 🛠 Utilisation
+*(Note : Les fonctionnalités de création, sauvegarde et affichage des contextes dans l'interface ont été temporairement désactivées durant le refactoring et sont la priorité de la prochaine phase de développement).*
 
-### Commandes disponibles
+### 🚀 Feuille de Route (Roadmap)
 
-- `JabbarRoot: Créer un contexte` - Crée un nouveau contexte de programmation
-- `JabbarRoot: Afficher la vue` - Affiche la vue des contextes dans l'explorateur
+Notre vision pour JabbarRoot est ambitieuse et s'articule autour des phases suivantes :
 
-## ⚙ Configuration
+**Phase 2 : Réactivation des Fonctionnalités de Base**
+1.  **[En cours]** **Gestion des Contextes :** Ré-implémenter un `ContextService` robuste dans le `core` pour le CRUD (Créer, Lire, Mettre à jour, Supprimer) des `ProgrammableContexts`.
+2.  **[Prochainement]** **Affichage Dynamique :** Rebrancher la vue latérale pour afficher la liste des contextes sauvegardés.
+3.  **[Prochainement]** **Statistiques en Direct :** Réactiver le calcul et l'affichage des statistiques de compression (taille, tokens économisés) pour chaque contexte.
 
-L'extension peut être configurée via les paramètres de VS Code (`Ctrl+,`).
+**Phase 3 : La "Prompt Factory"**
+*   **Concept :** Créer un atelier de composition de prompts.
+*   **Fonctionnalités :**
+    *   **Briques de Prompt (`PromptBrick`) :** Des morceaux de connaissance réutilisables (ex: "ma règle de style pour les erreurs", "le schéma de cette table de DB").
+    *   **Templates de Prompt (`PromptTemplate`) :** Assemblage de briques et de placeholders (ex: `{{JABBARROOT_CONTEXT}}`) pour créer des workflows de prompting puissants.
+    *   **Compilation Finale :** Un service qui injecte dynamiquement un `ProgrammableContext` dans un `PromptTemplate` pour générer un prompt final ultra-spécifique.
 
-## 📦 Développement
+**Phase 4 : Écosystème Auto-Évolutif**
+*   **Concept :** Permettre à l'opérateur de modifier le comportement de JabbarRoot lui-même.
+*   **Fonctionnalités :**
+    *   **Codex Dynamique :** Le comportement de JabbarRoot (ses Stances, ses Lois) sera chargé depuis des fichiers de configuration, permettant à l'utilisateur de le personnaliser à l'infini.
+    *   **Interface en Ligne de Commande (CLI) :** Un nouveau "corps" pour utiliser la puissance de JabbarRoot directement depuis le terminal.
 
-### Prérequis
+## 🛠️ Démarrage Rapide (pour les Développeurs)
 
-- Node.js 16+
-- npm 8+
-- VS Code 1.70+
+1.  **Prérequis :** Assurez-vous d'avoir `node.js` et `pnpm` installés.
+2.  **Installation :** À la racine du projet, lancez :
+    ```bash
+    pnpm install
+    ```
+3.  **Build :** Pour compiler les deux packages (`core` et `vscode-extension`) :
+    ```bash
+    pnpm build
+    ```
+4.  **Lancement :**
+    *   Ouvrez le dossier racine dans VSCode.
+    *   Appuyez sur `F5` pour lancer une nouvelle fenêtre "[Hôte de développement d'extension]" avec JabbarRoot activé.
 
-### Installation des dépendances
-
-```bash
-npm install
-```
-
-### Compilation
-
-```bash
-npm run compile
-```
-
-### Exécution en mode développement
-
-Appuyez sur F5 pour lancer une nouvelle fenêtre VS Code avec l'extension chargée.
-
-## 📝 Licence
-
-MIT
-
-## 🔍 Problèmes connus
-
-- La gestion des contextes volumineux peut nécessiter des optimisations supplémentaires
-- Certaines fonctionnalités avancées sont en cours de développement
-
-## 📝 Notes de version
-
-### 0.1.0 (Préversion)
-
-- Version initiale avec gestion de base des contextes
-- Interface utilisateur intégrée à VS Code
-- Commandes de base pour la gestion des contextes
-
-## 🤝 Contribuer
-
-Les contributions sont les bienvenues ! Voici comment contribuer :
-
-1. Forkez le dépôt
-2. Créez une branche pour votre fonctionnalité (`git checkout -b feature/ma-fonctionnalite`)
-3. Committez vos modifications (`git commit -am 'Ajout d\'une fonctionnalité'`)
-4. Poussez vers la branche (`git push origin feature/ma-fonctionnalite`)
-5. Créez une Pull Request
-
-## 📄 Licence
-
-Ce projet est sous licence MIT - voir le fichier [LICENSE](LICENSE) pour plus de détails.
-
-## 🙏 Remerciements
-
-- L'équipe VS Code pour leur excellent environnement de développement
-- La communauté open source pour son soutien continu
-- Tous les contributeurs qui ont rendu ce projet possible
+---
