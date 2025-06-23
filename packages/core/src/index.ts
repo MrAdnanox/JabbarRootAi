@@ -1,9 +1,9 @@
 // packages/core/src/index.ts
 
 // --- Interfaces ---
-export * from './interfaces/IConfiguration';
-export * from './interfaces/IFileSystem';
-export * from './interfaces/IStorage';
+export * from '../../types/src/interfaces/IConfiguration'
+export * from '../../types/src/interfaces/IFileSystem';
+export * from '../../types/src/interfaces/IStorage';
 
 // --- Models ---
 export * from './models/programmableContext';

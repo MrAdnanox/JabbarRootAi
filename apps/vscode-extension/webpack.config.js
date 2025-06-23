@@ -5,9 +5,9 @@ const path = require('path');
 /** @type {import('webpack').Configuration} */
 const config = {
   target: 'node',
-  entry: './src/extension.ts', // Chemin relatif au package
+  entry: './src/extension.ts',
   output: {
-    path: path.resolve(__dirname, 'dist'), // Chemin relatif au package
+    path: path.resolve(__dirname, 'dist'),
     filename: 'extension.js',
     libraryTarget: 'commonjs2',
   },
@@ -16,7 +16,10 @@ const config = {
   },
   resolve: {
     extensions: ['.ts', '.js'],
-    // L'alias est maintenant géré par tsconfig.json, on le supprime ici
+    alias: {
+      '@jabbarroot/core': path.resolve(__dirname, '../../packages/core/src'),
+      '@jabbarroot/types': path.resolve(__dirname, '../../packages/types/src')
+    }
   },
   module: {
     rules: [
@@ -25,13 +28,12 @@ const config = {
         exclude: /node_modules/,
         use: [{
           loader: 'ts-loader',
-          // Important pour dire à ts-loader d'utiliser le bon tsconfig
           options: {
             configFile: 'tsconfig.json'
           }
-        }],
-      },
-    ],
+        }]
+      }
+    ]
   },
   devtool: 'source-map',
 };

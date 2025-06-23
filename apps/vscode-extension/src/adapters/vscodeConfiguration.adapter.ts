@@ -1,7 +1,7 @@
 // packages/vscode-extension/src/adapters/vscodeConfiguration.adapter.ts
 
 import * as vscode from 'vscode';
-import { IConfiguration } from '@jabbarroot/core/src/interfaces/IConfiguration';
+import { IConfiguration } from '@jabbarroot/core';
 
 /**
  * Implémentation de IConfiguration utilisant l'API de VSCode.

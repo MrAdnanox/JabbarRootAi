@@ -21,13 +21,11 @@ importers:
         specifier: ^5.8.3
         version: 5.8.3
 
-  packages/core: {}
-
-  packages/vscode-extension:
+  apps/vscode-extension:
     dependencies:
-      '@jabbarroot/core':
+      '@jabbarroot/types':
         specifier: workspace:^
-        version: link:../core
+        version: link:../../packages/types
       minimatch:
         specifier: ^10.0.3
         version: 10.0.3
@@ -68,6 +66,26 @@ importers:
       webpack-cli:
         specifier: ^6.0.1
         version: 6.0.1(webpack@5.99.9)
+
+  packages/core:
+    dependencies:
+      '@jabbarroot/types':
+        specifier: workspace:^
+        version: link:../types
+
+  packages/prompt-factory:
+    dependencies:
+      '@jabbarroot/types':
+        specifier: workspace:^
+        version: link:../types
+
+  packages/types: {}
+
+  packages/vector-engine:
+    dependencies:
+      '@jabbarroot/types':
+        specifier: workspace:^
+        version: link:../types
 
 packages:
 

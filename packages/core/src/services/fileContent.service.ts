@@ -1,6 +1,6 @@
 // packages/core/src/services/fileContent.service.ts
 
-import { IFileSystem } from '../interfaces/IFileSystem';
+import { IFileSystem } from '@jabbarroot/types';
 
 /**
  * Service pur responsable de l'agrégation du contenu de plusieurs fichiers.

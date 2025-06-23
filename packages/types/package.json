@@ -1,13 +1,10 @@
 {
-    "name": "@jabbarroot/core",
+    "name": "@jabbarroot/types",
     "version": "0.1.0",
     "main": "dist/index.js",
     "types": "dist/index.d.ts",
     "scripts": {
       "build": "tsc -b",
       "watch": "tsc -b -w"
-    },
-    "dependencies": {
-      "@jabbarroot/types": "workspace:^"
     }
   }

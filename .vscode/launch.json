@@ -11,15 +11,12 @@
 		"type": "extensionHost",
 		"request": "launch",
 		"args": [
-		  // Le chemin vers le dossier de l'extension à lancer.
-		  // C'est notre sous-dossier, pas la racine.
-		  "--extensionDevelopmentPath=${workspaceFolder}/packages/vscode-extension"
+			"--extensionDevelopmentPath=${workspaceFolder}/apps/vscode-extension"
 		],
 		"outFiles": [
-		  // Où trouver les fichiers Javascript compilés pour les source maps.
-		  "${workspaceFolder}/packages/vscode-extension/dist/**/*.js"
+			"${workspaceFolder}/apps/vscode-extension/dist/**/*.js"
 		],
-		"preLaunchTask": "pnpm: build" // Exécuter notre script de build racine avant chaque lancement
+		"preLaunchTask": "pnpm: build"
 	  }
 	]
 }

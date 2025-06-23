@@ -1,6 +1,6 @@
 // packages/core/src/services/structureGeneration.service.ts
 
-import { IFileSystem, DirectoryEntry } from '../interfaces/IFileSystem';
+import { IFileSystem } from '@jabbarroot/types';
 
 export interface GenerationReport {
   tree: string;
@@ -68,7 +68,7 @@ export class StructureGenerationService {
         return a.name.localeCompare(b.name);
     });
 
-    const processableEntries = sortedEntries.filter(entry => {
+    const processableEntries = sortedEntries.filter((entry) => {
       const entryPath = `${currentDirPath}/${entry.name}`;
       const relativePath = this.fs.getRelativePath(rootPath, entryPath);
       return !shouldIgnore(relativePath);

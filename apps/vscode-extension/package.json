@@ -138,7 +138,7 @@
     "test": "vscode-test"
   },
   "dependencies": {
-    "@jabbarroot/core": "workspace:^",
+    "@jabbarroot/types": "workspace:^",
     "minimatch": "^10.0.3"
   },
   "devDependencies": {

@@ -1,0 +1,20 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "outDir": "dist",
+    "baseUrl": ".",
+    "paths": {
+      "@jabbarroot/core": ["../../packages/core/src"],
+      "@jabbarroot/core/*": ["../../packages/core/src/*"],
+      "@jabbarroot/types": ["../../packages/types/src"],
+      "@jabbarroot/types/*": ["../../packages/types/src/*"]
+    },
+    "moduleResolution": "node"
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "dist"],
+  "references": [
+    { "path": "../../packages/core" },
+    { "path": "../../packages/types" }
+  ]
+}

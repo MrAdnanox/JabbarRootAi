@@ -4,6 +4,7 @@ import { ProgrammableContext } from '../models/programmableContext';
 import { StructureGenerationService, StructureGenerationOptions } from './structureGeneration.service';
 import { FileContentService } from './fileContent.service';
 import { CompactionService } from './compaction.service';
+import { IFileSystem, IStorage } from '@jabbarroot/types';
 
 /**
  * Superviseur d'assemblage.

@@ -9,6 +9,7 @@ set -euo pipefail
 readonly SCRIPT_NAME="$(basename "$0")"
 readonly PROJECT_ROOT="/media/adnan/Projects/JabbarRoot"
 readonly PACKAGES_DIR="$PROJECT_ROOT/packages"
+readonly APPS_DIR="$PROJECT_ROOT/apps"
 
 # Couleurs pour l'affichage
 readonly RED='\033[0;31m'
@@ -96,9 +97,14 @@ check_prerequisites() {
         exit 1
     fi
     
-    # Vérifier que le répertoire packages existe
+    # Vérifier que les répertoires existent
     if [[ ! -d "$PACKAGES_DIR" ]]; then
         log_error "Répertoire packages non trouvé: $PACKAGES_DIR"
+        exit 1
+    fi
+    
+    if [[ ! -d "$APPS_DIR" ]]; then
+        log_error "Répertoire apps non trouvé: $APPS_DIR"
         exit 1
     fi
     
@@ -187,8 +193,11 @@ check_specific_files() {
     log_info "Vérification des fichiers spécifiques..."
     
     local files=(
-        "$PACKAGES_DIR/vscode-extension/src/extension.ts"
-        "$PACKAGES_DIR/vscode-extension/src/test/suite/commands/createContext.command.integration.test.ts"
+        "$APPS_DIR/vscode-extension/src/extension.ts"
+        "$PACKAGES_DIR/core/src/index.ts"
+        "$PACKAGES_DIR/prompt-factory/src/index.ts"
+        "$PACKAGES_DIR/types/src/index.ts"
+        "$PACKAGES_DIR/vector-engine/src/index.ts"
     )
     
     for file in "${files[@]}"; do
@@ -245,9 +254,19 @@ main() {
     local overall_exit_code=0
     
     # Vérifier chaque package
+    # Vérifier les applications
+    if [[ -d "$APPS_DIR/vscode-extension" ]]; then
+        check_package "$APPS_DIR/vscode-extension" "VS Code Extension" || overall_exit_code=$?
+    else
+        log_warning "Application VS Code non trouvée: $APPS_DIR/vscode-extension"
+    fi
+    
+    # Vérifier les packages
     local packages=(
         "$PACKAGES_DIR/core:Core"
-        "$PACKAGES_DIR/vscode-extension:VS Code Extension"
+        "$PACKAGES_DIR/prompt-factory:Prompt Factory"
+        "$PACKAGES_DIR/types:Types"
+        "$PACKAGES_DIR/vector-engine:Vector Engine"
     )
     
     for package_info in "${packages[@]}"; do

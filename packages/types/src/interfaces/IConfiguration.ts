@@ -1,4 +1,4 @@
-// packages/core/src/interfaces/IConfiguration.ts
+// packages/types/src/interfaces/IConfiguration.ts
 
 /**
  * Définit une interface pour un fournisseur de configuration,

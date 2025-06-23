@@ -1,7 +1,7 @@
 // packages/vscode-extension/src/extension.ts
 
 import * as vscode from 'vscode';
-
+import { IFileSystem, IStorage } from '@jabbarroot/types';
 // --- CORE ---
 // Importe TOUT ce qui est public depuis le point d'entrée du core.
 // C'est plus propre et utilise notre fichier "index.ts".
