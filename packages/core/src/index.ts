@@ -14,3 +14,5 @@ export * from './services/compaction.service';
 export * from './services/fileContent.service';
 export * from './services/structureGeneration.service';
 export * from './services/contextConstructor.service';
+export * from './services/context.service';
+export * from './services/statistics.service';

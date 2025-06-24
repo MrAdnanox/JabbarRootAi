@@ -1,11 +1,11 @@
-// packages/core/src/services/statistics/statistics.service.ts
+// packages/core/src/services/statistics.service.ts
 
-import { ProgrammableContext } from '../../models/programmableContext';
-import { ContextStats } from '../../models/contextStats';
-import { ContextConstructorService } from '../contextConstructor.service';
-import { StructureGenerationOptions } from '../structureGeneration.service';
-import { calculateRawStats } from './statistics.calculator';
-import { getMotivationMessage } from './statistics.formatter';
+import { ProgrammableContext } from '../models/programmableContext';
+import { ContextStats } from '../models/contextStats';
+import { ContextConstructorService } from './contextConstructor.service';
+import { StructureGenerationOptions } from './structureGeneration.service';
+import { calculateRawStats } from './statistics/statistics.calculator';
+import { getMotivationMessage } from './statistics/statistics.formatter';
 
 export class StatisticsService {
   constructor(private contextConstructor: ContextConstructorService) {}

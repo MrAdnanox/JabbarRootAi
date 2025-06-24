@@ -1,153 +1,151 @@
-// packages/vscode-extension/src/extension.ts
-
+// apps/vscode-extension/src/extension.ts
 import * as vscode from 'vscode';
-import { IFileSystem, IStorage } from '@jabbarroot/types';
-// --- CORE ---
-// Importe TOUT ce qui est public depuis le point d'entrée du core.
-// C'est plus propre et utilise notre fichier "index.ts".
+
+// Core services
 import {
   CompactionService,
   FileContentService,
   StructureGenerationService,
   ContextConstructorService,
-  ProgrammableContext
-  // IConfiguration, IFileSystem, IStorage etc. seront importés ici quand nécessaire
+  ContextService,
+  StatisticsService,
 } from '@jabbarroot/core';
 
-
-// --- EXTENSION-SPECIFIC ---
+// Adapters
+import { FileSystemStorageAdapter } from './adapters/fileSystemStorage.adapter';
 import { VscodeFileSystemAdapter } from './adapters/vscodeFileSystem.adapter';
-import { VscodeConfigurationAdapter } from './adapters/vscodeConfiguration.adapter';
+
+// Services
 import { IgnoreService } from './services/ignore.service';
-import { MementoStorageAdapter } from './adapters/mementoStorage.adapter';
+
+// Providers
 import { ContextTreeDataProvider } from './providers/contextTreeDataProvider';
-import { ContextItem } from './providers/context.tree-item-factory';
 
-// On garde une référence pour la gestion du projet
-const getProjectRootPath = (): string | undefined => {
-    return vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
-};
+// Utils
+import { getProjectRootPath } from './utils/workspace';
 
+// Command imports
+import { registerRefreshContextViewCommand } from './commands/refreshContextView.command';
+import { registerCreateContextCommand } from './commands/createContext.command';
+import { registerGenerateProjectTreeCommand } from './commands/generateProjectTree.command';
+import { registerCompileAndCopyContextCommand } from './commands/compileAndCopyContext.command';
+import { registerDeleteContextCommand } from './commands/deleteContext.command';
+import { registerAddPathToContextCommand } from './commands/addPathToContext.command';
+import { registerRemovePathFromContextCommand } from './commands/removePathFromContext.command';
+import { registerSetActiveContextCommand } from './commands/setActiveContext.command';
+import { registerUnsetActiveContextCommand } from './commands/unsetActiveContext.command';
+import { registerAddPathToActiveContextCommand } from './commands/addPathToActiveContext.command';
+import { registerAddActiveFileToSpecificContextCommand } from './commands/addActiveFileToSpecificContext.command';
 
 export function activate(context: vscode.ExtensionContext) {
+  // =================================================================================
+  //  0. PRÉ-REQUIS
+  // =================================================================================
+  const projectRootPath = getProjectRootPath();
+  if (!projectRootPath) {
+    vscode.window.showWarningMessage('JabbarRoot: Veuillez ouvrir un dossier pour activer l\'extension.');
+    return;
+  }
 
   // =================================================================================
-  //  1. PHASE D'INITIALISATION : INJECTION DE DÉPENDANCES
-  //     Nous construisons l'application de l'extérieur vers l'intérieur.
+  //  1. PHASE D'INITIALISATION DES SERVICES & PROVIDERS
   // =================================================================================
-
-  // --- Couche 0 : Adaptateurs (Ponts vers l'API VSCode) ---
+  // --- Couche 1 : Adapters d'Abstraction du Host (VSCode) ---
   const fsAdapter = new VscodeFileSystemAdapter();
-  const configAdapter = new VscodeConfigurationAdapter();
-  // L'état du workspace est un mécanisme de stockage, c'est donc un adaptateur.
-  const storageAdapter = new MementoStorageAdapter(context.workspaceState);
-
-  // --- Couche 1 : Services Spécifiques à l'Extension ---
+  const storageAdapter = new FileSystemStorageAdapter(fsAdapter, projectRootPath, 'contexts');
+  // const configAdapter = new VscodeConfigurationAdapter(); // Pour plus tard
   const ignoreService = new IgnoreService(fsAdapter);
 
   // --- Couche 2 : Services du Core (Cerveau Agnostique) ---
   const compactionService = new CompactionService();
   const fileContentService = new FileContentService(fsAdapter);
   const structureGenerationService = new StructureGenerationService(fsAdapter);
-  
-  // Le service de gestion des contextes (CRUD) dans le core, qui a besoin de savoir comment stocker.
-  // NOTE: Ce service 'ContextService' doit être créé dans le core. Pour l'instant on imagine son existence.
-  // const contextService = new CoreContextService(storageAdapter);
-
-  // Le service d'orchestration principal, qui reçoit les autres services du core.
   const contextConstructorService = new ContextConstructorService(
     structureGenerationService,
     fileContentService,
     compactionService
   );
+  const contextService = new ContextService(storageAdapter);
+  const statisticsService = new StatisticsService(contextConstructorService);
 
   // --- Couche 3 : UI Providers ---
-  // La TreeView a besoin des services pour afficher les données.
-  // NOTE: Il faudra refactorer ContextTreeDataProvider pour qu'il utilise les services injectés.
-  // const statisticsService = new CoreStatisticsService(contextConstructorService);
-  // const contextTreeProvider = new ContextTreeDataProvider(contextService, statisticsService, configAdapter);
-  // vscode.window.createTreeView('jabbaRoot.contextView', { treeDataProvider: contextTreeProvider });
-
+  const contextTreeProvider = new ContextTreeDataProvider(
+    contextService,
+    statisticsService,
+    ignoreService,
+    context.globalState // Pass Memento for active context state
+  );
+  vscode.window.createTreeView('jabbaRoot.contextView', { treeDataProvider: contextTreeProvider });
 
   // =================================================================================
-  //  2. PHASE D'ENREGISTREMENT : COMMANDES
-  //     Nous connectons l'application assemblée à l'UI de VSCode.
+  //  2. PHASE D'ENREGISTREMENT DES COMMANDES
   // =================================================================================
+  // Enregistrement des commandes via les fonctions d'aide dédiées
+  const refreshCommand = registerRefreshContextViewCommand(contextTreeProvider);
+  const createContextCommand = registerCreateContextCommand(contextService, contextTreeProvider);
+  const generateTreeCommand = registerGenerateProjectTreeCommand(
+    structureGenerationService,
+    projectRootPath,
+    ignoreService
+  );
+  const compileCommand = registerCompileAndCopyContextCommand(
+    contextConstructorService,
+    contextService,
+    ignoreService,
+    contextTreeProvider
+  );
+  
+  const deleteContextCommand = registerDeleteContextCommand(
+    contextService,
+    contextTreeProvider
+  );
 
-  const refreshCommand = vscode.commands.registerCommand('jabbaRoot.refreshContextView', () => {
-    // contextTreeProvider.refresh();
-    vscode.window.showInformationMessage("JabbarRoot: View refreshed (simulation).");
-  });
+  const addPathToContextCommand = registerAddPathToContextCommand(
+    contextService,
+    contextTreeProvider
+  );
 
-  const generateTreeCommand = vscode.commands.registerCommand('jabbaRoot.generateProjectTree', async () => {
-    const rootPath = getProjectRootPath();
-    if (!rootPath) {
-      vscode.window.showWarningMessage("JabbaRoot: No project folder open.");
-      return;
-    }
-    
-    const shouldIgnore = await ignoreService.createIgnorePredicate(rootPath);
-    const report = await structureGenerationService.generate(rootPath, { shouldIgnore });
-    
-    if (report?.tree) {
-      await vscode.env.clipboard.writeText(report.tree);
-      vscode.window.showInformationMessage("JabbarRoot: Project tree copied to clipboard.");
-    } else {
-      vscode.window.showErrorMessage("JabbaRoot: Could not generate project tree.");
-    }
-  });
+  const removePathFromContextCommand = registerRemovePathFromContextCommand(
+    contextService,
+    contextTreeProvider
+  );
 
-  const compileCommand = vscode.commands.registerCommand('jabbaRoot.compileAndCopyContext', async (contextItem: ContextItem) => {
-    if (!contextItem) {
-      vscode.window.showWarningMessage('No context selected.');
-      return;
-    }
-    
-    const projectRootPath = getProjectRootPath();
-    if (!projectRootPath) {
-        vscode.window.showErrorMessage('A project folder must be open.');
-        return;
-    }
+  const setActiveContextCommand = registerSetActiveContextCommand(
+    contextService,
+    contextTreeProvider,
+    context.globalState
+  );
 
-    const shouldIgnore = await ignoreService.createIgnorePredicate(projectRootPath);
-    const structureGenOptions = { shouldIgnore, maxDepth: 7 };
+  const unsetActiveContextCommand = registerUnsetActiveContextCommand(
+    contextTreeProvider,
+    context.globalState
+  );
 
-    await vscode.window.withProgress({ location: vscode.ProgressLocation.Notification, title: `JabbarRoot: Compiling ${contextItem.label}...` }, async (progress) => {
-      progress.report({ message: 'Assembling context...' });
+  const addPathToActiveContextCommand = registerAddPathToActiveContextCommand(
+    contextService,
+    contextTreeProvider,
+    context.globalState
+  );
 
-      const contextModel: ProgrammableContext = contextItem.context;
+  const addActiveFileToSpecificContextCommand = registerAddActiveFileToSpecificContextCommand(
+    contextService,
+    contextTreeProvider
+  );
 
-      const compiledContext = await contextConstructorService.compileContext(
-          contextModel,
-          contextModel.files_scope,
-          projectRootPath,
-          structureGenOptions
-      );
-      
-      await vscode.env.clipboard.writeText(compiledContext);
-      vscode.window.showInformationMessage(`JabbarRoot: Context "${contextItem.label}" compiled and copied!`);
-    });
-  });
-
-  const createContextCommand = vscode.commands.registerCommand('jabbaRoot.createContext', async () => {
-    // NOTE: La logique de création de contexte devra être migrée pour utiliser le `contextService` du core.
-    vscode.window.showInformationMessage("JabbarRoot: 'Create Context' command not fully migrated yet.");
-  });
-
-  const deleteContextCommand = vscode.commands.registerCommand('jabbaRoot.deleteContext', async (contextItem: ContextItem) => {
-    // NOTE: La logique de suppression devra utiliser le `contextService` du core.
-    vscode.window.showInformationMessage("JabbarRoot: 'Delete Context' command not fully migrated yet.");
-  });
-
-
-  // Enregistrement de toutes les commandes pour qu'elles soient disponibles dans l'extension
+  // Enregistrement de toutes les commandes dans le contexte de l'extension
   context.subscriptions.push(
     refreshCommand,
+    createContextCommand,
     generateTreeCommand,
     compileCommand,
-    createContextCommand,
-    deleteContextCommand
+    deleteContextCommand,
+    addPathToContextCommand,
+    removePathFromContextCommand,
+    setActiveContextCommand,
+    unsetActiveContextCommand,
+    addPathToActiveContextCommand,
+    addActiveFileToSpecificContextCommand
   );
-}
+} // Fin de la fonction activate
 
 export function deactivate() {}

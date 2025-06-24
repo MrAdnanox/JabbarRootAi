@@ -14,6 +14,21 @@ export class VscodeFileSystemAdapter implements IFileSystem {
     const contentBytes = await vscode.workspace.fs.readFile(uri);
     return Buffer.from(contentBytes).toString('utf8');
   }
+  public async writeFile(filePath: string, content: string): Promise<void> {
+    const uri = vscode.Uri.file(filePath);
+    const contentBytes = Buffer.from(content, 'utf8');
+    await vscode.workspace.fs.writeFile(uri, contentBytes);
+  }
+  public async createDirectory(dirPath: string): Promise<void> {
+    const uri = vscode.Uri.file(dirPath);
+    // createDirectory est récursif par nature dans l'API VSCode, c'est parfait.
+    await vscode.workspace.fs.createDirectory(uri);
+  }
+
+  public async deleteFile(filePath: string): Promise<void> {
+    const uri = vscode.Uri.file(filePath);
+    await vscode.workspace.fs.delete(uri, { useTrash: true }); // useTrash pour la sécurité
+  }
 
   public async readDirectory(dirPath: string): Promise<DirectoryEntry[]> {
     const uri = vscode.Uri.file(dirPath);

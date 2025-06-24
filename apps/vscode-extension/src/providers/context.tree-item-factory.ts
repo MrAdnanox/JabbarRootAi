@@ -10,17 +10,19 @@ export type ContextTreeItem = ContextItem | StatItem;
 export class ContextItem extends vscode.TreeItem {
   constructor(
     public readonly context: ProgrammableContext,
-    public readonly stats: ContextStats
+    public readonly stats: ContextStats,
+    public readonly isActive: boolean
   ) {
     super(context.name, vscode.TreeItemCollapsibleState.Collapsed);
-    this.description = `${stats.compressedTokensApprox} tokens | -${stats.reductionPercent}%`;
+    this.label = isActive ? `${context.name}` : context.name;
+    this.description = isActive ? `(active) ${stats.compressedTokensApprox} tokens` : `${stats.compressedTokensApprox} tokens | -${stats.reductionPercent}%`;
     this.tooltip = new vscode.MarkdownString(
       `**${context.name}**\n\n` +
       `- Fichiers: ${context.files_scope.length}\n` +
       `- Créé le: ${new Date(context.metadata.createdAt).toLocaleDateString()}\n\n` +
       `*Cliquez pour voir les statistiques détaillées.*`
     );
-    this.iconPath = new vscode.ThemeIcon('symbol-object');
+    this.iconPath = isActive ? new vscode.ThemeIcon('zap') : new vscode.ThemeIcon('symbol-object');
     this.contextValue = 'jabbaRootContext';
   }
 }

@@ -1,14 +1,12 @@
-// packages/core/src/services/contextConstructor.service.ts
-
 import { ProgrammableContext } from '../models/programmableContext';
 import { StructureGenerationService, StructureGenerationOptions } from './structureGeneration.service';
 import { FileContentService } from './fileContent.service';
 import { CompactionService } from './compaction.service';
-import { IFileSystem, IStorage } from '@jabbarroot/types';
+// IFileSystem, IStorage ne sont pas directement utilisés ici, on peut les enlever.
 
 /**
- * Superviseur d'assemblage.
- * Orchestre les services-outils pour construire un contexte final à partir d'un plan.
+ * Superviseur d'orchestration pour la construction d'un contexte programmable
+ * à partir d'un plan.
  */
 export class ContextConstructorService {
   constructor(
@@ -25,25 +23,27 @@ export class ContextConstructorService {
   ): Promise<string> {
     const outputParts: string[] = [];
 
+    // 1. Générer l'arborescence et la stocker. Elle ne sera PAS compressée.
     if (context.options.include_project_tree) {
-      // L'erreur était ici : le service attend 2 arguments.
-      const report = await this.structureGenerationService.generate(projectRootPath, structureGenOptions);
+      const report = await this.structureGenerationService.generate(
+        projectRootPath, // Correction : le startPath doit être la racine du projet
+        structureGenOptions
+      );
       if (report?.tree) {
         outputParts.push('--- PROJECT TREE ---\n' + report.tree);
       }
     }
 
-    if (files_scope.length > 0) {
-      // L'erreur était ici : le service attend 2 arguments.
-      const fileContents = await this.fileContentService.buildContentFromFiles(files_scope, projectRootPath);
-      if (fileContents) {
-        outputParts.push('--- FILE CONTENTS ---\n' + fileContents);
-      }
+    // 2. Générer le contenu des fichiers.
+    const fileContents = await this.fileContentService.buildContentFromFiles(files_scope, projectRootPath);
+    
+    if (fileContents) {
+      // 3. Compresser UNIQUEMENT le contenu des fichiers.
+      const compressedContents = this.compactionService.compress(fileContents, context.options.compression_level);
+      outputParts.push('--- FILE CONTENTS ---\n' + compressedContents);
     }
 
-    const rawContext = outputParts.join('\n\n');
-    const finalContext = this.compactionService.compress(rawContext, context.options.compression_level);
-    
-    return finalContext;
+    // 4. Assembler les parties finales. L'arborescence est intacte.
+    return outputParts.join('\n\n');
   }
 }

@@ -35,4 +35,23 @@ export interface DirectoryEntry {
      * @returns Le chemin relatif (ex: 'src/services/myService.ts').
      */
     getRelativePath(rootPath: string, filePath: string): string;
+
+    /**
+     * Crée un répertoire.
+     * @param dirPath Le chemin absolu du répertoire à créer.
+     */
+    createDirectory(dirPath: string): Promise<void>;
+
+    /**
+     * Supprime un fichier.
+     * @param filePath Le chemin absolu du fichier à supprimer.
+     */
+    deleteFile(filePath: string): Promise<void>;
+
+    /**
+     * Écrit le contenu d'un fichier.
+     * @param filePath Le chemin absolu du fichier.
+     * @param content Le contenu à écrire.
+     */
+    writeFile(filePath: string, content: string): Promise<void>;
   }

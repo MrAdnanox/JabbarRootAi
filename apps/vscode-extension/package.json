@@ -11,8 +11,8 @@
   "engines": {
     "vscode": "^1.70.0"
   },
-"main": "./dist/extension.js",
-"contributes": {
+  "main": "./dist/extension.js",
+  "contributes": {
     "viewsContainers": {
       "activitybar": [
         {
@@ -35,33 +35,58 @@
     "commands": [
       {
         "command": "jabbaRoot.generateProjectTree",
-        "title": "JabbaRoot: Générer l'arborescence du projet vers le presse-papiers",
+        "title": "JabbaRoot: Generate project tree to clipboard",
         "category": "JabbaRoot"
       },
       {
         "command": "jabbaRoot.createContext",
-        "title": "Créer un Contexte Programmable",
+        "title": "JabbaRoot: Create Context",
         "icon": "$(add)"
       },
       {
         "command": "jabbaRoot.deleteContext",
-        "title": "Supprimer le Contexte",
+        "title": "JabbaRoot: Delete Context",
         "icon": "$(trash)"
       },
       {
         "command": "jabbaRoot.refreshContextView",
-        "title": "Rafraîchir les Contextes",
+        "title": "JabbaRoot: Refresh Contexts",
         "icon": "$(refresh)"
       },
       {
         "command": "jabbaRoot.compileAndCopyContext",
-        "title": "Compiler et Copier le Contexte",
+        "title": "JabbaRoot: Compile and Copy Context",
         "icon": "$(symbol-string)"
       },
       {
         "command": "jabbaRoot.createIgnoreFile",
-        "title": "JabbaRoot: Créer un fichier .JabbarRootIgnore",
+        "title": "JabbaRoot: Create .JabbarRootIgnore file",
         "category": "JabbaRoot"
+      },
+      {
+        "command": "jabbaRoot.addPathToContext",
+        "title": "JabbarRoot: Add to Context...",
+        "icon": "$(add)"
+      },
+      {
+        "command": "jabbaRoot.removePathFromContext",
+        "title": "JabbarRoot: Remove from Context...",
+        "icon": "$(remove)"
+      },
+      {
+        "command": "jabbaRoot.setActiveContext",
+        "title": "JabbarRoot: Set as Active Context",
+        "icon": "$(zap)"
+      },
+      {
+        "command": "jabbaRoot.addPathToActiveContext",
+        "title": "JabbaRoot: Add to Active Context",
+        "icon": "$(file-add)"
+      },
+      {
+        "command": "jabbaRoot.addActiveFileToSpecificContext",
+        "title": "JabbaRoot: Add Active File to This Context",
+        "icon": "$(file-add)"
       }
     ],
     "menus": {
@@ -77,16 +102,47 @@
           "group": "navigation"
         }
       ],
+
       "view/item/context": [
+        {
+          "command": "jabbaRoot.setActiveContext",
+          "when": "view == jabbaRoot.contextView && viewItem == jabbaRootContext",
+          "group": "inline@0"
+        },
         {
           "command": "jabbaRoot.compileAndCopyContext",
           "when": "view == jabbaRoot.contextView && viewItem == jabbaRootContext",
-          "group": "inline"
+          "group": "inline@1"
         },
         {
           "command": "jabbaRoot.deleteContext",
           "when": "view == jabbaRoot.contextView && viewItem == jabbaRootContext",
-          "group": "inline"
+          "group": "inline@2"
+        },
+        {
+          "command": "jabbaRoot.addActiveFileToSpecificContext",
+          "when": "view == jabbaRoot.contextView && viewItem == jabbaRootContext",
+          "group": "inline@3"
+        },
+        {
+          "command": "jabbaRoot.removePathFromContext",
+          "when": "view == jabbaRoot.contextView && viewItem == jabbaRootContext",
+          "group": "inline@4"
+        }
+      ],
+      "explorer/context": [
+        {
+          "command": "jabbaRoot.addPathToActiveContext",
+          "when": "config.jabbaRoot.activeContextId",
+          "group": "9_jabbarroot@0"
+        },
+        {
+          "command": "jabbaRoot.addPathToContext",
+          "group": "9_jabbarroot@1"
+        },
+        {
+          "command": "jabbaRoot.removePathFromContext",
+          "group": "9_jabbarroot@2"
         }
       ]
     },
@@ -96,32 +152,37 @@
         "jabbaRoot.compilation.includeProjectTree": {
           "type": "boolean",
           "default": true,
-          "description": "Inclure l'arborescence du projet dans le contexte compilé si l'option est cochée pour ce contexte."
+          "description": "Include the project tree in the compiled context if the option is checked for this context."
         },
         "jabbaRoot.view.statistics.enabled": {
           "type": "boolean",
           "default": true,
-          "description": "[Master Switch] Affiche ou masque globalement les statistiques pour tous les contextes."
+          "description": "[Master Switch] Show or hide globally the statistics for all contexts."
         },
         "jabbaRoot.view.statistics.showSize": {
           "type": "boolean",
           "default": true,
-          "description": "Si les statistiques sont activées, afficher la ligne 'Taille (chars)'."
+          "description": "Show or hide the 'Size (chars)' line."
         },
         "jabbaRoot.view.statistics.showTokens": {
           "type": "boolean",
           "default": true,
-          "description": "Si les statistiques sont activées, afficher la ligne 'Jetons (est.)'."
+          "description": "Show or hide the 'Tokens (est.)' line."
         },
         "jabbaRoot.view.statistics.showReduction": {
           "type": "boolean",
           "default": true,
-          "description": "Si les statistiques sont activées, afficher la ligne 'Réduction'."
+          "description": "Show or hide the 'Reduction' line."
         },
         "jabbaRoot.view.statistics.showMotivation": {
           "type": "boolean",
           "default": true,
-          "description": "Si les statistiques sont activées, afficher la ligne 'Efficacité'."
+          "description": "Show or hide the 'Motivation' line."
+        },
+        "jabbaRoot.activeContextId": {
+          "type": ["string", "null"],
+          "default": null,
+          "description": "DO NOT EDIT MANUALLY. The ID of the currently active context."
         }
       }
     }
