@@ -15,9 +15,9 @@ export function registerSetActiveContextCommand(
   contextTreeProvider: ContextTreeDataProvider,
   globalState: vscode.Memento
 ): vscode.Disposable {
-  return vscode.commands.registerCommand('jabbaRoot.setActiveContext', async (contextItem: any) => { // TODO: Importer le bon type pour ContextItem
+  return vscode.commands.registerCommand('jabbarroot.setActiveContext', async (contextItem: any) => { // TODO: Importer le bon type pour ContextItem
     if (!contextItem) {
-      vscode.window.showWarningMessage('JabbarRoot: Select a context from the sidebar to set it as active.');
+      vscode.window.showWarningMessage('jabbarroot: Select a context from the sidebar to set it as active.');
       return;
     }
 

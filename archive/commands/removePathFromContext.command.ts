@@ -12,9 +12,9 @@ export function registerRemovePathFromContextCommand(
   contextService: ContextService,
   contextTreeProvider: ContextTreeDataProvider
 ): vscode.Disposable {
-  return vscode.commands.registerCommand('jabbaRoot.removePathFromContext', async (contextItem: any) => { // TODO: Importer le bon type pour ContextItem
+  return vscode.commands.registerCommand('jabbarroot.removePathFromContext', async (contextItem: any) => { // TODO: Importer le bon type pour ContextItem
     if (!contextItem) {
-      vscode.window.showWarningMessage('JabbarRoot: Select a context from the sidebar to remove a path from it.');
+      vscode.window.showWarningMessage('jabbarroot: Select a context from the sidebar to remove a path from it.');
       return;
     }
 

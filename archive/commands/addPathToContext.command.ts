@@ -13,22 +13,22 @@ export function registerAddPathToContextCommand(
   contextService: ContextService,
   contextTreeProvider: ContextTreeDataProvider
 ): vscode.Disposable {
-  return vscode.commands.registerCommand('jabbaRoot.addPathToContext', async (contextItem: any) => { // TODO: Importer le bon type pour ContextItem
+  return vscode.commands.registerCommand('jabbarroot.addPathToContext', async (contextItem: any) => { // TODO: Importer le bon type pour ContextItem
     if (!contextItem) {
-      vscode.window.showWarningMessage('JabbarRoot: Select a context from the sidebar to add a path to it.');
+      vscode.window.showWarningMessage('jabbarroot: Select a context from the sidebar to add a path to it.');
       return;
     }
 
     const projectRootPath = getProjectRootPath();
     if (!projectRootPath) {
-      vscode.window.showErrorMessage('JabbarRoot: No workspace folder is open.');
+      vscode.window.showErrorMessage('jabbarroot: No workspace folder is open.');
       return;
     }
 
     // Obtenir le chemin du fichier actif
     const activeEditor = vscode.window.activeTextEditor;
     if (!activeEditor) {
-      vscode.window.showWarningMessage('JabbarRoot: No active editor. Please open a file first.');
+      vscode.window.showWarningMessage('jabbarroot: No active editor. Please open a file first.');
       return;
     }
 

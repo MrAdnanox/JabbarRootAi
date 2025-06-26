@@ -8,7 +8,7 @@ import { IConfiguration } from '@jabbarroot/core';
  */
 export class VscodeConfigurationAdapter implements IConfiguration {
   private get config(): vscode.WorkspaceConfiguration {
-    return vscode.workspace.getConfiguration('jabbaRoot');
+    return vscode.workspace.getConfiguration('jabbarroot');
   }
 
   public getBool(key: string, defaultValue: boolean): boolean {

@@ -3,7 +3,7 @@ import { IStorage } from '@jabbarroot/types';
 import { v4 as uuidv4 } from 'uuid';
 import { ProgrammableContext } from '../models/programmableContext';
 
-const CONTEXTS_STORAGE_KEY = 'jabbaRoot.contexts';
+const CONTEXTS_STORAGE_KEY = 'jabbarroot.contexts';
 
 type StoredContexts = Record<string, ProgrammableContext>;
 

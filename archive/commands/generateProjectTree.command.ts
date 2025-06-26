@@ -7,7 +7,7 @@ export function registerGenerateProjectTreeCommand(
   projectRootPath: string,
   ignoreService: IgnoreService
 ): vscode.Disposable {
-  return vscode.commands.registerCommand('jabbaRoot.generateProjectTree', async () => {
+  return vscode.commands.registerCommand('jabbarroot.generateProjectTree', async () => {
     try {
       const shouldIgnore = await ignoreService.createIgnorePredicate(projectRootPath);
       const options: StructureGenerationOptions = {

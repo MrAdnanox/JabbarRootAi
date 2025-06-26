@@ -1,151 +1,165 @@
 // apps/vscode-extension/src/extension.ts
 import * as vscode from 'vscode';
-
-// Core services
 import {
-  CompactionService,
-  FileContentService,
-  StructureGenerationService,
-  ContextConstructorService,
-  ContextService,
-  StatisticsService,
+    ProjectService,
+    BrickService,
+    BrickConstructorService,
+    StatisticsService,
+    StructureGenerationService,
+    FileContentService,
+    CompactionService
 } from '@jabbarroot/core';
 
-// Adapters
-import { FileSystemStorageAdapter } from './adapters/fileSystemStorage.adapter';
 import { VscodeFileSystemAdapter } from './adapters/vscodeFileSystem.adapter';
-
-// Services
 import { IgnoreService } from './services/ignore.service';
-
-// Providers
-import { ContextTreeDataProvider } from './providers/contextTreeDataProvider';
-
-// Utils
+import { FileSystemStorageAdapter } from './adapters/fileSystemStorage.adapter';
+import { ProjectTreeDataProvider } from './providers/projectTreeDataProvider';
+import { ProjectViewTreeItem, BrickTreeItem } from './providers/projectTreeItem.factory';
 import { getProjectRootPath } from './utils/workspace';
 
 // Command imports
-import { registerRefreshContextViewCommand } from './commands/refreshContextView.command';
-import { registerCreateContextCommand } from './commands/createContext.command';
-import { registerGenerateProjectTreeCommand } from './commands/generateProjectTree.command';
-import { registerCompileAndCopyContextCommand } from './commands/compileAndCopyContext.command';
-import { registerDeleteContextCommand } from './commands/deleteContext.command';
-import { registerAddPathToContextCommand } from './commands/addPathToContext.command';
-import { registerRemovePathFromContextCommand } from './commands/removePathFromContext.command';
-import { registerSetActiveContextCommand } from './commands/setActiveContext.command';
-import { registerUnsetActiveContextCommand } from './commands/unsetActiveContext.command';
-import { registerAddPathToActiveContextCommand } from './commands/addPathToActiveContext.command';
-import { registerAddActiveFileToSpecificContextCommand } from './commands/addActiveFileToSpecificContext.command';
+import { registerCreateProjectCommand } from './commands/createProject.command';
+import { registerCreateBrickCommand } from './commands/createBrick.command';
+import { registerRemoveFileFromBrickCommand } from './commands/removeFileFromBrick.command';
+import { registerAddPathToBrickCommand } from './commands/addPathToBrick.command';
+import { registerActivateBrickCommand } from './commands/activateBrick.command';
+import { registerDeactivateBrickCommand } from './commands/deactivateBrick.command';
+import { registerCompileBrickCommand } from './commands/compileBrick.command';
 
-export function activate(context: vscode.ExtensionContext) {
-  // =================================================================================
-  //  0. PRÉ-REQUIS
-  // =================================================================================
-  const projectRootPath = getProjectRootPath();
-  if (!projectRootPath) {
-    vscode.window.showWarningMessage('JabbarRoot: Veuillez ouvrir un dossier pour activer l\'extension.');
-    return;
-  }
+export async function activate(context: vscode.ExtensionContext) {
+    // Vérification du dossier de travail
+    const projectRootPath = getProjectRootPath();
+    if (!projectRootPath) {
+        vscode.window.showWarningMessage('jabbarroot: Veuillez ouvrir un dossier pour activer l\'extension.');
+        return;
+    }
 
-  // =================================================================================
-  //  1. PHASE D'INITIALISATION DES SERVICES & PROVIDERS
-  // =================================================================================
-  // --- Couche 1 : Adapters d'Abstraction du Host (VSCode) ---
-  const fsAdapter = new VscodeFileSystemAdapter();
-  const storageAdapter = new FileSystemStorageAdapter(fsAdapter, projectRootPath, 'contexts');
-  // const configAdapter = new VscodeConfigurationAdapter(); // Pour plus tard
-  const ignoreService = new IgnoreService(fsAdapter);
+    try {
+        // Initialisation des adapters
+        const fsAdapter = new VscodeFileSystemAdapter();
+        const mainStorage = new FileSystemStorageAdapter(
+            fsAdapter,
+            projectRootPath,
+            '.jabbarroot_data/storage_v2'
+        );
 
-  // --- Couche 2 : Services du Core (Cerveau Agnostique) ---
-  const compactionService = new CompactionService();
-  const fileContentService = new FileContentService(fsAdapter);
-  const structureGenerationService = new StructureGenerationService(fsAdapter);
-  const contextConstructorService = new ContextConstructorService(
-    structureGenerationService,
-    fileContentService,
-    compactionService
-  );
-  const contextService = new ContextService(storageAdapter);
-  const statisticsService = new StatisticsService(contextConstructorService);
+        // Initialisation des services de base
+        const projectService = new ProjectService(mainStorage);
+        const brickService = new BrickService(mainStorage);
+        
+        // Initialisation des services de construction
+        const structureGenerationService = new StructureGenerationService(fsAdapter);
+        const compactionService = new CompactionService();
+        const fileContentService = new FileContentService(fsAdapter, compactionService);
+        
+        const brickConstructorService = new BrickConstructorService(
+            structureGenerationService,
+            fileContentService,
+            compactionService
+        );
 
-  // --- Couche 3 : UI Providers ---
-  const contextTreeProvider = new ContextTreeDataProvider(
-    contextService,
-    statisticsService,
-    ignoreService,
-    context.globalState // Pass Memento for active context state
-  );
-  vscode.window.createTreeView('jabbaRoot.contextView', { treeDataProvider: contextTreeProvider });
+        const statisticsService = new StatisticsService(brickConstructorService);
 
-  // =================================================================================
-  //  2. PHASE D'ENREGISTREMENT DES COMMANDES
-  // =================================================================================
-  // Enregistrement des commandes via les fonctions d'aide dédiées
-  const refreshCommand = registerRefreshContextViewCommand(contextTreeProvider);
-  const createContextCommand = registerCreateContextCommand(contextService, contextTreeProvider);
-  const generateTreeCommand = registerGenerateProjectTreeCommand(
-    structureGenerationService,
-    projectRootPath,
-    ignoreService
-  );
-  const compileCommand = registerCompileAndCopyContextCommand(
-    contextConstructorService,
-    contextService,
-    ignoreService,
-    contextTreeProvider
-  );
-  
-  const deleteContextCommand = registerDeleteContextCommand(
-    contextService,
-    contextTreeProvider
-  );
+        // Initialisation des services spécifiques à VSCode
+        const ignoreService = new IgnoreService(fsAdapter);
 
-  const addPathToContextCommand = registerAddPathToContextCommand(
-    contextService,
-    contextTreeProvider
-  );
+        // Initialisation de la vue hiérarchique
+        const projectTreeProvider = new ProjectTreeDataProvider(
+            projectService,
+            brickService,
+            context.globalState
+        );
 
-  const removePathFromContextCommand = registerRemovePathFromContextCommand(
-    contextService,
-    contextTreeProvider
-  );
+        // Création de la vue arborescente
+        const treeView = vscode.window.createTreeView('jabbarroot.contextView', {
+            treeDataProvider: projectTreeProvider,
+            showCollapseAll: true
+        });
+        context.subscriptions.push(treeView);
 
-  const setActiveContextCommand = registerSetActiveContextCommand(
-    contextService,
-    contextTreeProvider,
-    context.globalState
-  );
+        // Initialisation du contextKey
+        await vscode.commands.executeCommand('setContext', 'jabbarroot:selectedBrickIsActive', false);
 
-  const unsetActiveContextCommand = registerUnsetActiveContextCommand(
-    contextTreeProvider,
-    context.globalState
-  );
+        // Listener pour mettre à jour le contextKey lors du changement de sélection
+        treeView.onDidChangeSelection(async (e: vscode.TreeViewSelectionChangeEvent<ProjectViewTreeItem>) => {
+            let brickIsActive = false;
+            if (e.selection && e.selection.length > 0) {
+                const selectedItem = e.selection[0];
+                if (selectedItem instanceof BrickTreeItem) {
+                    brickIsActive = selectedItem.brick.isActiveForProjectCompilation;
+                }
+            }
+            await vscode.commands.executeCommand(
+                'setContext',
+                'jabbarroot:selectedBrickIsActive',
+                brickIsActive
+            );
+        });
 
-  const addPathToActiveContextCommand = registerAddPathToActiveContextCommand(
-    contextService,
-    contextTreeProvider,
-    context.globalState
-  );
+        // Enregistrement des commandes
+        const refreshProjectViewCommand = vscode.commands.registerCommand(
+            'jabbarroot.refreshProjectView',
+            () => projectTreeProvider.refresh()
+        );
 
-  const addActiveFileToSpecificContextCommand = registerAddActiveFileToSpecificContextCommand(
-    contextService,
-    contextTreeProvider
-  );
+        const createProjectCommand = registerCreateProjectCommand(projectService, projectTreeProvider);
+        const createBrickCommand = registerCreateBrickCommand(
+            projectService,
+            brickService,
+            projectTreeProvider
+        );
+        
+        const removeFileFromBrickCommand = registerRemoveFileFromBrickCommand(
+            brickService,
+            projectTreeProvider
+        );
 
-  // Enregistrement de toutes les commandes dans le contexte de l'extension
-  context.subscriptions.push(
-    refreshCommand,
-    createContextCommand,
-    generateTreeCommand,
-    compileCommand,
-    deleteContextCommand,
-    addPathToContextCommand,
-    removePathFromContextCommand,
-    setActiveContextCommand,
-    unsetActiveContextCommand,
-    addPathToActiveContextCommand,
-    addActiveFileToSpecificContextCommand
-  );
-} // Fin de la fonction activate
+        const addPathToBrickCommand = registerAddPathToBrickCommand(
+            projectService,
+            brickService,
+            projectTreeProvider,
+            ignoreService
+        );
 
-export function deactivate() {}
+        const compileBrickCommand = registerCompileBrickCommand(
+            brickConstructorService,
+            statisticsService,
+            projectService,
+            ignoreService,
+            projectTreeProvider
+        );
+        
+        const activateBrickCommand = registerActivateBrickCommand(brickService, projectTreeProvider);
+        const deactivateBrickCommand = registerDeactivateBrickCommand(brickService, projectTreeProvider);
+
+        // Enregistrement des abonnements
+        const subscriptions = [
+            refreshProjectViewCommand,
+            createProjectCommand,
+            createBrickCommand,
+            removeFileFromBrickCommand,
+            addPathToBrickCommand,
+            compileBrickCommand,
+            activateBrickCommand,
+            deactivateBrickCommand
+        ];
+
+        // Ajout de tous les abonnements au contexte
+        subscriptions.forEach(subscription => {
+            context.subscriptions.push(subscription);
+        });
+        
+        // Notification de fin d'initialisation
+        vscode.window.showInformationMessage('JabbarRoot: Extension activée avec succès !');
+    } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+        vscode.window.showErrorMessage(`Failed to activate JabbarRoot extension: ${errorMessage}`);
+    }
+}
+
+/**
+ * Fonction appelée lors de la désactivation de l'extension
+ */
+export function deactivate() {
+    // Nettoyage des ressources si nécessaire
+}

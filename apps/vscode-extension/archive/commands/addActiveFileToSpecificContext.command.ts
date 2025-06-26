@@ -16,9 +16,9 @@ export function registerAddActiveFileToSpecificContextCommand(
     contextService: ContextService,
     contextTreeProvider: ContextTreeDataProvider
 ): vscode.Disposable {
-    return vscode.commands.registerCommand('jabbaRoot.addActiveFileToSpecificContext', async (contextItem?: ContextItem) => {
+    return vscode.commands.registerCommand('jabbarroot.addActiveFileToSpecificContext', async (contextItem?: ContextItem) => {
         if (!contextItem || !(contextItem instanceof ContextItem) || !contextItem.context) {
-            vscode.window.showWarningMessage('JabbarRoot: No valid context selected from the JabbarRoot view.');
+            vscode.window.showWarningMessage('jabbarroot: No valid context selected from the jabbarroot view.');
             console.warn('addActiveFileToSpecificContext: Invalid or missing contextItem argument.', contextItem);
             return;
         }
@@ -26,13 +26,13 @@ export function registerAddActiveFileToSpecificContextCommand(
         const projectRootPath = getProjectRootPath();
         if (!projectRootPath) {
             // Ce cas devrait être rare si la vue est active, mais c'est une bonne garde.
-            vscode.window.showErrorMessage('JabbarRoot: No workspace folder is open.');
+            vscode.window.showErrorMessage('jabbarroot: No workspace folder is open.');
             return;
         }
 
         const activeEditor = vscode.window.activeTextEditor;
         if (!activeEditor) {
-            vscode.window.showWarningMessage('JabbarRoot: No active editor. Please open a file first to add it.');
+            vscode.window.showWarningMessage('jabbarroot: No active editor. Please open a file first to add it.');
             return;
         }
 

@@ -9,7 +9,7 @@ export function registerCompileAndCopyContextCommand(
   ignoreService: IgnoreService,
   contextTreeProvider: any // TODO: Importer le bon type
 ): vscode.Disposable {
-  return vscode.commands.registerCommand('jabbaRoot.compileAndCopyContext', async (contextItem: any) => { // TODO: Importer le bon type pour ContextItem
+  return vscode.commands.registerCommand('jabbarroot.compileAndCopyContext', async (contextItem: any) => { // TODO: Importer le bon type pour ContextItem
     if (!contextItem) {
       vscode.window.showWarningMessage('No context selected.');
       return;
@@ -26,7 +26,7 @@ export function registerCompileAndCopyContextCommand(
     await vscode.window.withProgress(
       { 
         location: vscode.ProgressLocation.Notification, 
-        title: `JabbarRoot: Compiling ${contextModel.name}...` 
+        title: `jabbarroot: Compiling ${contextModel.name}...` 
       }, 
       async (progress) => {
         try {
@@ -56,7 +56,7 @@ export function registerCompileAndCopyContextCommand(
             await vscode.env.clipboard.writeText(compiledContext);
             
             if (choice === actionCopyOnly) {
-              vscode.window.setStatusBarMessage(`JabbarRoot: Context "${contextModel.name}" copied!`, 3000);
+              vscode.window.setStatusBarMessage(`jabbarroot: Context "${contextModel.name}" copied!`, 3000);
             }
           }
           

@@ -13,7 +13,7 @@ export function registerCreateContextCommand(
   contextService: ContextService,
   contextTreeProvider: ContextTreeDataProvider
 ): vscode.Disposable {
-  return vscode.commands.registerCommand('jabbaRoot.createContext', async () => {
+  return vscode.commands.registerCommand('jabbarroot.createContext', async () => {
     const contextName = await vscode.window.showInputBox({
       prompt: 'Enter the name for the new context',
       validateInput: (value) => {

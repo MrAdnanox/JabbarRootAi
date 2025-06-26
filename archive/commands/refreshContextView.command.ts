@@ -9,7 +9,7 @@ import { ContextTreeDataProvider } from '../providers/contextTreeDataProvider';
 export function registerRefreshContextViewCommand(
   contextTreeProvider: ContextTreeDataProvider
 ): vscode.Disposable {
-  return vscode.commands.registerCommand('jabbaRoot.refreshContextView', () => {
+  return vscode.commands.registerCommand('jabbarroot.refreshContextView', () => {
     contextTreeProvider.refresh();
   });
 }

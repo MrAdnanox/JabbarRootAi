@@ -49,7 +49,7 @@ export interface Role {
   
   /**
    * Le Codex tel qu'il existe en mémoire après chargement et fusion.
-   * C'est l'état d'exécution de JabbarRoot.
+   * C'est l'état d'exécution de jabbarroot.
    */
   export interface LoadedCodex {
     version: string;

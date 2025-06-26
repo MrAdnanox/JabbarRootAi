@@ -58,8 +58,8 @@
         "icon": "$(remove)"
       },
       {
-        "command": "jabbarroot.addPathToBrick",
-        "title": "jabbarroot: Add Path to Brick",
+        "command": "jabbarroot.addFileToBrick",
+        "title": "jabbarroot: Add Active File to Brick",
         "category": "jabbarroot",
         "icon": "$(file-add)"
       },
@@ -161,39 +161,39 @@
          "group": "inline"
         },
         {
-          "command": "jabbarroot.compileBrick",
-          "when": "view == jabbarroot.contextView && viewItem == jabbarrootBrick",
-          "group": "inline@1"
-        },
-        {
           "command": "jabbarroot.activateBrick",
           "when": "view == jabbarroot.contextView && viewItem == jabbarrootBrick && !jabbarroot:selectedBrickIsActive",
-          "group": "inline@2"
+          "group": "inline"
         },
         {
           "command": "jabbarroot.deactivateBrick",
           "when": "view == jabbarroot.contextView && viewItem == jabbarrootBrick && jabbarroot:selectedBrickIsActive",
-          "group": "inline@2"
+          "group": "inline"
         },
         {
-          "command": "jabbarroot.addPathToBrick",
+          "command": "jabbarroot.addFileToBrick",
           "when": "view == jabbarroot.contextView && viewItem == jabbarrootBrick",
-          "group": "inline@3"
+          "group": "inline"
         },
         {
           "command": "jabbarroot.removeFileFromBrick",
           "when": "view == jabbarroot.contextView && viewItem == jabbarrootBrick",
-          "group": "inline@4"
+          "group": "inline"
         },
         {
-          "command": "jabbarroot.deleteBrick",
+          "command": "jabbarroot.compileBrick",
           "when": "view == jabbarroot.contextView && viewItem == jabbarrootBrick",
-          "group": "inline@5"
+          "group": "inline"
         },
         {
           "command": "jabbarroot.editBrickOptions",
           "when": "view == jabbarroot.contextView && viewItem == jabbarrootBrick",
-          "group": "inline@6"
+          "group": "inline"
+        },
+        {
+          "command": "jabbarroot.deleteBrick",
+          "when": "view == jabbarroot.contextView && viewItem == jabbarrootBrick",
+          "group": "inline"
         }
       ],
       "explorer/context": []

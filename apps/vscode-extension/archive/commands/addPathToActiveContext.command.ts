@@ -16,25 +16,25 @@ export function registerAddPathToActiveContextCommand(
   contextTreeProvider: ContextTreeDataProvider,
   globalState: vscode.Memento
 ): vscode.Disposable {
-  return vscode.commands.registerCommand('jabbaRoot.addPathToActiveContext', async () => {
+  return vscode.commands.registerCommand('jabbarroot.addPathToActiveContext', async () => {
     // Vérifier si un éditeur est actif
     const activeEditor = vscode.window.activeTextEditor;
     if (!activeEditor) {
-      vscode.window.showWarningMessage('JabbarRoot: No active editor.');
+      vscode.window.showWarningMessage('jabbarroot: No active editor.');
       return;
     }
 
     // Vérifier si un dossier de travail est ouvert
     const workspaceFolders = vscode.workspace.workspaceFolders;
     if (!workspaceFolders || workspaceFolders.length === 0) {
-      vscode.window.showWarningMessage('JabbarRoot: No workspace folder is open.');
+      vscode.window.showWarningMessage('jabbarroot: No workspace folder is open.');
       return;
     }
 
     // Vérifier s'il y a un contexte actif
     const activeContextId = globalState.get<string>(ACTIVE_CONTEXT_ID_KEY);
     if (!activeContextId) {
-      vscode.window.showWarningMessage('JabbarRoot: No active context. Please set an active context first.');
+      vscode.window.showWarningMessage('jabbarroot: No active context. Please set an active context first.');
       return;
     }
 
@@ -44,7 +44,7 @@ export function registerAddPathToActiveContextCommand(
       const activeContext = contexts.find(ctx => ctx.id === activeContextId);
       
       if (!activeContext) {
-        vscode.window.showErrorMessage('JabbarRoot: Active context not found.');
+        vscode.window.showErrorMessage('jabbarroot: Active context not found.');
         return;
       }
 

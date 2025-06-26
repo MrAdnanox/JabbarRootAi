@@ -1,56 +1,86 @@
-// packages/vscode-extension/src/services/ignore.service.ts
-
+// apps/vscode-extension/src/services/ignore.service.ts
 import * as vscode from 'vscode';
 import { minimatch } from 'minimatch';
 import { VscodeFileSystemAdapter } from '../adapters/vscodeFileSystem.adapter';
+import { JabbarProject, BrickContext } from '@jabbarroot/core';
+import * as path from 'path';
 
 /**
  * Service responsable de la logique d'ignorance des fichiers,
  * spécifique à l'environnement VSCode et aux conventions de type .gitignore.
  */
 export class IgnoreService {
-  private readonly DEFAULT_IGNORE = ['.git', '.DS_Store', '*.log', '.vscode', '.idea', 'node_modules', '__pycache__', 'dist', 'build', '.env'];
-  
-  constructor(private readonly fs: VscodeFileSystemAdapter) {}
+    private readonly DEFAULT_IGNORE = ['.git', '.DS_Store', '*.log', '.vscode', '.idea', 'node_modules', '__pycache__', 'dist', 'build', '.env'];
 
-  private async loadIgnorePatterns(projectRootPath: string): Promise<string[]> {
-    let patterns = [...this.DEFAULT_IGNORE];
-    const gitignorePath = `${projectRootPath}/.gitignore`;
-    const jabbaIgnorePath = `${projectRootPath}/.jabbarrootignore`; // Convention de nom de fichier
+    constructor(private readonly fs: VscodeFileSystemAdapter) {}
 
-    for (const path of [gitignorePath, jabbaIgnorePath]) {
-      try {
-        const content = await this.fs.readFile(path);
-        const filePatterns = content
-          .split('\n')
-          .map(line => line.trim())
-          .filter(line => line && !line.startsWith('#'));
-        patterns.push(...filePatterns);
-      } catch {
-        // Fichier non trouvé, c'est normal, on continue
-      }
-    }
-    return patterns;
-  }
-
-  /**
-   * Crée et retourne une fonction de prédicat `shouldIgnore`
-   * configurée avec les règles du projet.
-   * @param projectRootPath Le chemin racine du projet.
-   * @returns Une fonction qui prend un chemin relatif et retourne true s'il doit être ignoré.
-   */
-  public async createIgnorePredicate(projectRootPath: string): Promise<(relativePath: string) => boolean> {
-    const patterns = await this.loadIgnorePatterns(projectRootPath);
-    
-    return (relativePath: string): boolean => {
-      // La logique de minimatch est maintenant contenue ici
-      return patterns.some(pattern => {
-        if (pattern.endsWith('/')) {
-          // Gère les motifs de répertoire (ex: 'node_modules/')
-          return minimatch(relativePath, pattern.slice(0, -1), { dot: true, matchBase: true }) || relativePath.startsWith(pattern.slice(0, -1) + '/');
+    private async loadPatternsFromFile(projectRootPath: string, relativeFilePath: string): Promise<string[]> {
+        const absoluteFilePath = path.join(projectRootPath, relativeFilePath);
+        try {
+            const content = await this.fs.readFile(absoluteFilePath);
+            return content
+                .split('\n')
+                .map(line => line.trim())
+                .filter(line => line && !line.startsWith('#'));
+        } catch {
+            // Fichier non trouvé ou erreur de lecture, retourner un tableau vide
+            // console.warn(`Ignore file not found or unreadable: ${absoluteFilePath}`);
+            return [];
         }
-        return minimatch(relativePath, pattern, { dot: true, matchBase: true });
-      });
-    };
-  }
+    }
+
+    /**
+     * Crée et retourne une fonction de prédicat `shouldIgnore`
+     * configurée avec les règles du projet et éventuellement de la brique.
+     * @param project Le projet jabbarroot
+     * @param brick La brique optionnelle pour des règles spécifiques
+     * @returns Une fonction qui prend un chemin relatif et retourne true s'il doit être ignoré
+     */
+    public async createIgnorePredicate(
+        project: JabbarProject,
+        brick?: BrickContext
+    ): Promise<(relativePath: string) => boolean> {
+        let combinedPatterns: string[] = [...this.DEFAULT_IGNORE];
+
+        // 1. .gitignore standard
+        const gitignorePatterns = await this.loadPatternsFromFile(project.projectRootPath, '.gitignore');
+        combinedPatterns.push(...gitignorePatterns);
+
+        // 2. Project-level ignores
+        if (project.options.projectIgnorePatterns) {
+            combinedPatterns.push(...project.options.projectIgnorePatterns);
+        }
+        if (project.options.projectIgnoreFiles) {
+            for (const file of project.options.projectIgnoreFiles) {
+                const patterns = await this.loadPatternsFromFile(project.projectRootPath, file);
+                combinedPatterns.push(...patterns);
+            }
+        }
+
+        // 3. Brick-level ignores (if brick is provided)
+        if (brick) {
+            if (brick.options.brickIgnorePatterns) {
+                combinedPatterns.push(...brick.options.brickIgnorePatterns);
+            }
+            if (brick.options.brickIgnoreFiles) {
+                for (const file of brick.options.brickIgnoreFiles) {
+                    const patterns = await this.loadPatternsFromFile(project.projectRootPath, file);
+                    combinedPatterns.push(...patterns);
+                }
+            }
+        }
+        
+        // Supprimer les doublons potentiels pour optimiser minimatch
+        const uniquePatterns = Array.from(new Set(combinedPatterns));
+        
+        return (filePathToCheck: string): boolean => {
+            return uniquePatterns.some(pattern => {
+                // Gestion des patterns de dossier (ex: "node_modules/")
+                return pattern.endsWith('/')
+                    ? minimatch(filePathToCheck, pattern.slice(0, -1), { dot: true, matchBase: true }) || 
+                      filePathToCheck.startsWith(pattern.slice(0, -1) + '/')
+                    : minimatch(filePathToCheck, pattern, { dot: true, matchBase: true });
+            });
+        };
+    }
 }

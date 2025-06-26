@@ -61,14 +61,14 @@ export class StructureGenerationService {
     const entries = await this.fs.readDirectory(currentDirPath);
     
     // Trier les entrées : dossiers en premier, puis par ordre alphabétique
-    const sortedEntries = entries.sort((a, b) => {
+    const sortedEntries = entries.sort((a: any, b: any) => {
         if (a.isDirectory !== b.isDirectory) {
             return a.isDirectory ? -1 : 1;
         }
         return a.name.localeCompare(b.name);
     });
 
-    const processableEntries = sortedEntries.filter((entry) => {
+    const processableEntries = sortedEntries.filter((entry: any) => {
       const entryPath = `${currentDirPath}/${entry.name}`;
       const relativePath = this.fs.getRelativePath(rootPath, entryPath);
       return !shouldIgnore(relativePath);

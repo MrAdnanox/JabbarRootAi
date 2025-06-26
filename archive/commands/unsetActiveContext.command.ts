@@ -12,7 +12,7 @@ export function registerUnsetActiveContextCommand(
   contextTreeProvider: ContextTreeDataProvider,
   globalState: vscode.Memento
 ): vscode.Disposable {
-  return vscode.commands.registerCommand('jabbaRoot.unsetActiveContext', async () => {
+  return vscode.commands.registerCommand('jabbarroot.unsetActiveContext', async () => {
     // Vérifier s'il y a un contexte actif
     const currentActiveContextId = globalState.get<string>(ACTIVE_CONTEXT_ID_KEY);
     if (!currentActiveContextId) {

@@ -12,14 +12,14 @@ export function registerDeleteContextCommand(
   contextService: ContextService,
   contextTreeProvider: ContextTreeDataProvider
 ): vscode.Disposable {
-  return vscode.commands.registerCommand('jabbaRoot.deleteContext', async (contextItem: any) => { // TODO: Importer le bon type pour ContextItem
+  return vscode.commands.registerCommand('jabbarroot.deleteContext', async (contextItem: any) => { // TODO: Importer le bon type pour ContextItem
     if (!contextItem) {
-      vscode.window.showWarningMessage('JabbarRoot: Select a context to delete from the sidebar.');
+      vscode.window.showWarningMessage('jabbarroot: Select a context to delete from the sidebar.');
       return;
     }
 
     const confirmation = await vscode.window.showWarningMessage(
-      `JabbarRoot: Are you sure you want to delete the context "${contextItem.context.name}"?`,
+      `jabbarroot: Are you sure you want to delete the context "${contextItem.context.name}"?`,
       { modal: true },
       'Delete'
     );
@@ -28,7 +28,7 @@ export function registerDeleteContextCommand(
       try {
         await contextService.deleteContext(contextItem.context.id);
         contextTreeProvider.refresh(); // Rafraîchir la vue après suppression
-        vscode.window.showInformationMessage(`JabbarRoot: Context "${contextItem.context.name}" deleted.`);
+        vscode.window.showInformationMessage(`jabbarroot: Context "${contextItem.context.name}" deleted.`);
       } catch (error) {
         console.error('Error deleting context:', error);
         vscode.window.showErrorMessage(

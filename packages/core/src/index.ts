@@ -8,11 +8,14 @@ export * from '../../types/src/interfaces/IStorage';
 // --- Models ---
 export * from './models/programmableContext';
 export * from './models/contextStats';
+export * from './models/project.types';
 
 // --- Services ---
-export * from './services/compaction.service';
-export * from './services/fileContent.service';
-export * from './services/structureGeneration.service';
-export * from './services/contextConstructor.service';
-export * from './services/context.service';
-export * from './services/statistics.service';
+// Export sélectif pour éviter les conflits
+export { CompactionService, type ICompactionService } from './services/compaction.service';
+export { FileContentService } from './services/fileContent.service';
+export { StructureGenerationService, type StructureGenerationOptions } from './services/structureGeneration.service';
+export { BrickConstructorService } from './services/brickConstructor.service';
+export { StatisticsService } from './services/statistics.service';
+export { ProjectService } from './services/project.service';
+export { BrickService } from './services/brick.service';

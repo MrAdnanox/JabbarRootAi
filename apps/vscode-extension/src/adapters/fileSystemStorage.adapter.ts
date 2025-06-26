@@ -1,89 +1,63 @@
-import { IStorage, IFileSystem } from '@jabbarroot/core';
+// packages/vscode-extension/src/adapters/fileSystemStorage.adapter.ts
+import * as vscode from 'vscode'; // Pour IFileSystem qui utilise vscode.Uri, etc.
 import * as path from 'path';
+import { IFileSystem, IStorage } from '@jabbarroot/core'; // Assurez-vous que les paths sont corrects
 
-/**
- * Implémentation de IStorage qui persiste les données dans des fichiers JSON
- * au sein d'un répertoire `.jabbarroot` à la racine du projet.
- * 
- * Cette implémentation ne gère qu'une seule "clé" de stockage principale,
- * qui correspond à un répertoire sur le disque.
- */
 export class FileSystemStorageAdapter implements IStorage {
-  private baseStoragePath: string;
+    private baseStoragePath: string;
 
-  constructor(
-    private readonly fs: IFileSystem,
-    private readonly projectRootPath: string,
-    private readonly storageKey: string // ex: 'contexts'
-  ) {
-    this.baseStoragePath = path.join(this.projectRootPath, '.jabbarroot', this.storageKey);
-  }
-
-  private async ensureDirectoryExists(): Promise<void> {
-    try {
-      // Tente de lire le répertoire. S'il n'existe pas, une erreur sera levée.
-      await this.fs.readDirectory(this.baseStoragePath);
-    } catch (error) {
-      // Si l'erreur indique que le répertoire n'existe pas, on le crée.
-      // NOTE: IFileSystem n'a pas de `createDirectory`. C'est une limite à gérer.
-      // Pour l'instant, on va devoir l'ajouter à l'interface et à son implémentation.
-      // Voir "PROCHAINES ÉTAPES".
-      await (this.fs as any).createDirectory(this.baseStoragePath);
+    constructor(
+        private readonly fs: IFileSystem, // Doit être une instance de VscodeFileSystemAdapter
+        projectRootPath: string, // Chemin racine du VRAI projet utilisateur
+        storageDirectoryName: string // Nom du dossier sous .jabbarroot, ex: "jabbarroot_data"
+    ) {
+        // Le stockage se fait DANS le .jabbarroot du projet ouvert par l'utilisateur
+        this.baseStoragePath = path.join(projectRootPath, '.jabbarroot', storageDirectoryName);
     }
-  }
 
-  async get<T>(key: string): Promise<T | undefined> {
-    // Dans cette implémentation, `key` est le nom de la collection (ex: "jabbaRoot.contexts")
-    // Nous lisons tous les fichiers .json du répertoire `baseStoragePath`.
-    await this.ensureDirectoryExists();
-
-    try {
-      const entries = await this.fs.readDirectory(this.baseStoragePath);
-      const jsonFiles = entries.filter(e => !e.isDirectory && e.name.endsWith('.json'));
-      
-      const data: Record<string, any> = {};
-
-      for (const file of jsonFiles) {
-        const filePath = path.join(this.baseStoragePath, file.name);
-        const content = await this.fs.readFile(filePath);
-        const id = path.basename(file.name, '.json');
-        data[id] = JSON.parse(content);
-      }
-
-      return data as T;
-    } catch (error) {
-      console.error(`[FileSystemStorageAdapter] Failed to get data for key "${key}"`, error);
-      return undefined;
+    private async ensureDirectoryExists(filePathBeingWritten: string): Promise<void> {
+        // S'assurer que le dossier parent du fichier existe, pas juste baseStoragePath
+        const dirOfFile = path.dirname(filePathBeingWritten);
+        // Tenter de lire le répertoire. Si une erreur est levée, il n'existe pas.
+        // Cette logique de création de répertoire doit être récursive si fs.createDirectory ne l'est pas.
+        // VscodeFileSystemAdapter.createDirectory EST récursif.
+        try {
+            await this.fs.readDirectory(dirOfFile);
+        } catch (error) {
+            await this.fs.createDirectory(dirOfFile);
+        }
     }
-  }
 
-  async update<T>(key: string, value: T): Promise<void> {
-    // Ici, `value` est l'objet complet des contextes: Record<string, ProgrammableContext>
-    await this.ensureDirectoryExists();
-    const data = value as Record<string, any>;
+    async get<T>(key: string): Promise<T | undefined> {
+        const filePath = path.join(this.baseStoragePath, `${key}.json`);
+        try {
+            const content = await this.fs.readFile(filePath);
+            return JSON.parse(content) as T;
+        } catch (error) {
+            // console.warn(`[FSA.get] Failed to read or parse ${filePath}:`, error);
+            return undefined; // Fichier non trouvé ou erreur de parse
+        }
+    }
 
-    try {
-        // Pour être robuste, on lit les fichiers existants pour les supprimer s'ils ne sont plus dans `value`.
-        const existingEntries = await this.fs.readDirectory(this.baseStoragePath);
-        const existingIds = existingEntries.map(e => path.basename(e.name, '.json'));
-        const newIds = Object.keys(data);
+    async update<T>(key: string, value: T): Promise<void> {
+        const filePath = path.join(this.baseStoragePath, `${key}.json`);
 
-        // Supprimer les fichiers qui n'existent plus dans les nouvelles données
-        for (const id of existingIds) {
-            if (!newIds.includes(id)) {
-                const filePathToDelete = path.join(this.baseStoragePath, `${id}.json`);
-                await (this.fs as any).deleteFile(filePathToDelete);
+        if (value === undefined || value === null) { // Suppression explicite si value est undefined/null
+            try {
+                await this.fs.deleteFile(filePath);
+            } catch (error) {
+                // Ignorer si le fichier n'existe pas déjà
+                // console.warn(`[FSA.update - delete] Failed to delete ${filePath}:`, error);
+            }
+        } else {
+            await this.ensureDirectoryExists(filePath); // S'assurer que le dossier de base existe
+            const content = JSON.stringify(value, null, 2); // Indenté pour la lisibilité
+            try {
+                await this.fs.writeFile(filePath, content);
+            } catch (error) {
+                console.error(`[FSA.update - write] Failed to write ${filePath}:`, error);
+                throw error; // Projeter l'erreur si l'écriture échoue
             }
         }
-        
-        // Ecrire/Mettre à jour les fichiers
-        for (const id in data) {
-            const filePath = path.join(this.baseStoragePath, `${id}.json`);
-            const content = JSON.stringify(data[id], null, 2); // Indenté pour la lisibilité
-            await this.fs.writeFile(filePath, content);
-        }
-    } catch (error) {
-        console.error(`[FileSystemStorageAdapter] Failed to update data for key "${key}"`, error);
     }
-  }
 }

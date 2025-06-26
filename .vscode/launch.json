@@ -7,7 +7,7 @@
 	"version": "0.2.0",
 	"configurations": [
 	  {
-		"name": "Lancer l'Extension JabbarRoot",
+		"name": "Lancer l'Extension jabbarroot",
 		"type": "extensionHost",
 		"request": "launch",
 		"args": [

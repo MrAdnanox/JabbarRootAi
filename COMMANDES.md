@@ -1,6 +1,6 @@
-# Commandes JabbaRoot
+# Commandes jabbarroot
 
-Ce document répertorie toutes les commandes essentielles pour le développement, le test et le déploiement de l'extension JabbaRoot.
+Ce document répertorie toutes les commandes essentielles pour le développement, le test et le déploiement de l'extension jabbarroot.
 
 ## Développement
 

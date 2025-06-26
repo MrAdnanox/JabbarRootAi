@@ -1,4 +1,5 @@
 // apps/vscode-extension/src/providers/contextTreeDataProvider.ts
+/**
 import * as vscode from 'vscode';
 import { ContextItem, ContextTreeItem, StatItem } from './context.tree-item-factory';
 import { ContextService, ProgrammableContext, StatisticsService } from '@jabbarroot/core';
@@ -7,9 +8,11 @@ import { IgnoreService } from '../services/ignore.service';
 import { ACTIVE_CONTEXT_ID_KEY } from '../constants';
 
 /**
- * Fournisseur de données pour la vue arborescente des contextes JabbarRoot.
+ * Fournisseur de données pour la vue arborescente des contextes jabbarroot.
  * S'appuie sur le ContextService pour récupérer les données et les statistiques.
  */
+
+/**
 export class ContextTreeDataProvider implements vscode.TreeDataProvider<ContextTreeItem> {
   private _onDidChangeTreeData: vscode.EventEmitter<ContextTreeItem | undefined | null | void> = new vscode.EventEmitter();
   readonly onDidChangeTreeData: vscode.Event<ContextTreeItem | undefined | null | void> = this._onDidChangeTreeData.event;
@@ -75,3 +78,4 @@ export class ContextTreeDataProvider implements vscode.TreeDataProvider<ContextT
     }
   }
 }
+   */
