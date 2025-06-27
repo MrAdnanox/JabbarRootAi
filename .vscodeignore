@@ -1,7 +1,6 @@
 .vscode/**
 .vscode-test/**
 out/**
-node_modules/**
 src/**
 .gitignore
 .yarnrc
@@ -12,3 +11,25 @@ vsc-extension-quickstart.md
 **/*.map
 **/*.ts
 **/.vscode-test.*
+**/.env
+
+# Ignorer tous les node_modules, où qu'ils soient
+**/node_modules/**
+
+# Ignorer les fichiers de configuration et de dev à la racine
+.vscode/
+.git/
+.gitignore
+*.md
+*.yaml
+*.json
+.nvmrc
+check-ts-errors.sh
+LICENSE.txt
+
+# Ignorer les sources de tous les packages. Webpack s'en occupe.
+packages/
+apps/
+
+# Ignorer le dossier de build de l'extension s'il est à la racine (ne devrait pas)
+dist/

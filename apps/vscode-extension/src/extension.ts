@@ -25,6 +25,8 @@ import { registerAddPathToBrickCommand } from './commands/addPathToBrick.command
 import { registerActivateBrickCommand } from './commands/activateBrick.command';
 import { registerDeactivateBrickCommand } from './commands/deactivateBrick.command';
 import { registerCompileBrickCommand } from './commands/compileBrick.command';
+import { registerAddSelectionToActiveBrickCommand } from './commands/addSelectionToActiveBrick.command';
+import { registerSetAsDefaultTargetBrickCommand } from './commands/setAsDefaultTargetBrick.command';
 
 export async function activate(context: vscode.ExtensionContext) {
     // Vérification du dossier de travail
@@ -58,7 +60,11 @@ export async function activate(context: vscode.ExtensionContext) {
             compactionService
         );
 
-        const statisticsService = new StatisticsService(brickConstructorService);
+        const statisticsService = new StatisticsService(
+            fileContentService,
+            compactionService,
+            brickConstructorService
+        );
 
         // Initialisation des services spécifiques à VSCode
         const ignoreService = new IgnoreService(fsAdapter);
@@ -132,6 +138,9 @@ export async function activate(context: vscode.ExtensionContext) {
         const activateBrickCommand = registerActivateBrickCommand(brickService, projectTreeProvider);
         const deactivateBrickCommand = registerDeactivateBrickCommand(brickService, projectTreeProvider);
 
+        const setAsDefaultTargetBrickCommand = registerSetAsDefaultTargetBrickCommand(brickService);
+        const addSelectionToActiveBrickCommand = registerAddSelectionToActiveBrickCommand(projectService, brickService, ignoreService);
+
         // Enregistrement des abonnements
         const subscriptions = [
             refreshProjectViewCommand,
@@ -141,7 +150,9 @@ export async function activate(context: vscode.ExtensionContext) {
             addPathToBrickCommand,
             compileBrickCommand,
             activateBrickCommand,
-            deactivateBrickCommand
+            deactivateBrickCommand,
+            setAsDefaultTargetBrickCommand,
+            addSelectionToActiveBrickCommand,
         ];
 
         // Ajout de tous les abonnements au contexte

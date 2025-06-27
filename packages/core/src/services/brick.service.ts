@@ -33,6 +33,7 @@ export class BrickService {
             files_scope: [],
             options: initialOptions,
             isActiveForProjectCompilation,
+            isDefaultTarget: false, // Initialisation à false par défaut
             metadata: { createdAt: now, updatedAt: now },
         };
 
@@ -79,6 +80,33 @@ export class BrickService {
         // appelle getBrick(id) pour chaque ID de sa liste.
     }
 
+    async getAllBricks(): Promise<BrickContext[]> {
+        const allBrickIds = await this.storage.get<string[]>(ALL_BRICK_IDS_KEY) ?? [];
+        const bricks: BrickContext[] = [];
+        for (const id of allBrickIds) {
+            const brick = await this.getBrick(id);
+            if (brick) {
+                bricks.push(brick);
+            }
+        }
+        return bricks;
+    }
+
+    async getDefaultTargetBrick(): Promise<BrickContext | undefined> {
+        const allBricks = await this.getAllBricks();
+        return allBricks.find(brick => brick.isDefaultTarget);
+    }
+
+    async setAsDefaultTarget(brickIdToSet: string): Promise<void> {
+        const allBricks = await this.getAllBricks();
+        for (const brick of allBricks) {
+            const shouldBeTarget = brick.id === brickIdToSet;
+            if (brick.isDefaultTarget !== shouldBeTarget) {
+                await this.updateBrick(brick.id, { isDefaultTarget: shouldBeTarget });
+            }
+        }
+    }
+
     async updateBrick(
         brickId: string,
         updates: Partial<Omit<BrickContext, 'id' | 'projectId' | 'metadata'>> & { options?: Partial<BrickContextOptions> }
@@ -119,5 +147,25 @@ export class BrickService {
         // await this.projectService.removeBrickIdFromProject(brick.projectId, brickId);
         // Encore une fois, dépend de la disponibilité de ProjectService.
         // console.log(`[BrickService] Brick ${brickId} deleted. Unlinking from project ${brick.projectId} NOT YET handled by BrickService directly.`);
+    }
+
+    async addPathsToBrick(brickId: string, newPaths: string[]): Promise<void> {
+        const brick = await this.getBrick(brickId);
+        if (!brick) {
+            // Gérer l'erreur : brique non trouvée
+            return;
+        }
+
+        const existingPaths = new Set(brick.files_scope);
+        const uniqueNewPaths = newPaths.filter(p => !existingPaths.has(p));
+
+        if (uniqueNewPaths.length === 0) {
+            // Rien à ajouter, on peut retourner pour éviter une écriture inutile.
+            return;
+        }
+
+        brick.files_scope.push(...uniqueNewPaths);
+
+        await this.storage.update(this.getBrickKey(brickId), brick);
     }
 }

@@ -60,4 +60,14 @@ export class FileContentService {
         
         return contentParts.join('\n\n');
     }
+
+    public async readFileContent(projectRootPath: string, relativeFilePath: string): Promise<string | null> {
+        const absoluteFilePathToRead = path.join(projectRootPath, relativeFilePath);
+        try {
+            return await this.fs.readFile(absoluteFilePathToRead);
+        } catch (error) {
+            console.warn(`Could not read file ${absoluteFilePathToRead}`, error);
+            return null;
+        }
+    }
 }

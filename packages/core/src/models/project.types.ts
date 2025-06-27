@@ -96,6 +96,8 @@ export interface BrickContext {
     options: BrickContextOptions;
     /** Si true, cette brique sera incluse lors de la compilation du projet parent. */
     isActiveForProjectCompilation: boolean;
+    /** Si true, cette brique est la cible par défaut pour l'ajout de fichiers. */
+    isDefaultTarget: boolean;
     /** Métadonnées de la brique. */
     metadata: {
         createdAt: string; // ISO 8601

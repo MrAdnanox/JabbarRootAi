@@ -9,6 +9,7 @@ export * from '../../types/src/interfaces/IStorage';
 export * from './models/programmableContext';
 export * from './models/contextStats';
 export * from './models/project.types';
+export * from './models/compilation.types';
 
 // --- Services ---
 // Export sélectif pour éviter les conflits

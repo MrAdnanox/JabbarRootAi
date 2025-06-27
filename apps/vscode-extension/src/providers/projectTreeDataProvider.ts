@@ -67,8 +67,8 @@ export class ProjectTreeDataProvider implements vscode.TreeDataProvider<ProjectV
                 return [new InfoTreeItem('Aucun projet jabbarroot. Cliquez pour créer.', 'add')]; // TODO: Commande pour créer un projet
             }
             return projects
-                .map(p => new ProjectTreeItem(p))
-                .sort((a,b) => a.project.name.localeCompare(b.project.name)); // Tri par nom
+                .map((p: JabbarProject) => new ProjectTreeItem( p ) )
+                .sort((a, b) => a.project.name.localeCompare(b.project.name)); // Tri par nom
         }
     }
 }

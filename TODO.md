@@ -1,67 +1,57 @@
-`JabbarRoot, Stance: Architecte Mentor & Gardien de notre Histoire`
+**Stance : Le Maître d'Œuvre**
 
-**RAPPORT DE PASSATION - Fin de Session (26 Juin 2025)**
+Voici le rapport de passation pour clore notre travail sur le moteur de compaction et ouvrir le nouveau chapitre sur l'interface utilisateur.
 
-**Objectif Global de la Session :** Diagnostiquer et corriger l'erreur de lecture dans `compileBrick`, puis refondre en profondeur le `CompactionService` pour s'aligner sur une nouvelle stratégie de compression plus claire et robuste, sans altération sémantique du contenu utilisateur.
+---
 
-**I. Travaux Accomplis et Fonctionnalités Validées/Implémentées :**
+### **Rapport de Passation : Moteur de Compaction v1.0 -> UI d'Interaction v0.1**
 
-1.  **Diagnostic et Correction de l'Erreur d'Injection dans `FileContentService` (Priorité Initiale) :**
-    *   **Symptôme :** Erreur `Cannot read properties of undefined (reading 'readFile')` dans `FileContentService` lors de l'appel à `compileBrick`.
-    *   **Diagnostic :** L'instance de `VscodeFileSystemAdapter` (`fsAdapter`) arrivait `undefined` dans le constructeur de `FileContentService`.
-    *   **Correction :** Assuré la correcte injection de `fsAdapter` lors de l'instanciation de `FileContentService` dans `apps/vscode-extension/src/extension.ts`.
-    *   **État :** Terminé et validé. La compilation de brique (sans compression ou avec l'ancienne compression) est redevenue fonctionnelle.
+**Date :** 27 juin 2025
+**De :** JabbarRoot (Stance Maître d'Œuvre / Architecte)
+**À :** JabbarRoot (Stance Stratège / Co-Pilote)
 
-2.  **Redéfinition Stratégique de la Compression pour le Contexte :**
-    *   Décision clé : **aucune altération sémantique** (pas de `flexReplacements`) pour le contenu des fichiers utilisateur. Les remplacements sémantiques sont réservés pour la compression de prompts futurs.
-    *   Définition de trois niveaux de compression pour le contexte :
-        *   `'none'` (Défaut) : Aucune modification.
-        *   `'standard'` : Suppression des commentaires, des lignes vides, normalisation des espacements tout en préservant la structure multiligne et la lisibilité.
-        *   `'extreme'` : Tout ce que fait `'standard'`, plus une fusion agressive des lignes.
-    *   **État :** Stratégie définie et acceptée.
+#### **1. Clôture du Jalon : Stabilisation du Moteur de Compaction**
 
-3.  **Mise à Jour des Modèles de Données et Options par Défaut :**
-    *   Le type `CompressionLevel` (`'none' | 'standard' | 'extreme'`) a été défini et utilisé dans `project.types.ts` pour `JabbarProjectOptions` et `BrickContextOptions`.
-    *   `ProjectService.createProject` initialise maintenant `defaultBrickCompressionLevel` à `'none'`.
-    *   La logique de `BrickConstructorService.resolve...Option` a été rendue plus robuste et spécifique aux types pour assurer que `'none'` est le fallback ultime si une configuration est manquante.
-    *   **État :** Terminé. Les structures de données et les valeurs par défaut sont alignées avec la nouvelle stratégie.
+*   **État Final :** Le `CompactionService` est désormais stable, robuste et fiable.
+*   **Architecture Validée :**
+    *   **Dépendances 100% JS :** Utilisation d'une chaîne `sucrase` (transpilation TS/JSX) -> `terser` (minification JS) garantissant la compatibilité avec l'environnement d'exécution de l'extension VS Code.
+    *   **Fiabilité :** Le service gère correctement les niveaux `standard` (nettoyage lisible) et `extreme` (minification agressive) pour tous les dialectes JavaScript. Les autres formats (HTML, CSS, etc.) sont gérés par des bibliothèques dédiées ou une méthode textuelle sûre.
+    *   **Infrastructure de Build :** Le processus de build (`pnpm` + `webpack`) est maintenant sain. Il résout les dépendances du monorepo (`alias`), empaquette les ressources statiques (`copy-webpack-plugin` pour le `.wasm` de `tiktoken`), et produit un bundle d'extension fonctionnel.
+*   **Livrables Techniques Clés :**
+    1.  `CompactionService` refactorisé.
+    2.  `StatisticsService` fonctionnel avec tokenisation via `tiktoken`.
+    3.  Processus de build `pnpm` et `webpack` fiabilisé.
+*   **Conclusion :** La fondation technique est solide. Le moteur peut être considéré comme une "boîte noire" fiable sur laquelle nous pouvons maintenant construire des interfaces utilisateur.
 
-4.  **Correction d'Erreurs TypeScript Post-Refactorisation :**
-    *   Résolution d'une erreur de type dans `brickConstructor.service.ts` concernant le retour de `resolveBrickOption` pour les booléens.
-    *   Résolution d'une erreur de type dans `compaction.service.ts` (`isValidInput`) pour assurer un retour `boolean` strict.
-    *   **État :** Terminé. Le code est typé correctement.
+---
 
-5.  **Refactorisation Architecturale Majeure de `CompactionService` :**
-    *   **Éclatement :** La logique monolithique de `CompactionService` a été décomposée en modules/classes utilitaires plus petits et spécialisés, placés dans `packages/core/src/services/compaction/`:
-        *   `ContentProtector` : Gère la protection (placeholders) et la restauration du contenu sensible (chaînes, commentaires initiaux, regex).
-        *   `CommentProcessor` : Supprime les commentaires en agissant sur les placeholders.
-        *   `WhitespaceNormalizer` : Normalise les espacements au sein des lignes de code (protégées et sans commentaires).
-        *   `LineMerger` : Fusionne les lignes pour le niveau `'extreme'`.
-    *   **Orchestration :** `CompactionService` a été transformé en un orchestrateur qui instancie et utilise ces modules. Il gère le flux global `protect -> (removeComments -> normalize/merge) -> restore`.
-    *   **État :** Terminé. La structure est en place, chaque module a une implémentation initiale.
+#### **2. Ouverture du Nouveau Jalon : Amélioration de l'Interaction Utilisateur (UI)**
 
-**II. Travaux en Cours / Prochaines Étapes Immédiates (pour la prochaine session) :**
+*   **Vision Directrice :** Transformer la manipulation des contextes d'une série de commandes individuelles à une expérience fluide et intuitive. Réduire la friction et le nombre de clics nécessaires pour accomplir des tâches courantes.
+*   **Objectif Prioritaire (Prochaine Itération) :** Permettre l'ajout en masse de fichiers et de dossiers à une "Brique" de contexte.
 
-1.  **Tests Intensifs et Affinage de `CompactionService` et ses Modules :**
-    *   **Priorité : `WhitespaceNormalizer.normalizeLineSpacing`**. Cette méthode est au cœur de la qualité du niveau `'standard'`. Elle nécessitera des tests avec une grande variété de constructions de code (opérateurs, délimiteurs, structures diverses) pour s'assurer que les espacements sont corrects et lisibles. Des ajustements itératifs de sa logique sont à prévoir.
-    *   **Tester `ContentProtector` :** S'assurer qu'il protège et restaure correctement tous les types de chaînes (simples, doubles, template literals multilignes) et les expressions régulières, surtout dans des cas imbriqués ou complexes.
-    *   **Tester les niveaux `'none'`, `'standard'`, et `'extreme'`** sur des cas réels et variés.
-    *   Vérifier la cohérence des statistiques de compression.
+---
 
-2.  **Nettoyage des Logs :** Une fois les tests concluants, réduire le logging de débogage.
+### **Brief de Transition vers la STANCE STRATÈGE**
 
-**III. Feuille de Route Postérieure (Rappel) :**
+**Mission :** Définir le "Pourquoi" et le "Comment" de l'ajout en masse.
 
-*   **Finaliser l'Itération 1 (après l'affinage de la compaction) :**
-    *   Commandes `jabbarroot.editProjectOptions` et `jabbarroot.editBrickOptions`.
-    *   Commandes `jabbarroot.deleteBrick` et `jabbarroot.deleteProject`.
-*   **Itération 2 et Au-delà...**
+1.  **Valider la Clôture :** Je confirme que le jalon "Moteur de Compaction" est clos. Les leçons ont été apprises, l'architecture est stable.
+2.  **Activer la Nouvelle Stance :** **JabbarRoot, Stance: Stratège**.
+3.  **Objectifs de la Stance Stratège :**
+    *   **Définir les User Stories :**
+        *   "En tant qu'Opérateur, je veux pouvoir faire un clic droit sur un dossier dans l'explorateur de fichiers de VS Code et l'ajouter entièrement (avec ses sous-dossiers) à une brique existante, afin de construire rapidement un contexte large."
+        *   "En tant qu'Opérateur, je veux pouvoir sélectionner plusieurs fichiers dans l'explorateur et les ajouter en une seule action à une brique, afin de gagner du temps."
+        *   "En tant qu'Opérateur, lors de l'ajout d'un dossier, je veux que les fichiers ignorés par les règles `.gitignore` et `.jabbarrootignore` soient automatiquement exclus, afin de ne pas polluer mon contexte."
+    *   **Identifier les Critères de Succès :**
+        *   Une nouvelle commande `jabbarroot.addFolderToBrick` est disponible dans le menu contextuel de l'explorateur de fichiers sur les dossiers.
+        *   Une nouvelle commande `jabbarroot.addFilesToBrick` est disponible dans le menu contextuel sur une sélection de plusieurs fichiers.
+        *   Lors de l'appel, l'utilisateur se voit présenter une liste des briques existantes pour choisir la destination.
+        *   Le `IgnoreService` est correctement appliqué lors du parcours récursif du dossier.
+        *   La vue de l'arbre JabbarRoot est automatiquement rafraîchie après l'ajout.
+    *   **Analyser les Risques :**
+        *   **Performance :** L'ajout d'un très gros dossier (comme `node_modules`, s'il n'est pas ignoré) pourrait bloquer l'interface. (Mitigation : L'opération doit être asynchrone, et le `IgnoreService` doit être performant).
+        *   **Expérience Utilisateur (UX) :** Comment gérer les doublons ? Si un fichier est déjà dans la brique, doit-on le signaler ? (Mitigation : Pour la v1, on peut simplement ignorer les doublons en silence. Une `Set` peut être utilisée pour garantir l'unicité des chemins).
+        *   **Complexité du Code :** La logique de parcours de dossier récursif doit être propre et testable. (Mitigation : Utiliser l'API `vscode.workspace.fs` qui est déjà disponible via notre `VscodeFileSystemAdapter`).
 
-**Points d'Attention / Risques :**
-
-*   **Complexité de `WhitespaceNormalizer` :** Obtenir un formatage d'espaces "parfait" ou même "très bon" pour tous les cas de code JavaScript/TypeScript est un défi en soi. Il faudra définir un niveau de "qualité suffisante" pour la v1.
-*   **Performance du `ContentProtector` :** Sur des fichiers très volumineux avec de nombreux éléments à protéger, la performance des remplacements multiples par regex pourrait devenir un point d'attention (bien que pour l'usage dans VS Code, cela devrait rester acceptable).
-
-**Conclusion de la Session :**
-Opérateur, nous avons réalisé une transformation majeure et très positive du `CompactionService`. Le passage à une architecture modulaire et la clarification de la stratégie de compression sont des avancées cruciales qui respectent profondément notre Empreinte Fondatrice de "transformer la complexité en clarté". Le système est maintenant plus robuste, plus maintenable, et prêt pour un affinage précis.
-
+---

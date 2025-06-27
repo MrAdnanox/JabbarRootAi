@@ -32,9 +32,16 @@ export class BrickTreeItem extends vscode.TreeItem {
         let iconId = 'symbol-constant'; // Icône par défaut pour brique inactive
         let iconColorId; // Pas de couleur spécifique par défaut
 
+        if (brick.isDefaultTarget) {
+            iconId = 'target';
+            labelSuffix += ' [CIBLE]';
+        }
+
         if (brick.isActiveForProjectCompilation) {
-            labelSuffix = ' (Active)'; // Texte pour la description ou à intégrer dans le label
-            iconId = 'zap'; // Icône suggérant l'activité (ancienne icône pour contexte actif)
+            labelSuffix += ' (Active)'; // Texte pour la description ou à intégrer dans le label
+            if (!brick.isDefaultTarget) { // Ne pas écraser l'icône de cible
+                iconId = 'zap'; // Icône suggérant l'activité (ancienne icône pour contexte actif)
+            }
             // iconColorId = new vscode.ThemeColor('debugIcon.startForeground'); // Exemple de couleur
         }
 

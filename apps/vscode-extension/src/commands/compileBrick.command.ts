@@ -3,13 +3,13 @@ import * as vscode from 'vscode';
 import {
     BrickConstructorService,
     StatisticsService,
-    ProjectService, // Pour récupérer le projet parent
-    BrickContext,   // Pour le typage
-    JabbarProject,  // Pour le typage
-    StructureGenerationOptions, // Options de génération de structure
-    ContextStats    // Statistiques de compilation
+    ProjectService,
+    BrickContext,
+    JabbarProject,
+    StructureGenerationOptions,
+    BrickCompilationReport
 } from '@jabbarroot/core';
-import { IgnoreService } from '../services/ignore.service'; // Service local à l'extension
+import { IgnoreService } from '../services/ignore.service';
 import { ProjectTreeDataProvider } from '../providers/projectTreeDataProvider';
 import { BrickTreeItem } from '../providers/projectTreeItem.factory';
 
@@ -41,51 +41,54 @@ export function registerCompileBrickCommand(
             },
             async (progress) => {
                 try {
-                    progress.report({ message: 'Préparation des options d\'ignore...' });
+                    progress.report({ message: 'Préparation des options...' });
                     const ignorePredicate = await ignoreService.createIgnorePredicate(parentProject, brickToCompile);
                     const structureGenOptions: StructureGenerationOptions = {
-                        // maxDepth peut venir des options de la brique/projet ou être une constante ici
-                        maxDepth: parentProject.options.defaultBrickIncludeProjectTreeMaxDepth ?? 7, // Exemple d'une nouvelle option potentielle
+                        maxDepth: parentProject.options.defaultBrickIncludeProjectTreeMaxDepth ?? 7,
                         shouldIgnore: ignorePredicate,
                     };
 
-                    progress.report({ message: 'Assemblage du contexte de la brique...' });
-                    const compiledContext = await brickConstructorService.compileBrick(
+                    progress.report({ message: 'Génération du rapport de compilation...' });
+                    // Utilisation de la nouvelle méthode du service de statistiques
+                    const report: BrickCompilationReport = await statisticsService.generateBrickReport(
                         brickToCompile,
                         parentProject,
                         structureGenOptions
                     );
 
-                    progress.report({ message: 'Calcul des statistiques...' });
-                    const stats: ContextStats = await statisticsService.calculateBrickStats(
-                        brickToCompile,
-                        parentProject,
-                        structureGenOptions
-                    );
+                    // Formatage du message pour la notification
+                    const title = `JabbarRoot: Brique "${report.brickName}" compilée`;
+                    const originalInfo = `${report.totalOriginalSize.toLocaleString()} chars | ~${report.totalOriginalTokens.toLocaleString()} tokens`;
+                    const finalInfo = `${report.totalCompressedSize.toLocaleString()} chars | ~${report.totalCompressedTokens.toLocaleString()} tokens`;
+                    const savedInfo = `Économie: ${report.totalReductionPercent}% (${(report.totalOriginalTokens - report.totalCompressedTokens).toLocaleString()} tokens)`;
 
-                    // Affichage des résultats et statistiques (similaire à l'ancienne commande)
-                    const title = `JabbarRoot: Brique "${brickToCompile.name}" compilée`;
-                    const originalSize = `${stats.originalChars.toLocaleString()} chars / ~${stats.originalTokensApprox.toLocaleString()} tokens`;
-                    const finalSize = `${stats.compressedChars.toLocaleString()} chars / ~${stats.compressedTokensApprox.toLocaleString()} tokens`;
-                    const saved = `${stats.savedChars.toLocaleString()} chars / ~${stats.savedTokensApprox.toLocaleString()} tokens (${stats.reductionPercent}%)`;
-                    const motivation = stats.motivation;
+                    const message = `${title}\nOriginal: ${originalInfo}\nFinal: ${finalInfo}\n${savedInfo}\n${report.motivation}`;
 
-                    const message = `${title}\nOriginal: ${originalSize}\nFinal: ${finalSize}\nÉconomie: ${saved}\n${motivation}`;
-                    
+                    // Actions de la notification
                     const actionShowAndCopy = '👁️ Afficher & Copier';
-                    const actionCopyOnly = '📋 Copier Seulement';
-                    const choice = await vscode.window.showInformationMessage(message, { modal: true }, actionShowAndCopy, actionCopyOnly);
+                    const actionCopyOnly = '📋 Copier';
+
+                    const choice = await vscode.window.showInformationMessage(
+                        message, 
+                        { modal: true }, 
+                        actionShowAndCopy, 
+                        actionCopyOnly
+                    );
 
                     if (choice === actionShowAndCopy || choice === actionCopyOnly) {
-                        await vscode.env.clipboard.writeText(compiledContext);
+                        await vscode.env.clipboard.writeText(report.compiledContent);
                         if (choice === actionCopyOnly) {
-                            vscode.window.setStatusBarMessage(`JabbarRoot: Brique "${brickToCompile.name}" copiée!`, 5000);
+                            vscode.window.setStatusBarMessage(
+                                `JabbarRoot: Contenu de "${report.brickName}" copié !`, 
+                                5000
+                            );
                         }
                     }
+
                     if (choice === actionShowAndCopy) {
                         const document = await vscode.workspace.openTextDocument({
-                            content: compiledContext,
-                            language: 'markdown', // Ou un langage plus approprié si le contexte a un format spécifique
+                            content: report.compiledContent,
+                            language: 'markdown',
                         });
                         await vscode.window.showTextDocument(document, { preview: true });
                     }

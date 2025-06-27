@@ -25,7 +25,7 @@ export class BrickConstructorService {
     ) {}
 
     // Méthode pour résoudre les options de type CompressionLevel
-    private resolveCompressionOption(
+    public resolveCompressionOption(
         brickOptions: BrickContextOptions,
         projectOptions: JabbarProjectOptions
     ): CompressionLevel {
@@ -67,14 +67,13 @@ export class BrickConstructorService {
     }
 
 
-    public async compileBrick(
+    public async assembleContextFromPreprocessedFiles(
         brick: BrickContext,
         project: JabbarProject,
-        structureGenOptionsForBrick: StructureGenerationOptions // Doit être complète ici
+        structureGenOptions: StructureGenerationOptions,
+        preprocessedFiles: { filePath: string; content: string }[]
     ): Promise<string> {
         const outputParts: string[] = [];
-        
-        // 1. Résoudre les options de compilation finales pour cette brique
         const finalIncludeProjectTree = this.resolveBooleanOption(
             brick.options,
             project.options,
@@ -82,60 +81,22 @@ export class BrickConstructorService {
             'defaultBrickIncludeProjectTree'
         );
 
-        const finalCompressionLevel = this.resolveCompressionOption(
-            brick.options,
-            project.options
-        );
-
-        // MaxDepth pour la génération d'arbre de la brique (si activée)
-        // Prend la valeur de defaultBrickIncludeProjectTreeMaxDepth du projet.
-        // StructureGenerationOptions passée en argument contient déjà le maxDepth
-        // car elle est construite par l'appelant (ex: compileBrick.command.ts)
-        // qui utilise ignoreService ET les options du projet/brique.
-        // Donc, structureGenOptionsForBrick.maxDepth devrait être utilisé directement.
-
-        // console.log(`[BrickConstructorService] Compiling Brick '${brick.name}'`);
-        // console.log(`  - Final Include Tree: ${finalIncludeProjectTree}`);
-        // console.log(`  - Final Compression: ${finalCompressionLevel}`);
-        // console.log(`  - Structure Gen MaxDepth (from command): ${structureGenOptionsForBrick.maxDepth}`);
-
-
         if (finalIncludeProjectTree) {
-            // const resolvedMaxDepth = this.resolveOptionalNumberOption(
-            //     brick.options, // Inutilisé pour maxDepth actuellement pour la brique
-            //     project.options,
-            //     'defaultBrickIncludeProjectTreeMaxDepth'
-            // ) ?? 7; // Fallback si non défini dans projet (devrait l'être)
-
-            // Utiliser le maxDepth fourni dans structureGenOptionsForBrick
-            // car il a été calculé en amont avec toutes les options pertinentes.
-            const optionsForThisBrickTree: StructureGenerationOptions = {
-                ...structureGenOptionsForBrick, // Contient déjà le shouldIgnore
-                // maxDepth: structureGenOptionsForBrick.maxDepth // Déjà dedans
-            };
-            
-            // console.log(`  - Generating project tree with maxDepth: ${optionsForThisBrickTree.maxDepth}`);
-            const report: GenerationReport | null = await this.structureGenerationService.generate(
+            const treeReport = await this.structureGenerationService.generate(
                 project.projectRootPath,
-                optionsForThisBrickTree 
+                structureGenOptions
             );
-            if (report?.tree) {
-                outputParts.push('--- PROJECT TREE ---');
-                outputParts.push(report.tree);
+            if (treeReport?.tree) {
+                outputParts.push(`--- PROJECT TREE ---\n${treeReport.tree}`);
             }
         }
-        
-        // --- SECTION FICHIERS ---
-        if (brick.files_scope && brick.files_scope.length > 0) {
-            const fileContents = await this.fileContentService.buildContentFromFiles(
-                brick.files_scope,
-                project.projectRootPath,
-                finalCompressionLevel
-            );
-            outputParts.push('--- FILE CONTENTS ---');
+
+        if (preprocessedFiles.length > 0) {
+            outputParts.push(`--- FILE CONTENTS ---`);
+            const fileContents = preprocessedFiles
+                .map(file => `---FILE:${file.filePath}---\n${file.content}`)
+                .join('\n\n');
             outputParts.push(fileContents);
-        } else {
-            outputParts.push('--- FILE CONTENTS ---\n(No content from files_scope or all files were empty/unreadable)');
         }
         
         return outputParts.join('\n\n').trim();
