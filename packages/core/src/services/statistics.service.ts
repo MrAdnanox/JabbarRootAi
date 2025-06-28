@@ -20,17 +20,20 @@ export class StatisticsService {
     public async generateBrickReport(
         brick: BrickContext,
         project: JabbarProject,
-        structureGenOptions: StructureGenerationOptions // Pour la génération de l'arbre
+        structureGenOptions: StructureGenerationOptions
     ): Promise<BrickCompilationReport> {
-        
         const fileStats: FileCompilationStats[] = [];
         const compressedFileContents: { filePath: string; content: string }[] = [];
         const determinedCompressionLevel = this.brickConstructorService.resolveCompressionOption(brick.options, project.options);
 
-        // 1. Process each file to gather stats and compressed content
-        const encoder = encoding_for_model('gpt-4'); // ou 'gpt-3.5-turbo' selon le modèle cible
+        // 1. Filtrer les fichiers ignorés
+        const shouldIgnore = structureGenOptions.shouldIgnore || (() => false);
+        const filesToProcess = brick.files_scope.filter(filePath => !shouldIgnore(filePath));
+
+        // 2. Process each file to gather stats and compressed content
+        const encoder = encoding_for_model('gpt-4');
         try {
-            for (const filePath of brick.files_scope) {
+            for (const filePath of filesToProcess) {
                 const originalContent = await this.fileContentService.readFileContent(project.projectRootPath, filePath);
                 if (originalContent === null) continue; // Skip if file not readable
 

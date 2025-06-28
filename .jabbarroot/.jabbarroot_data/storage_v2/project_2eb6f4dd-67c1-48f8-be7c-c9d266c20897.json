@@ -3,19 +3,25 @@
   "name": "JabbarRoot",
   "projectRootPath": "/media/adnan/Projects/JabbarRoot",
   "brickContextIds": [
-    "e798488e-11b7-4104-b0a3-20cdeb96fca2"
+    "e798488e-11b7-4104-b0a3-20cdeb96fca2",
+    "106ae2ae-4952-4845-8364-e9d50f2a1b57",
+    "6f6d7442-d85d-497c-a7d1-fd15e53f52db"
   ],
   "options": {
-    "compilationCompressionLevel": "standard",
+    "compilationCompressionLevel": "none",
     "compilationIncludeProjectTree": true,
     "defaultBrickCompressionLevel": "standard",
     "defaultBrickIncludeProjectTree": false,
     "defaultBrickIncludeProjectTreeMaxDepth": 7,
-    "projectIgnoreFiles": [],
-    "projectIgnorePatterns": []
+    "projectIgnoreFiles": [
+      ".gitignore"
+    ],
+    "projectIgnorePatterns": [
+      "*.tsbuildinfo"
+    ]
   },
   "metadata": {
     "createdAt": "2025-06-28T16:59:20.205Z",
-    "updatedAt": "2025-06-28T16:59:30.104Z"
+    "updatedAt": "2025-06-28T17:38:24.678Z"
   }
 }

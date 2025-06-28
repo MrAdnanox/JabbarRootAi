@@ -73,14 +73,26 @@ export class IgnoreService {
         // Supprimer les doublons potentiels pour optimiser minimatch
         const uniquePatterns = Array.from(new Set(combinedPatterns));
         
+        // Normalisation des chemins pour une correspondance cohérente
+        const normalizePath = (p: string) => p.replace(/\\/g, '/').replace(/^\/\.\//, '');
+        
         return (filePathToCheck: string): boolean => {
-            return uniquePatterns.some(pattern => {
+            const normalizedPath = normalizePath(filePathToCheck);
+            const shouldIgnore = uniquePatterns.some(pattern => {
+                const normalizedPattern = normalizePath(pattern);
                 // Gestion des patterns de dossier (ex: "node_modules/")
-                return pattern.endsWith('/')
-                    ? minimatch(filePathToCheck, pattern.slice(0, -1), { dot: true, matchBase: true }) || 
-                      filePathToCheck.startsWith(pattern.slice(0, -1) + '/')
-                    : minimatch(filePathToCheck, pattern, { dot: true, matchBase: true });
+                return normalizedPattern.endsWith('/')
+                    ? minimatch(normalizedPath, normalizedPattern.slice(0, -1), { dot: true, matchBase: true }) || 
+                      normalizedPath.startsWith(normalizedPattern.slice(0, -1) + '/')
+                    : minimatch(normalizedPath, normalizedPattern, { dot: true, matchBase: true });
             });
+            
+            // Log de débogage pour les fichiers ignorés
+            if (shouldIgnore) {
+                console.log(`[JabbarRoot] Fichier ignoré: ${filePathToCheck} (correspond à l'un des motifs: ${uniquePatterns.join(', ')})`);
+            }
+            
+            return shouldIgnore;
         };
     }
 }

@@ -1,0 +1,27 @@
+{
+  "id": "106ae2ae-4952-4845-8364-e9d50f2a1b57",
+  "projectId": "2eb6f4dd-67c1-48f8-be7c-c9d266c20897",
+  "name": "config",
+  "files_scope": [
+    "apps/vscode-extension/package.json",
+    "apps/vscode-extension/tsconfig.json",
+    "apps/vscode-extension/webpack.config.js",
+    "packages/core/package.json",
+    "packages/core/tsconfig.json",
+    "tsconfig.base.json",
+    "pnpm-workspace.yaml",
+    "package.json",
+    "eslint.config.mjs"
+  ],
+  "options": {
+    "special_sections": {},
+    "compilationCompressionLevel": "standard",
+    "compilationIncludeProjectTree": false
+  },
+  "isActiveForProjectCompilation": true,
+  "isDefaultTarget": false,
+  "metadata": {
+    "createdAt": "2025-06-28T17:21:40.333Z",
+    "updatedAt": "2025-06-28T17:33:05.433Z"
+  }
+}

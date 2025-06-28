@@ -1,0 +1,53 @@
+{
+  "id": "6f6d7442-d85d-497c-a7d1-fd15e53f52db",
+  "projectId": "2eb6f4dd-67c1-48f8-be7c-c9d266c20897",
+  "name": "packages",
+  "files_scope": [
+    "packages/core/package.json",
+    "packages/core/tsconfig.json",
+    "packages/core/tsconfig.tsbuildinfo",
+    "packages/prompt-factory/package.json",
+    "packages/prompt-factory/tsconfig.json",
+    "packages/prompt-factory/tsconfig.tsbuildinfo",
+    "packages/types/package.json",
+    "packages/types/tsconfig.json",
+    "packages/types/tsconfig.tsbuildinfo",
+    "packages/vector-engine/package.json",
+    "packages/vector-engine/tsconfig.json",
+    "packages/vector-engine/tsconfig.tsbuildinfo",
+    "packages/core/src/index.ts",
+    "packages/prompt-factory/src/index.ts",
+    "packages/types/src/index.ts",
+    "packages/vector-engine/src/index.ts",
+    "packages/core/src/models/compilation.types.ts",
+    "packages/core/src/models/contextStats.ts",
+    "packages/core/src/models/programmableContext.ts",
+    "packages/core/src/models/project.types.ts",
+    "packages/core/src/services/brick.service.ts",
+    "packages/core/src/services/brickConstructor.service.ts",
+    "packages/core/src/services/compaction.service.ts",
+    "packages/core/src/services/context.service.ts",
+    "packages/core/src/services/contextConstructor.service.ts.back",
+    "packages/core/src/services/fileContent.service.ts",
+    "packages/core/src/services/project.service.ts",
+    "packages/core/src/services/statistics.service.ts",
+    "packages/core/src/services/structureGeneration.service.ts",
+    "packages/types/src/interfaces/IConfiguration.ts",
+    "packages/types/src/interfaces/IFileSystem.ts",
+    "packages/types/src/interfaces/IStorage.ts",
+    "packages/core/src/models/codex/types.ts",
+    "packages/core/src/services/statistics/statistics.calculator.ts",
+    "packages/core/src/services/statistics/statistics.formatter.ts"
+  ],
+  "options": {
+    "special_sections": {},
+    "compilationCompressionLevel": "standard",
+    "compilationIncludeProjectTree": false
+  },
+  "isActiveForProjectCompilation": true,
+  "isDefaultTarget": true,
+  "metadata": {
+    "createdAt": "2025-06-28T17:27:40.008Z",
+    "updatedAt": "2025-06-28T17:33:11.381Z"
+  }
+}

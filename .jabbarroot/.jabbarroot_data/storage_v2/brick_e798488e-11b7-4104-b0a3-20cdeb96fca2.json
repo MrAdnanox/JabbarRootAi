@@ -5,11 +5,8 @@
   "files_scope": [
     "apps/vscode-extension/LICENSE",
     "apps/vscode-extension/package.json",
-    "apps/vscode-extension/package.json.back",
     "apps/vscode-extension/tsconfig.json",
     "apps/vscode-extension/webpack.config.js",
-    "apps/vscode-extension/resources/JabbarRoot-icon.png",
-    "apps/vscode-extension/resources/JabbarRoot-icon.svg",
     "apps/vscode-extension/src/constants.ts",
     "apps/vscode-extension/src/extension.ts",
     "apps/vscode-extension/src/adapters/fileSystemStorage.adapter.ts",
@@ -44,13 +41,13 @@
   ],
   "options": {
     "special_sections": {},
-    "compilationCompressionLevel": "extreme",
+    "compilationCompressionLevel": "standard",
     "compilationIncludeProjectTree": true
   },
   "isActiveForProjectCompilation": true,
-  "isDefaultTarget": true,
+  "isDefaultTarget": false,
   "metadata": {
     "createdAt": "2025-06-28T16:59:30.071Z",
-    "updatedAt": "2025-06-28T17:01:02.734Z"
+    "updatedAt": "2025-06-28T17:33:00.065Z"
   }
 }
