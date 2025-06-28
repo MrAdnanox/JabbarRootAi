@@ -1,8 +1,8 @@
 {
   "name": "jabbarroot-vscode-extension",
   "displayName": "JabbarRootAi",
-  "description": "jabbarroot, the context protector",
-  "version": "0.1.0",
+  "description": "jabbarroot, the flow protector",
+  "version": "0.2.0",
   "publisher": "JabbarRootAi",
   "repository": {
     "type": "git",
