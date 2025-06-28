@@ -21,12 +21,18 @@ export class ProjectTreeItem extends vscode.TreeItem {
 
 export class BrickTreeItem extends vscode.TreeItem {
     public readonly contextValue = 'jabbarrootBrick';
+    public readonly brick: BrickContext;
+    public readonly parentProject: JabbarProject;
 
     constructor(
-        public readonly brick: BrickContext,
-        public readonly collapsibleState: vscode.TreeItemCollapsibleState = vscode.TreeItemCollapsibleState.None
+        brick: BrickContext,
+        parentProject: JabbarProject,
+        collapsibleState: vscode.TreeItemCollapsibleState = vscode.TreeItemCollapsibleState.Collapsed
     ) {
         super(brick.name, collapsibleState);
+        
+        this.brick = brick;
+        this.parentProject = parentProject;
 
         let labelSuffix = '';
         let iconId = 'symbol-constant'; // Icône par défaut pour brique inactive
@@ -74,5 +80,34 @@ export class StatTreeItem extends vscode.TreeItem {
         this.description = description;
         this.iconPath = new vscode.ThemeIcon(icon);
         this.contextValue = 'jabbarrootBrickStat';
+    }
+}
+
+/**
+ * Représente un fichier à l'intérieur d'une brique dans la vue arborescente
+ */
+export class FileTreeItem extends vscode.TreeItem {
+    constructor(
+        public readonly label: string, // Le chemin relatif du fichier
+        public readonly brickId: string, // L'ID de la brique parente
+        public readonly parentProject: JabbarProject // Le projet parent pour le contexte
+    ) {
+        super(label, vscode.TreeItemCollapsibleState.None);
+        this.contextValue = 'jabbarrootFileInBrick';
+        this.description = `(dans ${this.parentProject.name})`; // Description pour clarifier
+        this.iconPath = new vscode.ThemeIcon('file-code'); // Icône de fichier standard
+        
+        // Construction de l'URI absolue du fichier
+        const fileUri = vscode.Uri.joinPath(
+            vscode.Uri.file(this.parentProject.projectRootPath), 
+            this.label
+        );
+        
+        // Définition de la commande pour l'ouverture du fichier
+        this.command = {
+            command: 'vscode.open', // Commande native de VS Code pour ouvrir un fichier
+            title: 'Ouvrir le fichier', // Texte du tooltip
+            arguments: [fileUri] // L'URI du fichier à ouvrir
+        };
     }
 }

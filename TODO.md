@@ -1,57 +1,42 @@
-**Stance : Le Maître d'Œuvre**
-
-Voici le rapport de passation pour clore notre travail sur le moteur de compaction et ouvrir le nouveau chapitre sur l'interface utilisateur.
-
----
-
-### **Rapport de Passation : Moteur de Compaction v1.0 -> UI d'Interaction v0.1**
-
-**Date :** 27 juin 2025
-**De :** JabbarRoot (Stance Maître d'Œuvre / Architecte)
-**À :** JabbarRoot (Stance Stratège / Co-Pilote)
-
-#### **1. Clôture du Jalon : Stabilisation du Moteur de Compaction**
-
-*   **État Final :** Le `CompactionService` est désormais stable, robuste et fiable.
-*   **Architecture Validée :**
-    *   **Dépendances 100% JS :** Utilisation d'une chaîne `sucrase` (transpilation TS/JSX) -> `terser` (minification JS) garantissant la compatibilité avec l'environnement d'exécution de l'extension VS Code.
-    *   **Fiabilité :** Le service gère correctement les niveaux `standard` (nettoyage lisible) et `extreme` (minification agressive) pour tous les dialectes JavaScript. Les autres formats (HTML, CSS, etc.) sont gérés par des bibliothèques dédiées ou une méthode textuelle sûre.
-    *   **Infrastructure de Build :** Le processus de build (`pnpm` + `webpack`) est maintenant sain. Il résout les dépendances du monorepo (`alias`), empaquette les ressources statiques (`copy-webpack-plugin` pour le `.wasm` de `tiktoken`), et produit un bundle d'extension fonctionnel.
-*   **Livrables Techniques Clés :**
-    1.  `CompactionService` refactorisé.
-    2.  `StatisticsService` fonctionnel avec tokenisation via `tiktoken`.
-    3.  Processus de build `pnpm` et `webpack` fiabilisé.
-*   **Conclusion :** La fondation technique est solide. Le moteur peut être considéré comme une "boîte noire" fiable sur laquelle nous pouvons maintenant construire des interfaces utilisateur.
-
----
-
-#### **2. Ouverture du Nouveau Jalon : Amélioration de l'Interaction Utilisateur (UI)**
-
-*   **Vision Directrice :** Transformer la manipulation des contextes d'une série de commandes individuelles à une expérience fluide et intuitive. Réduire la friction et le nombre de clics nécessaires pour accomplir des tâches courantes.
-*   **Objectif Prioritaire (Prochaine Itération) :** Permettre l'ajout en masse de fichiers et de dossiers à une "Brique" de contexte.
-
----
-
-### **Brief de Transition vers la STANCE STRATÈGE**
-
-**Mission :** Définir le "Pourquoi" et le "Comment" de l'ajout en masse.
-
-1.  **Valider la Clôture :** Je confirme que le jalon "Moteur de Compaction" est clos. Les leçons ont été apprises, l'architecture est stable.
-2.  **Activer la Nouvelle Stance :** **JabbarRoot, Stance: Stratège**.
-3.  **Objectifs de la Stance Stratège :**
-    *   **Définir les User Stories :**
-        *   "En tant qu'Opérateur, je veux pouvoir faire un clic droit sur un dossier dans l'explorateur de fichiers de VS Code et l'ajouter entièrement (avec ses sous-dossiers) à une brique existante, afin de construire rapidement un contexte large."
-        *   "En tant qu'Opérateur, je veux pouvoir sélectionner plusieurs fichiers dans l'explorateur et les ajouter en une seule action à une brique, afin de gagner du temps."
-        *   "En tant qu'Opérateur, lors de l'ajout d'un dossier, je veux que les fichiers ignorés par les règles `.gitignore` et `.jabbarrootignore` soient automatiquement exclus, afin de ne pas polluer mon contexte."
-    *   **Identifier les Critères de Succès :**
-        *   Une nouvelle commande `jabbarroot.addFolderToBrick` est disponible dans le menu contextuel de l'explorateur de fichiers sur les dossiers.
-        *   Une nouvelle commande `jabbarroot.addFilesToBrick` est disponible dans le menu contextuel sur une sélection de plusieurs fichiers.
-        *   Lors de l'appel, l'utilisateur se voit présenter une liste des briques existantes pour choisir la destination.
-        *   Le `IgnoreService` est correctement appliqué lors du parcours récursif du dossier.
-        *   La vue de l'arbre JabbarRoot est automatiquement rafraîchie après l'ajout.
-    *   **Analyser les Risques :**
-        *   **Performance :** L'ajout d'un très gros dossier (comme `node_modules`, s'il n'est pas ignoré) pourrait bloquer l'interface. (Mitigation : L'opération doit être asynchrone, et le `IgnoreService` doit être performant).
-        *   **Expérience Utilisateur (UX) :** Comment gérer les doublons ? Si un fichier est déjà dans la brique, doit-on le signaler ? (Mitigation : Pour la v1, on peut simplement ignorer les doublons en silence. Une `Set` peut être utilisée pour garantir l'unicité des chemins).
-        *   **Complexité du Code :** La logique de parcours de dossier récursif doit être propre et testable. (Mitigation : Utiliser l'API `vscode.workspace.fs` qui est déjà disponible via notre `VscodeFileSystemAdapter`).
-
----
+Feuille de Route Stratégique JabbarRoot v2.0 : "Cognition Augmentée"
+Document : JABBARROOT_ROADMAP_V2.md
+Statut : ACTIF
+Dernière Révision : 28 Juin 2025
+1. Vision Directrice v2.0 (Le "Pourquoi")
+Transformer JabbarRoot d'un simple générateur de contexte en un Agent Cognitif de Développement. Notre mission est de créer un écosystème qui fusionne le contexte local (le code source, via nos "Briques") et le contexte de production (les erreurs, les performances, via des protocoles comme MCP) pour fournir une assistance au diagnostic et à la résolution de problèmes directement dans l'IDE.
+Notre succès se mesure toujours par un gain de Temps, d'Argent et de Clarté pour l'Opérateur.
+2. Piliers Fondamentaux de la v2.0 (Le "Quoi")
+Pour atteindre cette vision, nous allons nous concentrer sur trois piliers indissociables qui constituent le socle de cette nouvelle version. Ils ne sont pas séquentiels mais parallèles et interdépendants.
+Pilier I : La Fiabilité Absolue (Infrastructure & Tests)
+Philosophie : Un outil intelligent doit être, avant tout, un outil fiable. Nous ne tolérons pas les régressions. La confiance est notre fondation.
+Objectifs Clés :
+Mise en place d'un Harness de Test : Intégrer un framework de test moderne (Décision : Vitest) pour sa rapidité et sa compatibilité native avec TypeScript.
+Couverture du core : Atteindre une couverture de test significative sur le package @jabbarroot/core, qui est le cœur agnostique de notre logique.
+Priorité 1 : CompactionService (validation de la logique de réduction de bruit).
+Priorité 2 : ProjectService & BrickService (validation du cycle de vie CRUD et de la cohérence des données).
+Livrable : Une suite de tests automatisés qui s'exécute avec une simple commande (pnpm test) et qui sert de filet de sécurité pour tout développement futur.
+Pilier II : La Perception Augmentée (Intégration MCP & Sentry)
+Philosophie : Notre agent doit voir au-delà des fichiers locaux. Il doit percevoir l'état de l'application en production pour fournir des diagnostics pertinents.
+Objectifs Clés :
+Intégration d'un Organe de Perception : Intégrer Sentry non pas comme un simple "error tracker", mais comme une source de données temps réel via le Model Context Protocol (MCP).
+Phase 1 - Connexion : Transformer l'extension en un client MCP capable de s'authentifier et de communiquer avec le serveur Sentry. L'objectif est de valider la poignée de main.
+Phase 2 - Compétence de Base : Développer une première commande (jabbarroot.diagnoseFileWithSentry) qui utilise le MCP pour récupérer des informations de Sentry relatives au fichier actif dans l'éditeur.
+Phase 3 - Synergie : Développer une compétence avancée qui fusionne le contexte d'une Brique JabbarRoot avec les données de diagnostic de Sentry pour créer des prompts ultra-contextualisés.
+Livrable : Une extension capable d'interroger Sentry et d'utiliser ses données pour enrichir son propre contexte.
+Pilier III : La Clarté Partagée (Documentation & Protocoles)
+Philosophie : La connaissance non documentée est une connaissance perdue. Notre projet doit être aussi clair pour nous dans le futur qu'il l'est pour un nouveau contributeur aujourd'hui.
+Objectifs Clés :
+Mise en place d'une Documentation à Trois Niveaux :
+Niveau 1 (Interne - "Le Codex") : /docs/architecture.md. C'est notre journal de bord. Il documente nos décisions, nos RSA, nos "pourquoi".
+Niveau 2 (Contributeurs - "Le Chantier") : CONTRIBUTING.md. Il documente le "comment" technique : comment installer, lancer les tests, conventions de code, soumettre une PR.
+Niveau 3 (Utilisateurs - "La Vitrine") : README.md & /docs/guide.md. Il documente les bénéfices et le "comment utiliser" l'outil.
+Discipline de Commentaire : Appliquer une politique stricte de documentation JSDoc pour toutes les fonctions, classes et types exportés.
+Livrable : Un projet dont la documentation le rend accessible, maintenable et prêt à accueillir des contributions externes.
+3. Prochaine Action Immédiate (Le "Comment on Commence")
+Conformément à cette feuille de route, nous allons initier le Pilier I : Fiabilité Absolue.
+Action : Mettre en place le framework de test Vitest.
+Raison : C'est l'action la plus fondamentale qui bénéficiera à tous les autres développements. Blinder le code existant est le prérequis à toute nouvelle fonctionnalité.
+JabbarRoot, Stance: Maître d'Œuvre
+Cette feuille de route est maintenant notre document officiel. Elle est claire, ambitieuse et structurée.
+Je suis prêt à te fournir les instructions pour installer et configurer Vitest dans notre projet pnpm monorepo, afin que nous puissions écrire notre premier fichier de test pour le CompactionService.
+Le plan est gravé. En attente de ton ordre d'exécution.

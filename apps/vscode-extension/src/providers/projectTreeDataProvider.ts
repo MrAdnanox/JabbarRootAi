@@ -1,7 +1,7 @@
 // apps/vscode-extension/src/providers/projectTreeDataProvider.ts
 import * as vscode from 'vscode';
 import { ProjectService, BrickService, JabbarProject, BrickContext } from '@jabbarroot/core';
-import { ProjectTreeItem, BrickTreeItem, InfoTreeItem, ProjectViewTreeItem, StatTreeItem } from './projectTreeItem.factory';
+import { ProjectTreeItem, BrickTreeItem, InfoTreeItem, ProjectViewTreeItem, StatTreeItem, FileTreeItem } from './projectTreeItem.factory';
 import { getProjectRootPath } from '../utils/workspace'; // Pour vérifier si un dossier est ouvert
 
 export class ProjectTreeDataProvider implements vscode.TreeDataProvider<ProjectViewTreeItem> {
@@ -38,9 +38,8 @@ export class ProjectTreeDataProvider implements vscode.TreeDataProvider<ProjectV
                 for (const brickId of project.brickContextIds) {
                     const brick = await this.brickService.getBrick(brickId);
                     if (brick) {
-                        // Pour l'état collapsible des briques:
-                        // Si on veut afficher des stats en dessous, on met Collapsed, sinon None.
-                        brickItems.push(new BrickTreeItem(brick, vscode.TreeItemCollapsibleState.None));
+                        // On utilise CollapsibleState.Collapsed pour permettre l'affichage des fichiers
+                        brickItems.push(new BrickTreeItem(brick, project, vscode.TreeItemCollapsibleState.Collapsed));
                     }
                 }
                 if (brickItems.length === 0) {
@@ -49,15 +48,17 @@ export class ProjectTreeDataProvider implements vscode.TreeDataProvider<ProjectV
                 return brickItems.sort((a,b) => a.brick.name.localeCompare(b.brick.name)); // Tri par nom
 
             } else if (element instanceof BrickTreeItem) {
-                // Pour l'instant, les briques n'ont pas d'enfants.
-                // Ici, on pourrait charger et afficher des stats pour la brique, comme avant.
-                // Exemple (nécessite StatisticsService et les options du projet parent):
-                // const stats = await this.statisticsService.calculateBrickStats(element.brick, element.project);
-                // return [
-                //   new StatTreeItem('Chars (Original)', stats.originalChars.toLocaleString(), 'symbol-string'),
-                //   // ... autres stats
-                // ];
-                return [];
+                // Afficher les fichiers de la brique
+                const brick = element.brick;
+                const parentProject = element.parentProject;
+
+                if (brick.files_scope && brick.files_scope.length > 0) {
+                    return brick.files_scope
+                        .sort((a, b) => a.localeCompare(b)) // Trier les fichiers par ordre alphabétique
+                        .map(filePath => new FileTreeItem(filePath, brick.id, parentProject));
+                } else {
+                    return [new InfoTreeItem('Aucun fichier dans cette brique.', 'info')];
+                }
             }
             return []; // Ne devrait pas arriver pour InfoTreeItem ou StatTreeItem
         } else {

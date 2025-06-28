@@ -6,7 +6,10 @@
   "publisher": "jabbarroot",
   "repository": {
     "type": "git",
-    "url": "https://github.com/mradnanox/jabbarrootAi.git"
+    "url": "https://github.com/MrAdnanox/JabbarRootAi.git"
+  },
+  "bugs": {
+    "url": "https://github.com/MrAdnanox/JabbarRootAi/issues"
   },
   "engines": {
     "vscode": "^1.70.0"
@@ -55,11 +58,11 @@
         "command": "jabbarroot.removeFileFromBrick",
         "title": "jabbarroot: Remove Files from Brick...",
         "category": "jabbarroot",
-        "icon": "$(remove)"
+        "icon": "$(diff-removed)"
       },
       {
-        "command": "jabbarroot.addFileToBrick",
-        "title": "jabbarroot: Add Active File to Brick",
+        "command": "jabbarroot.addPathToBrick",
+        "title": "jabbarroot: Add Path to Brick",
         "category": "jabbarroot",
         "icon": "$(file-add)"
       },
@@ -67,13 +70,13 @@
         "command": "jabbarroot.activateBrick",
         "title": "Activate Brick for Project Compilation",
         "category": "jabbarroot",
-        "icon": "$(circle-outline)"
+        "icon": "$(star)"
       },
       {
         "command": "jabbarroot.deactivateBrick",
         "title": "Deactivate Brick from Project Compilation",
         "category": "jabbarroot",
-        "icon": "$(pass-filled)"
+        "icon": "$(star-full)"
       },
       {
         "command": "jabbarroot.editProjectOptions",
@@ -103,13 +106,25 @@
         "command": "jabbarroot.compileBrick",
         "title": "jabbarroot: Compile Brick Individually",
         "category": "jabbarroot",
-        "icon": "$(symbol-string)"
+        "icon": "$(server-process)"
       },
       {
         "command": "jabbarroot.compileProject",
         "title": "jabbarroot: Compile Project (Active Bricks)",
         "category": "jabbarroot",
         "icon": "$(layers-active)"
+      },
+      {
+        "command": "jabbarroot.addSelectionToActiveBrick",
+        "title": "JabbarRoot: Ajouter la sélection à la brique active",
+        "category": "JabbarRoot",
+        "icon": "$(add)"
+      },
+      {
+        "command": "jabbarroot.setAsDefaultTargetBrick",
+        "title": "JabbarRoot: Définir comme brique de collecte",
+        "category": "JabbarRoot",
+        "icon": "$(target)"
       }
     ],
     "menus": {
@@ -156,47 +171,58 @@
           "group": "inline"
         },
         {
-         "command": "jabbarroot.deleteProject",
-         "when": "view == jabbarroot.contextView && viewItem == jabbarrootProject",
-         "group": "inline"
-        },
-        {
-          "command": "jabbarroot.activateBrick",
-          "when": "view == jabbarroot.contextView && viewItem == jabbarrootBrick && !jabbarroot:selectedBrickIsActive",
-          "group": "inline"
-        },
-        {
-          "command": "jabbarroot.deactivateBrick",
-          "when": "view == jabbarroot.contextView && viewItem == jabbarrootBrick && jabbarroot:selectedBrickIsActive",
-          "group": "inline"
-        },
-        {
-          "command": "jabbarroot.addFileToBrick",
-          "when": "view == jabbarroot.contextView && viewItem == jabbarrootBrick",
-          "group": "inline"
-        },
-        {
-          "command": "jabbarroot.removeFileFromBrick",
-          "when": "view == jabbarroot.contextView && viewItem == jabbarrootBrick",
+          "command": "jabbarroot.deleteProject",
+          "when": "view == jabbarroot.contextView && viewItem == jabbarrootProject",
           "group": "inline"
         },
         {
           "command": "jabbarroot.compileBrick",
           "when": "view == jabbarroot.contextView && viewItem == jabbarrootBrick",
-          "group": "inline"
+          "group": "inline@1"
         },
         {
-          "command": "jabbarroot.editBrickOptions",
+          "command": "jabbarroot.activateBrick",
+          "when": "view == jabbarroot.contextView && viewItem == jabbarrootBrick && !jabbarroot:selectedBrickIsActive",
+          "group": "inline@2"
+        },
+        {
+          "command": "jabbarroot.deactivateBrick",
+          "when": "view == jabbarroot.contextView && viewItem == jabbarrootBrick && jabbarroot:selectedBrickIsActive",
+          "group": "inline@2"
+        },
+        {
+          "command": "jabbarroot.setAsDefaultTargetBrick",
           "when": "view == jabbarroot.contextView && viewItem == jabbarrootBrick",
-          "group": "inline"
+          "group": "inline@3"
+        },
+        {
+          "command": "jabbarroot.addPathToBrick",
+          "when": "view == jabbarroot.contextView && viewItem == jabbarrootBrick",
+          "group": "inline@4"
+        },
+        {
+          "command": "jabbarroot.removeFileFromBrick",
+          "when": "view == jabbarroot.contextView && viewItem == jabbarrootBrick",
+          "group": "inline@5"
         },
         {
           "command": "jabbarroot.deleteBrick",
           "when": "view == jabbarroot.contextView && viewItem == jabbarrootBrick",
-          "group": "inline"
+          "group": "inline@6"
+        },
+        {
+          "command": "jabbarroot.editBrickOptions",
+          "when": "view == jabbarroot.contextView && viewItem == jabbarrootBrick",
+          "group": "inline@7"
         }
       ],
-      "explorer/context": []
+      "explorer/context": [
+        {
+          "command": "jabbarroot.addSelectionToActiveBrick",
+          "when": "explorerResourceIsFolder || resourceExtname",
+          "group": "2_jabbarroot@1"
+        }
+      ]
     },
     "configuration": {
       "title": "jabbarroot",
@@ -232,7 +258,10 @@
           "description": "Show or hide the 'Motivation' line."
         },
         "jabbarroot.activeContextId": {
-          "type": ["string", "null"],
+          "type": [
+            "string",
+            "null"
+          ],
           "default": null,
           "description": "DO NOT EDIT MANUALLY. The ID of the currently active context."
         }
@@ -240,7 +269,7 @@
     }
   },
   "activationEvents": [
-    "onView:jabbarroot.contextView"
+    "onStartupFinished"
   ],
   "scripts": {
     "vscode:prepublish": "npm run package",
@@ -263,6 +292,7 @@
     "@vscode/test-cli": "^0.0.10",
     "@vscode/test-electron": "^2.5.2",
     "chai": "^5.2.0",
+    "copy-webpack-plugin": "^13.0.0",
     "sinon": "^21.0.0",
     "ts-loader": "^9.5.2",
     "webpack": "^5.99.7",

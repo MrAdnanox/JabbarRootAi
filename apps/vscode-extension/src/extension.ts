@@ -21,12 +21,18 @@ import { getProjectRootPath } from './utils/workspace';
 import { registerCreateProjectCommand } from './commands/createProject.command';
 import { registerCreateBrickCommand } from './commands/createBrick.command';
 import { registerRemoveFileFromBrickCommand } from './commands/removeFileFromBrick.command';
+import { registerRemoveSingleFileFromBrickCommand } from './commands/removeSingleFileFromBrick.command';
 import { registerAddPathToBrickCommand } from './commands/addPathToBrick.command';
 import { registerActivateBrickCommand } from './commands/activateBrick.command';
 import { registerDeactivateBrickCommand } from './commands/deactivateBrick.command';
 import { registerCompileBrickCommand } from './commands/compileBrick.command';
 import { registerAddSelectionToActiveBrickCommand } from './commands/addSelectionToActiveBrick.command';
 import { registerSetAsDefaultTargetBrickCommand } from './commands/setAsDefaultTargetBrick.command';
+import { registerEditBrickOptionsCommand } from './commands/editBrickOptions.command';
+import { registerDeleteBrickCommand } from './commands/deleteBrick.command';
+import { registerDeleteProjectCommand } from './commands/deleteProject.command';
+import { registerEditProjectOptionsCommand } from './commands/editProjectOptions.command';
+import { registerCompileProjectCommand } from './commands/compileProject.command';
 
 export async function activate(context: vscode.ExtensionContext) {
     // Vérification du dossier de travail
@@ -120,10 +126,30 @@ export async function activate(context: vscode.ExtensionContext) {
             projectTreeProvider
         );
 
+        const removeSingleFileFromBrickCommand = registerRemoveSingleFileFromBrickCommand(
+            brickService,
+            projectTreeProvider
+        );
+
         const addPathToBrickCommand = registerAddPathToBrickCommand(
             projectService,
             brickService,
             projectTreeProvider,
+            ignoreService
+        );
+
+        const deleteProjectCommand = registerDeleteProjectCommand(
+            projectService,
+            brickService,
+            projectTreeProvider
+        );
+
+        const editProjectOptionsCommand = registerEditProjectOptionsCommand(context, projectService);
+
+        const compileProjectCommand = registerCompileProjectCommand(
+            projectService,
+            brickService,
+            statisticsService,
             ignoreService
         );
 
@@ -140,6 +166,8 @@ export async function activate(context: vscode.ExtensionContext) {
 
         const setAsDefaultTargetBrickCommand = registerSetAsDefaultTargetBrickCommand(brickService);
         const addSelectionToActiveBrickCommand = registerAddSelectionToActiveBrickCommand(projectService, brickService, ignoreService);
+        const editBrickOptionsCommand = registerEditBrickOptionsCommand(context, projectService, brickService);
+        const deleteBrickCommand = registerDeleteBrickCommand(brickService, projectService, projectTreeProvider);
 
         // Enregistrement des abonnements
         const subscriptions = [
@@ -147,7 +175,13 @@ export async function activate(context: vscode.ExtensionContext) {
             createProjectCommand,
             createBrickCommand,
             removeFileFromBrickCommand,
+            removeSingleFileFromBrickCommand,
             addPathToBrickCommand,
+            editBrickOptionsCommand,
+            deleteBrickCommand,
+            deleteProjectCommand,
+            editProjectOptionsCommand,
+            compileProjectCommand,
             compileBrickCommand,
             activateBrickCommand,
             deactivateBrickCommand,

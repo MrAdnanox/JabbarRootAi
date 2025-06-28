@@ -8,73 +8,92 @@ interface FileSelectionItem extends vscode.QuickPickItem {
     filePath: string;
 }
 
-/**
- * Enregistre la commande pour retirer des fichiers d'une brique
- * @param brickService - Service de gestion des briques
- * @param treeDataProvider - Fournisseur de données pour l'arborescence
- * @returns Un disposable pour libérer les ressources
- */
 export function registerRemoveFileFromBrickCommand(
     brickService: BrickService,
     treeDataProvider: ProjectTreeDataProvider
 ): vscode.Disposable {
     return vscode.commands.registerCommand('jabbarroot.removeFileFromBrick', async (brickItem?: BrickTreeItem) => {
-        try {
-            validateBrickItem(brickItem);
-            
-            const brick = brickItem!.brick;
-            validateBrickFiles(brick.files_scope, brick.name);
-
-            const selectedItems = await promptFileSelection(brick.files_scope, brick.name);
-            if (!selectedItems?.length) return;
-
-            await processFileRemoval(
-                brickService,
-                treeDataProvider,
-                brick,
-                selectedItems
-            );
-        } catch (error) {
-            handleError(error);
+        // Vérifier si un élément de brique valide est sélectionné
+        if (!brickItem || !(brickItem instanceof BrickTreeItem)) {
+            vscode.window.showErrorMessage('Veuillez sélectionner une brique pour en retirer des fichiers.');
+            return;
         }
-    });
-}
 
-/**
- * Valide que l'élément de brique est valide
- */
-function validateBrickItem(brickItem: BrickTreeItem | undefined): asserts brickItem is BrickTreeItem {
-    if (!brickItem || !(brickItem instanceof BrickTreeItem)) {
-        throw new Error('Veuillez sélectionner une brique pour en retirer des fichiers.');
-    }
-}
+        const brick = brickItem.brick;
 
-/**
- * Valide que la brique contient des fichiers
- */
-function validateBrickFiles(files: string[] | undefined, brickName: string): void {
-    if (!files || files.length === 0) {
-        throw new Error(`La brique "${brickName}" ne contient aucun fichier à retirer.`);
-    }
-}
+        // Vérifier s'il y a des fichiers dans la brique
+        if (!brick.files_scope || brick.files_scope.length === 0) {
+            vscode.window.showInformationMessage(`La brique "${brick.name}" ne contient aucun fichier à retirer.`);
+            return;
+        }
 
-/**
- * Affiche la sélection de fichiers et retourne les éléments sélectionnés
- */
-async function promptFileSelection(
-    files: string[],
-    brickName: string
-): Promise<FileSelectionItem[] | undefined> {
-    const filesToChooseFrom = files.map(filePath => ({
-        label: filePath,
-        description: '',
-        filePath
-    }));
+        // Créer une instance de QuickPick
+        const quickPick = vscode.window.createQuickPick<FileSelectionItem>();
+        quickPick.title = `Retirer des fichiers de la brique: ${brick.name}`;
+        quickPick.placeholder = 'Choisissez les fichiers à retirer ou utilisez les boutons';
+        quickPick.canSelectMany = true; // Note: canPickMany n'existe pas, utiliser canSelectMany
 
-    return vscode.window.showQuickPick(filesToChooseFrom, {
-        canPickMany: true,
-        placeHolder: `Sélectionnez les fichiers à retirer de la brique "${brickName}"`,
-        title: `Retirer des fichiers de la brique: ${brickName}`
+        // Définir les items
+        const items = brick.files_scope.map(filePath => ({
+            label: filePath,
+            filePath: filePath,
+            picked: true // Tous les items sont cochés par défaut
+        }));
+        quickPick.items = items;
+        quickPick.selectedItems = items; // Assure que la sélection visuelle correspond
+
+        // Définir les boutons personnalisés
+        const selectAllButton: vscode.QuickInputButton = {
+            iconPath: new vscode.ThemeIcon('checklist'),
+            tooltip: 'Tout sélectionner'
+        };
+        const deselectAllButton: vscode.QuickInputButton = {
+            iconPath: new vscode.ThemeIcon('clear-all'),
+            tooltip: 'Tout désélectionner'
+        };
+        quickPick.buttons = [selectAllButton, deselectAllButton];
+
+        // Gérer les clics sur les boutons
+        quickPick.onDidTriggerButton(button => {
+            if (button === selectAllButton) {
+                quickPick.selectedItems = [...quickPick.items];
+            } else if (button === deselectAllButton) {
+                quickPick.selectedItems = [];
+            }
+        });
+
+        // Gérer l'acceptation (quand l'utilisateur appuie sur Entrée)
+        quickPick.onDidAccept(async () => {
+            const selectedItems = quickPick.selectedItems;
+            quickPick.hide(); // Fermer la vue
+
+            if (selectedItems.length === brick.files_scope.length) {
+                // L'utilisateur n'a rien retiré, on ne fait rien
+                return;
+            }
+            
+            const pathsToKeep = new Set(selectedItems.map(item => item.filePath));
+            const newFilesScope = brick.files_scope.filter(path => pathsToKeep.has(path));
+
+            try {
+                await brickService.updateBrick(brick.id, { files_scope: newFilesScope });
+                const removedCount = brick.files_scope.length - newFilesScope.length;
+                vscode.window.showInformationMessage(
+                    `${removedCount} fichier(s) retiré(s) de la brique "${brick.name}".`
+                );
+                treeDataProvider.refresh();
+            } catch (error) {
+                const errorMessage = error instanceof Error ? error.message : 'Une erreur inconnue est survenue';
+                vscode.window.showErrorMessage(`Échec du retrait de fichiers: ${errorMessage}`);
+            } finally {
+                quickPick.dispose(); // Nettoyer les ressources
+            }
+        });
+
+        // Gérer la fermeture (quand l'utilisateur appuie sur Echap)
+        quickPick.onDidHide(() => quickPick.dispose());
+
+        quickPick.show();
     });
 }
 
