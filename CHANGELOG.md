@@ -6,6 +6,13 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 
 ## [Unreleased]
 
+### Fixed
+- Correction de la gestion des fichiers ignorés dans la compilation
+  - Normalisation des chemins pour une correspondance cohérente
+  - Meilleure gestion des motifs d'ignorance
+  - Ajout de logs de débogage pour le suivi des fichiers ignorés
+  - Correction de la détection des fichiers comme `*.tsbuildinfo`
+
 ### Added
 - Nouvelle fonctionnalité de protection du flow
 - Documentation développeur complète
