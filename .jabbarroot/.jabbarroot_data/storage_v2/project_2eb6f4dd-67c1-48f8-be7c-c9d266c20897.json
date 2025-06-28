@@ -1,9 +1,9 @@
 {
-  "id": "2ea61657-01db-4260-92c8-64d4a291ba65",
+  "id": "2eb6f4dd-67c1-48f8-be7c-c9d266c20897",
   "name": "JabbarRoot",
   "projectRootPath": "/media/adnan/Projects/JabbarRoot",
   "brickContextIds": [
-    "52935418-6e58-496b-8dd2-fcbdd2d17714"
+    "e798488e-11b7-4104-b0a3-20cdeb96fca2"
   ],
   "options": {
     "compilationCompressionLevel": "standard",
@@ -15,7 +15,7 @@
     "projectIgnorePatterns": []
   },
   "metadata": {
-    "createdAt": "2025-06-26T23:55:24.900Z",
-    "updatedAt": "2025-06-27T01:26:14.667Z"
+    "createdAt": "2025-06-28T16:59:20.205Z",
+    "updatedAt": "2025-06-28T16:59:30.104Z"
   }
 }
