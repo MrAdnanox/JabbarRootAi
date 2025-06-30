@@ -1,14 +1,6 @@
 // apps/vscode-extension/src/extension.ts
 import * as vscode from 'vscode';
-import {
-    ProjectService,
-    BrickService,
-    BrickConstructorService,
-    StatisticsService,
-    StructureGenerationService,
-    FileContentService,
-    CompactionService
-} from '@jabbarroot/core';
+import { ProjectService, BrickService, BrickConstructorService, StatisticsService, StructureGenerationService, FileContentService, CompactionService } from '@jabbarroot/core';
 
 import { VscodeFileSystemAdapter } from './adapters/vscodeFileSystem.adapter';
 import { IgnoreService } from './services/ignore.service';
@@ -34,7 +26,8 @@ import { registerDeleteProjectCommand } from './commands/deleteProject.command';
 import { registerEditProjectOptionsCommand } from './commands/editProjectOptions.command';
 import { registerCompileProjectCommand } from './commands/compileProject.command';
 import { registerGenerateReadmeCommand } from './commands/doc/generateReadme.command';
-import { DocumentationService } from './services/documentation.service';
+import { registerGenerateTestsCommand } from './commands/test/generateTests.command';
+import { DocumentationService, UnitTestGeneratorService } from './services';
 
 
 // Fonction utilitaire de log
@@ -58,52 +51,37 @@ export async function activate(context: vscode.ExtensionContext) {
     try {
     log('Initialisation des services...');
         // Initialisation des adapters
-        const fsAdapter = new VscodeFileSystemAdapter();
-        const mainStorage = new FileSystemStorageAdapter(
-            fsAdapter,
+        const fileSystemAdapter = new VscodeFileSystemAdapter();
+        const storageAdapter = new FileSystemStorageAdapter(
+            fileSystemAdapter,
             projectRootPath,
             '.jabbarroot_data/storage_v2'
         );
 
         // Initialisation des services de base
-        const projectService = new ProjectService(mainStorage);
-        const brickService = new BrickService(mainStorage);
+        const projectService = new ProjectService(storageAdapter);
+        const brickService = new BrickService(storageAdapter);
         
         // Initialisation des services de construction
-        const structureGenerationService = new StructureGenerationService(fsAdapter);
+        const structureGenerationService = new StructureGenerationService(fileSystemAdapter);
         const compactionService = new CompactionService();
-        const fileContentService = new FileContentService(fsAdapter, compactionService);
+        const fileContentService = new FileContentService(fileSystemAdapter, compactionService);
         
-        const brickConstructorService = new BrickConstructorService(
-            structureGenerationService,
-            fileContentService,
-            compactionService
-        );
+        const brickConstructorService = new BrickConstructorService(structureGenerationService, fileContentService, compactionService);
 
-        const statisticsService = new StatisticsService(
-            fileContentService,
-            compactionService,
-            brickConstructorService
-        );
+        const statisticsService = new StatisticsService(fileContentService, compactionService, brickConstructorService);
 
         // Initialisation des services spécifiques à VSCode
-        const ignoreService = new IgnoreService(fsAdapter);
+        const ignoreService = new IgnoreService(fileSystemAdapter);
         
         // Initialisation du service de documentation
-        const documentationService = new DocumentationService(
-            projectService,
-            brickService,
-            statisticsService,
-            ignoreService,
-            fileContentService // L'injection doit être présente
-        );
+        const documentationService = new DocumentationService(projectService, brickService, statisticsService, ignoreService, fileContentService);
+        
+        // Initialisation du service de génération de tests unitaires
+        const unitTestGeneratorService = new UnitTestGeneratorService(brickService, fileContentService);
 
         // Initialisation de la vue hiérarchique
-        const projectTreeProvider = new ProjectTreeDataProvider(
-            projectService,
-            brickService,
-            context.globalState
-        );
+        const projectTreeProvider = new ProjectTreeDataProvider(projectService, brickService, context.globalState);
 
         // Création de la vue arborescente
         const treeView = vscode.window.createTreeView('jabbarroot.contextView', {
@@ -138,51 +116,21 @@ export async function activate(context: vscode.ExtensionContext) {
         );
 
         const createProjectCommand = registerCreateProjectCommand(projectService, projectTreeProvider);
-        const createBrickCommand = registerCreateBrickCommand(
-            projectService,
-            brickService,
-            projectTreeProvider
-        );
+        const createBrickCommand = registerCreateBrickCommand(projectService, brickService, projectTreeProvider);
         
-        const removeFileFromBrickCommand = registerRemoveFileFromBrickCommand(
-            brickService,
-            projectTreeProvider
-        );
+        const removeFileFromBrickCommand = registerRemoveFileFromBrickCommand(brickService, projectTreeProvider);
 
-        const removeSingleFileFromBrickCommand = registerRemoveSingleFileFromBrickCommand(
-            brickService,
-            projectTreeProvider
-        );
+        const removeSingleFileFromBrickCommand = registerRemoveSingleFileFromBrickCommand(brickService, projectTreeProvider);
 
-        const addPathToBrickCommand = registerAddPathToBrickCommand(
-            projectService,
-            brickService,
-            projectTreeProvider,
-            ignoreService
-        );
+        const addPathToBrickCommand = registerAddPathToBrickCommand(projectService, brickService, projectTreeProvider, ignoreService);
 
-        const deleteProjectCommand = registerDeleteProjectCommand(
-            projectService,
-            brickService,
-            projectTreeProvider
-        );
+        const deleteProjectCommand = registerDeleteProjectCommand(projectService, brickService, projectTreeProvider);
 
         const editProjectOptionsCommand = registerEditProjectOptionsCommand(context, projectService);
 
-        const compileProjectCommand = registerCompileProjectCommand(
-            projectService,
-            brickService,
-            statisticsService,
-            ignoreService
-        );
+        const compileProjectCommand = registerCompileProjectCommand(projectService, brickService, statisticsService, ignoreService);
 
-        const compileBrickCommand = registerCompileBrickCommand(
-            brickConstructorService,
-            statisticsService,
-            projectService,
-            ignoreService,
-            projectTreeProvider
-        );
+        const compileBrickCommand = registerCompileBrickCommand(brickConstructorService, statisticsService, projectService, ignoreService, projectTreeProvider);
         
         const activateBrickCommand = registerActivateBrickCommand(brickService, projectTreeProvider);
         const deactivateBrickCommand = registerDeactivateBrickCommand(brickService, projectTreeProvider);
@@ -198,11 +146,25 @@ export async function activate(context: vscode.ExtensionContext) {
             generateReadmeCommand = registerGenerateReadmeCommand(projectService, documentationService);
             log('Commande generateReadme enregistrée avec succès');
             log('Détails de la commande:', {
-                id: 'jabbarroot.generateReadme',
+                id: 'jabbarroot.doc.generateReadme',
                 title: 'JabbarDoc: Générer le README du projet'
             });
         } catch (error) {
             log('ERREUR lors de l\'enregistrement de la commande generateReadme:', error);
+            throw error; // Propager l'erreur pour qu'elle soit visible dans la console
+        }
+
+        log('Enregistrement de la commande generateTests...');
+        let generateTestsCommand: vscode.Disposable;
+        try {
+            generateTestsCommand = registerGenerateTestsCommand(projectService, unitTestGeneratorService);
+            log('Commande generateTests enregistrée avec succès');
+            log('Détails de la commande:', {
+                id: 'jabbarroot.test.generateTests',
+                title: 'JabbarTest: Générer les tests unitaires'
+            });
+        } catch (error) {
+            log('ERREUR lors de l\'enregistrement de la commande generateTests:', error);
             throw error; // Propager l'erreur pour qu'elle soit visible dans la console
         }
 
@@ -222,6 +184,7 @@ export async function activate(context: vscode.ExtensionContext) {
             compileProjectCommand,
             compileBrickCommand,
             generateReadmeCommand,
+            generateTestsCommand,
             activateBrickCommand,
             deactivateBrickCommand,
             setAsDefaultTargetBrickCommand,

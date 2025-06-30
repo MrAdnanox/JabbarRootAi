@@ -1,18 +1,14 @@
 {
-  "id": "e798488e-11b7-4104-b0a3-20cdeb96fca2",
+  "id": "e7a794eb-9bee-4894-b82d-4230773d1f8a",
   "projectId": "2eb6f4dd-67c1-48f8-be7c-c9d266c20897",
-  "name": "App",
+  "name": "prompt-factory",
   "files_scope": [
-    "apps/vscode-extension/LICENSE",
-    "apps/vscode-extension/package.json",
-    "apps/vscode-extension/tsconfig.json",
-    "apps/vscode-extension/webpack.config.js",
-    "apps/vscode-extension/src/constants.ts",
-    "apps/vscode-extension/src/extension.ts",
     "apps/vscode-extension/src/adapters/fileSystemStorage.adapter.ts",
     "apps/vscode-extension/src/adapters/mementoStorage.adapter.ts",
     "apps/vscode-extension/src/adapters/vscodeConfiguration.adapter.ts",
     "apps/vscode-extension/src/adapters/vscodeFileSystem.adapter.ts",
+    "apps/vscode-extension/src/commands/test/generateTests.command.ts",
+    "apps/vscode-extension/src/commands/doc/generateReadme.command.ts",
     "apps/vscode-extension/src/commands/activateBrick.command.ts",
     "apps/vscode-extension/src/commands/addPathToBrick.command.ts",
     "apps/vscode-extension/src/commands/addSelectionToActiveBrick.command.ts",
@@ -28,26 +24,31 @@
     "apps/vscode-extension/src/commands/removeFileFromBrick.command.ts",
     "apps/vscode-extension/src/commands/removeSingleFileFromBrick.command.ts",
     "apps/vscode-extension/src/commands/setAsDefaultTargetBrick.command.ts",
-    "apps/vscode-extension/src/providers/context.tree-item-factory.ts",
     "apps/vscode-extension/src/providers/projectTreeDataProvider.ts",
     "apps/vscode-extension/src/providers/projectTreeItem.factory.ts",
+    "apps/vscode-extension/src/services/documentation.service.ts",
     "apps/vscode-extension/src/services/ignore.service.ts",
+    "apps/vscode-extension/src/services/index.ts",
+    "apps/vscode-extension/src/services/unitTestGenerator.service.ts",
     "apps/vscode-extension/src/utils/workspace.ts",
-    "apps/vscode-extension/src/webviews/BrickOptionsViewProvider.ts",
-    "apps/vscode-extension/src/webviews/ProjectOptionsViewProvider.ts",
-    "apps/vscode-extension/src/webviews/assets/css/main.css",
-    "apps/vscode-extension/src/webviews/assets/js/projectOptions.webview.js",
-    "apps/vscode-extension/src/webviews/assets/js/webview.js"
+    "apps/vscode-extension/src/constants.ts",
+    "apps/vscode-extension/src/extension.ts",
+    "packages/prompt-factory/src/index.ts",
+    "packages/prompt-factory/src/executors/GenericAgent.executor.ts",
+    "packages/prompt-factory/src/executors/structure-decoder.executor.ts",
+    "packages/prompt-factory/src/schemas/ArchitecturalReport.schema.ts",
+    "docs/guide-ajout-agent.md",
+    "docs/architecture.md"
   ],
   "options": {
     "special_sections": {},
     "compilationCompressionLevel": "standard",
-    "compilationIncludeProjectTree": true
+    "compilationIncludeProjectTree": false
   },
   "isActiveForProjectCompilation": true,
-  "isDefaultTarget": false,
+  "isDefaultTarget": true,
   "metadata": {
-    "createdAt": "2025-06-28T16:59:30.071Z",
-    "updatedAt": "2025-06-29T00:45:37.449Z"
+    "createdAt": "2025-06-30T17:46:26.874Z",
+    "updatedAt": "2025-06-30T17:52:20.314Z"
   }
 }

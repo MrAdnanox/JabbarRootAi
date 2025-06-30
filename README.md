@@ -88,6 +88,26 @@ Contributions are welcome! To contribute:
 
 MIT
 
+## 📋 TODO
+
+### Améliorations de la compression
+- [ ] Ajouter le support de plus de langages et types de fichiers
+  - [ ] Support avancé pour les fichiers JSON
+  - [ ] Minification des fichiers JavaScript/TypeScript
+  - [ ] Support des fichiers Markdown
+  - [ ] Compression des images (WebP, SVG optimisé)
+
+### Interface utilisateur
+- [ ] Corriger l'icône SVG de l'extension
+  - [ ] Vérifier la compatibilité des formats
+  - [ ] Optimiser la taille du fichier
+  - [ ] S'assurer de la bonne visibilité dans le thème sombre/clair
+
+### Optimisations techniques
+- [ ] Implémenter le cache pour les fichiers fréquemment compressés
+- [ ] Ajouter des tests de performance
+- [ ] Documenter les options avancées de compression
+
 ---
 
 Built with ❤️ for developers working with LLMs

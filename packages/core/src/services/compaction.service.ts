@@ -1,6 +1,8 @@
 import { CompactionInput, ICompactor } from './compaction/types';
 import { CompressionLevel } from '../models/project.types';
 import { getLanguageIdFromPath } from './compaction/utils';
+import { CleanCssCompactor } from './compaction/strategies/CleanCssCompactor';
+import { MinifyHtmlCompactor } from './compaction/strategies/MinifyHtmlCompactor';
 import { RegexCompactor } from './compaction/strategies/RegexCompactor';
 
 export class CompactionService {
@@ -11,14 +13,23 @@ export class CompactionService {
   }
 
   private registerStrategies(): void {
-    // Une seule classe de stratégie, mais configurée pour chaque langage.
-    this.registry.set('javascript', new RegexCompactor('js'));
-    this.registry.set('typescript', new RegexCompactor('js'));
-    this.registry.set('css', new RegexCompactor('css'));
-    this.registry.set('html', new RegexCompactor('html'));
-    this.registry.set('xml', new RegexCompactor('html'));
-    this.registry.set('svg', new RegexCompactor('html'));
-    // Les autres utiliseront le fallback par défaut du service.
+    // Stratégie Zéro Dépendance pour JS/TS (le plus sûr)
+    const jsCompactor = new RegexCompactor('js');
+    this.registry.set('javascript', jsCompactor);
+    this.registry.set('typescript', jsCompactor);
+
+    // Stratégie Spécialisée pour CSS
+    const cssCompactor = new CleanCssCompactor();
+    this.registry.set('css', cssCompactor);
+    this.registry.set('scss', cssCompactor);
+    this.registry.set('sass', cssCompactor);
+    this.registry.set('less', cssCompactor);
+
+    // Stratégie Spécialisée pour HTML
+    const htmlCompactor = new MinifyHtmlCompactor();
+    this.registry.set('html', htmlCompactor);
+    this.registry.set('xml', htmlCompactor);
+    this.registry.set('svg', htmlCompactor);
   }
 
   public async compact(text: string, level: CompressionLevel, filePath: string): Promise<string> {
@@ -36,12 +47,16 @@ export class CompactionService {
     const strategy = this.registry.get(languageId);
     if (!strategy) return file;
 
-    const compactedContent = await strategy.compact(file.content);
-    
-    return {
-      path: file.path,
-      content: compactedContent,
-    };
+    try {
+      const compactedContent = await strategy.compact(file.content);
+      return {
+        path: file.path,
+        content: compactedContent,
+      };
+    } catch (error) {
+      console.error(`Error compacting ${file.path}:`, error);
+      return file; // Retourne le contenu original en cas d'erreur
+    }
   }
 
   public async compactFiles(files: CompactionInput[]): Promise<CompactionInput[]> {

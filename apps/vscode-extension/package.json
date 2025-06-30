@@ -37,6 +37,12 @@
     },
     "commands": [
       {
+        "command": "jabbarroot.test.generateTests",
+        "title": "JabbarTest: Générer les tests unitaires",
+        "category": "jabbarroot",
+        "icon": "$(test)"
+      },
+      {
         "command": "jabbarroot.doc.generateReadme",
         "title": "JabbarDoc: Générer le README du projet",
         "category": "jabbarroot",

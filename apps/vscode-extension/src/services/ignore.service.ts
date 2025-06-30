@@ -74,17 +74,59 @@ export class IgnoreService {
         const uniquePatterns = Array.from(new Set(combinedPatterns));
         
         // Normalisation des chemins pour une correspondance cohérente
-        const normalizePath = (p: string) => p.replace(/\\/g, '/').replace(/^\/\.\//, '');
+        const normalizePattern = (pattern: string): string => {
+            // Supprime le préfixe ! s'il existe (pour les négations)
+            const isNegation = pattern.startsWith('!');
+            const cleanPattern = isNegation ? pattern.slice(1) : pattern;
+            
+            // Normalise les séparateurs de chemin
+            let normalized = cleanPattern.replace(/\\/g, '/');
+            
+            // Si le pattern se termine par un /, on l'ajoute pour la correspondance de dossiers
+            if (pattern.endsWith('/') && !normalized.endsWith('/')) {
+                normalized += '/';
+            }
+            
+            // Si le pattern est un chemin de dossier, on s'assure qu'il commence par /
+            if (normalized.endsWith('/') && !normalized.startsWith('/')) {
+                normalized = '**/' + normalized;
+            }
+            
+            // Échapper les caractères spéciaux pour minimatch
+            normalized = normalized
+                .replace(/([\]\[\]{}|()+?^$])/g, '\\$1')
+                .replace(/\*\*\//g, '{*/,}**/')  // Gestion des **/
+                .replace(/\/\*\*\//g, '/{**/,}**/');  // Gestion des /**/
+                
+            return isNegation ? `!${normalized}` : normalized;
+        };
         
         return (filePathToCheck: string): boolean => {
-            const normalizedPath = normalizePath(filePathToCheck);
+            const normalizedPath = filePathToCheck.replace(/\\/g, '/').replace(/^\/\.\//, '');
             const shouldIgnore = uniquePatterns.some(pattern => {
-                const normalizedPattern = normalizePath(pattern);
+                const normalizedPattern = normalizePattern(pattern);
                 // Gestion des patterns de dossier (ex: "node_modules/")
-                return normalizedPattern.endsWith('/')
-                    ? minimatch(normalizedPath, normalizedPattern.slice(0, -1), { dot: true, matchBase: true }) || 
-                      normalizedPath.startsWith(normalizedPattern.slice(0, -1) + '/')
-                    : minimatch(normalizedPath, normalizedPattern, { dot: true, matchBase: true });
+                if (normalizedPattern.endsWith('/')) {
+                    const pattern = normalizedPattern.slice(0, -1);
+                    // Pour les dossiers, on vérifie une correspondance exacte ou un sous-dossier
+                    const isMatch = normalizedPath === pattern || 
+                                  normalizedPath.startsWith(pattern + '/');
+                    console.log(`[JabbarRoot] Vérification du dossier '${normalizedPath}' avec le motif '${normalizedPattern}': ${isMatch}`);
+                    return isMatch;
+                }
+                
+                // Pour les fichiers, on utilise minimatch avec matchBase désactivé
+                const isMatch = minimatch(normalizedPath, normalizedPattern, { 
+                    dot: true, 
+                    matchBase: false, // Désactiver matchBase pour une correspondance exacte
+                    nocomment: true,
+                    nocase: true,
+                    noext: true
+                });
+                
+                if (isMatch) {
+                    console.log(`[JabbarRoot] Le chemin '${normalizedPath}' correspond au motif '${normalizedPattern}'`);
+                }
             });
             
             // Log de débogage pour les fichiers ignorés
