@@ -1,9 +1,9 @@
 {
-  "name": "@jabbarroot/vscode-extension",
-  "displayName": "jabbarroot",
-  "description": "jabbarroot, the context protector",
-  "version": "0.1.0",
-  "publisher": "jabbarroot",
+  "name": "jabbarroot-vscode-extension",
+  "displayName": "JabbarRootAi",
+  "description": "jabbarroot, the flow protector",
+  "version": "0.2.0",
+  "publisher": "JabbarRootAi",
   "repository": {
     "type": "git",
     "url": "https://github.com/MrAdnanox/JabbarRootAi.git"
@@ -20,7 +20,7 @@
       "activitybar": [
         {
           "id": "jabbarroot",
-          "title": "jabbarroot",
+          "title": "JabbarRootAi",
           "icon": "resources/JabbarRoot-icon.svg"
         }
       ]
@@ -36,6 +36,12 @@
       ]
     },
     "commands": [
+      {
+        "command": "jabbarroot.doc.generateReadme",
+        "title": "JabbarDoc: Générer le README du projet",
+        "category": "jabbarroot",
+        "icon": "$(notebook)"
+      },
       {
         "command": "jabbarroot.refreshProjectView",
         "title": "jabbarroot: Refresh Projects View",
@@ -125,6 +131,12 @@
         "title": "JabbarRoot: Définir comme brique de collecte",
         "category": "JabbarRoot",
         "icon": "$(target)"
+      },
+      {
+        "command": "jabbarroot.removeSingleFileFromBrick",
+        "title": "Retirer ce fichier de la brique",
+        "category": "JabbarRoot",
+        "icon": "$(trash)"
       }
     ],
     "menus": {
@@ -214,6 +226,11 @@
           "command": "jabbarroot.editBrickOptions",
           "when": "view == jabbarroot.contextView && viewItem == jabbarrootBrick",
           "group": "inline@7"
+        },
+        {
+          "command": "jabbarroot.removeSingleFileFromBrick",
+          "when": "view == jabbarroot.contextView && viewItem == jabbarrootFileInBrick",
+          "group": "inline"
         }
       ],
       "explorer/context": [
@@ -295,7 +312,9 @@
     "copy-webpack-plugin": "^13.0.0",
     "sinon": "^21.0.0",
     "ts-loader": "^9.5.2",
+    "tsd": "^0.7.4",
     "webpack": "^5.99.7",
-    "webpack-cli": "^6.0.1"
+    "webpack-cli": "^6.0.1",
+    "xo": "^0.24.0"
   }
 }

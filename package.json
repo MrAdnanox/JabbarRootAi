@@ -10,12 +10,13 @@
     "url": "https://github.com/MrAdnanox/JabbarRootAi.git"
   },
   "scripts": {
-    "build:packages": "pnpm --filter \"@jabbarroot/core\" --filter \"@jabbarroot/types\" --filter \"@jabbarroot/prompt-factory\" --filter \"@jabbarroot/vector-engine\" build",
-    "build:extension": "pnpm --filter \"@jabbarroot/vscode-extension\" build",
+    "watch:ext": "pnpm --filter ./apps/vscode-extension watch",
+    "build:packages": "pnpm --filter \"./packages/*\" build",
+    "build:prompt-factory": "pnpm --filter ./packages/prompt-factory build",
+    "build:extension": "pnpm --filter ./apps/vscode-extension build",
     "build": "pnpm build:packages && pnpm build:extension",
-    "watch:ext": "pnpm --filter \"@jabbarroot/vscode-extension\" watch",
-    "lint": "eslint packages/**/src/**/*.ts",
-    "test": "pnpm --filter \"@jabbarroot/vscode-extension\" test"
+    "lint": "eslint packages/**/*.ts apps/**/*.ts",
+    "test": "pnpm --filter ./apps/vscode-extension test"
   },
   "devDependencies": {
     "@types/brace-expansion": "^1.1.2",

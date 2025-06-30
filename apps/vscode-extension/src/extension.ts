@@ -33,16 +33,30 @@ import { registerDeleteBrickCommand } from './commands/deleteBrick.command';
 import { registerDeleteProjectCommand } from './commands/deleteProject.command';
 import { registerEditProjectOptionsCommand } from './commands/editProjectOptions.command';
 import { registerCompileProjectCommand } from './commands/compileProject.command';
+import { registerGenerateReadmeCommand } from './commands/doc/generateReadme.command';
+import { DocumentationService } from './services/documentation.service';
+
+
+// Fonction utilitaire de log
+const log = (message: string, data?: any) => {
+  console.log(`JabbLog [Extension]: ${message}`, data || '');
+};
 
 export async function activate(context: vscode.ExtensionContext) {
-    // Vérification du dossier de travail
-    const projectRootPath = getProjectRootPath();
-    if (!projectRootPath) {
-        vscode.window.showWarningMessage('jabbarroot: Veuillez ouvrir un dossier pour activer l\'extension.');
-        return;
+  log('Début de l\'activation de l\'extension');
+  
+  // Vérification du dossier de travail
+  log('Vérification du dossier de travail...');
+  const projectRootPath = getProjectRootPath();
+  if (!projectRootPath) {
+      const msg = 'Aucun dossier de travail détecté. Veuillez ouvrir un dossier pour activer l\'extension.';
+      log('Erreur: ' + msg);
+      vscode.window.showWarningMessage('jabbarroot: ' + msg);
+      return;
     }
 
     try {
+    log('Initialisation des services...');
         // Initialisation des adapters
         const fsAdapter = new VscodeFileSystemAdapter();
         const mainStorage = new FileSystemStorageAdapter(
@@ -74,6 +88,15 @@ export async function activate(context: vscode.ExtensionContext) {
 
         // Initialisation des services spécifiques à VSCode
         const ignoreService = new IgnoreService(fsAdapter);
+        
+        // Initialisation du service de documentation
+        const documentationService = new DocumentationService(
+            projectService,
+            brickService,
+            statisticsService,
+            ignoreService,
+            fileContentService // L'injection doit être présente
+        );
 
         // Initialisation de la vue hiérarchique
         const projectTreeProvider = new ProjectTreeDataProvider(
@@ -168,8 +191,23 @@ export async function activate(context: vscode.ExtensionContext) {
         const addSelectionToActiveBrickCommand = registerAddSelectionToActiveBrickCommand(projectService, brickService, ignoreService);
         const editBrickOptionsCommand = registerEditBrickOptionsCommand(context, projectService, brickService);
         const deleteBrickCommand = registerDeleteBrickCommand(brickService, projectService, projectTreeProvider);
+        
+        log('Enregistrement de la commande generateReadme...');
+        let generateReadmeCommand: vscode.Disposable;
+        try {
+            generateReadmeCommand = registerGenerateReadmeCommand(projectService, documentationService);
+            log('Commande generateReadme enregistrée avec succès');
+            log('Détails de la commande:', {
+                id: 'jabbarroot.generateReadme',
+                title: 'JabbarDoc: Générer le README du projet'
+            });
+        } catch (error) {
+            log('ERREUR lors de l\'enregistrement de la commande generateReadme:', error);
+            throw error; // Propager l'erreur pour qu'elle soit visible dans la console
+        }
 
         // Enregistrement des abonnements
+        log('Enregistrement des abonnements...');
         const subscriptions = [
             refreshProjectViewCommand,
             createProjectCommand,
@@ -183,22 +221,29 @@ export async function activate(context: vscode.ExtensionContext) {
             editProjectOptionsCommand,
             compileProjectCommand,
             compileBrickCommand,
+            generateReadmeCommand,
             activateBrickCommand,
             deactivateBrickCommand,
             setAsDefaultTargetBrickCommand,
             addSelectionToActiveBrickCommand,
+            vscode.workspace.onDidChangeWorkspaceFolders(() => projectTreeProvider.refresh()),
+            vscode.workspace.onDidSaveTextDocument(() => projectTreeProvider.refresh())
         ];
 
         // Ajout de tous les abonnements au contexte
-        subscriptions.forEach(subscription => {
-            context.subscriptions.push(subscription);
-        });
+        log('Ajout des abonnements au contexte...');
+        context.subscriptions.push(...subscriptions);
+        log(`Extension activée avec succès. ${subscriptions.length} abonnements enregistrés.`);
         
         // Notification de fin d'initialisation
-        vscode.window.showInformationMessage('JabbarRoot: Extension activée avec succès !');
+        const successMsg = 'JabbarRoot: Extension activée avec succès !';
+        log(successMsg);
+        vscode.window.showInformationMessage(successMsg);
     } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-        vscode.window.showErrorMessage(`Failed to activate JabbarRoot extension: ${errorMessage}`);
+        const errorMessage = error instanceof Error ? error.message : 'Erreur inconnue';
+        const errorMsg = `Échec de l'activation de l'extension JabbarRoot: ${errorMessage}`;
+        log(`ERREUR: ${errorMsg}`, error);
+        vscode.window.showErrorMessage(`JabbLog: ${errorMsg}`);
     }
 }
 
@@ -206,5 +251,6 @@ export async function activate(context: vscode.ExtensionContext) {
  * Fonction appelée lors de la désactivation de l'extension
  */
 export function deactivate() {
+    log("Désactivation de l'extension JabbarRoot");
     // Nettoyage des ressources si nécessaire
 }

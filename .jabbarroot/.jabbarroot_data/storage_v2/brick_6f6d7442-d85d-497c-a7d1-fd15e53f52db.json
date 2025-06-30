@@ -44,10 +44,10 @@
     "compilationCompressionLevel": "standard",
     "compilationIncludeProjectTree": false
   },
-  "isActiveForProjectCompilation": true,
-  "isDefaultTarget": true,
+  "isActiveForProjectCompilation": false,
+  "isDefaultTarget": false,
   "metadata": {
     "createdAt": "2025-06-28T17:27:40.008Z",
-    "updatedAt": "2025-06-28T17:33:11.381Z"
+    "updatedAt": "2025-06-29T00:44:53.010Z"
   }
 }

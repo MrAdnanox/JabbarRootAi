@@ -6,22 +6,28 @@
     "apps/vscode-extension/package.json",
     "apps/vscode-extension/tsconfig.json",
     "apps/vscode-extension/webpack.config.js",
+    "eslint.config.mjs",
+    "package.json",
     "packages/core/package.json",
     "packages/core/tsconfig.json",
-    "tsconfig.base.json",
     "pnpm-workspace.yaml",
-    "package.json",
-    "eslint.config.mjs"
+    "tsconfig.base.json",
+    "packages/prompt-factory/package.json",
+    "packages/prompt-factory/tsconfig.json",
+    ".vscode/extensions.json",
+    ".vscode/launch.json",
+    ".vscode/settings.json",
+    ".vscode/tasks.json"
   ],
   "options": {
     "special_sections": {},
     "compilationCompressionLevel": "standard",
-    "compilationIncludeProjectTree": false
+    "compilationIncludeProjectTree": true
   },
-  "isActiveForProjectCompilation": true,
-  "isDefaultTarget": false,
+  "isActiveForProjectCompilation": false,
+  "isDefaultTarget": true,
   "metadata": {
     "createdAt": "2025-06-28T17:21:40.333Z",
-    "updatedAt": "2025-06-28T17:33:05.433Z"
+    "updatedAt": "2025-06-29T23:54:00.858Z"
   }
 }

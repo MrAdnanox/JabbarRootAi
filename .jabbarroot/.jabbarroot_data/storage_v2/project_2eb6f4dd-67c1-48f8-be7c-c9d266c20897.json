@@ -5,13 +5,16 @@
   "brickContextIds": [
     "e798488e-11b7-4104-b0a3-20cdeb96fca2",
     "106ae2ae-4952-4845-8364-e9d50f2a1b57",
-    "6f6d7442-d85d-497c-a7d1-fd15e53f52db"
+    "6f6d7442-d85d-497c-a7d1-fd15e53f52db",
+    "d0dc00bb-efd1-4164-a1bc-82f4ccaabe56",
+    "783adc74-7ac1-4354-ab97-3efc127a3d0d",
+    "a6f28738-9b6c-4ac9-966d-a81c91e6a7c9"
   ],
   "options": {
     "compilationCompressionLevel": "none",
     "compilationIncludeProjectTree": true,
     "defaultBrickCompressionLevel": "standard",
-    "defaultBrickIncludeProjectTree": false,
+    "defaultBrickIncludeProjectTree": true,
     "defaultBrickIncludeProjectTreeMaxDepth": 7,
     "projectIgnoreFiles": [
       ".gitignore"
@@ -22,6 +25,6 @@
   },
   "metadata": {
     "createdAt": "2025-06-28T16:59:20.205Z",
-    "updatedAt": "2025-06-28T17:38:24.678Z"
+    "updatedAt": "2025-06-29T18:59:14.903Z"
   }
 }

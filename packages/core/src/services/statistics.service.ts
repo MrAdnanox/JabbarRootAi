@@ -9,6 +9,7 @@ import { BrickConstructorService } from './brickConstructor.service';
 import { encoding_for_model } from 'tiktoken';
 import * as path from 'path';
 import { getMotivationMessage } from './statistics/statistics.formatter';
+import { CompactionInput } from './compaction/types';
 
 export class StatisticsService {
     constructor(
@@ -37,12 +38,15 @@ export class StatisticsService {
                 const originalContent = await this.fileContentService.readFileContent(project.projectRootPath, filePath);
                 if (originalContent === null) continue; // Skip if file not readable
 
-                const compressedContent = await this.compactionService.compact(originalContent, determinedCompressionLevel, filePath);
+                // Correction architecturale
+                const compactionPayload: CompactionInput[] = [{ path: filePath, content: originalContent }];
+                const compactedResult = await this.compactionService.compactFiles(compactionPayload);
+                const compactedContent = compactedResult[0].content; // On récupère le contenu du premier (et unique) élément
 
                 const originalTokens = encoder.encode(originalContent).length;
-                const compressedTokens = encoder.encode(compressedContent).length;
+                const compressedTokens = encoder.encode(compactedContent).length;
                 const originalSize = originalContent.length;
-                const compressedSize = compressedContent.length;
+                const compressedSize = compactedContent.length;
 
                 fileStats.push({
                     filePath,
@@ -57,7 +61,7 @@ export class StatisticsService {
                 // Stocker le contenu compressé pour l'assemblage final
                 compressedFileContents.push({
                     filePath,
-                    content: compressedContent
+                    content: compactedContent
                 });
             }
         } catch (error) {

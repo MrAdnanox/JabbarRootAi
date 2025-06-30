@@ -8,6 +8,11 @@
     "watch": "tsc -b -w"
   },
   "dependencies": {
-    "@jabbarroot/types": "workspace:^"
+    "@google/generative-ai": "^0.15.0",
+    "zod": "^3.25.67"
+  },
+  "devDependencies": {
+    "@types/node": "^20.14.9",
+    "typescript": "^5.5.2"
   }
 }

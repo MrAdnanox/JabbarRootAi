@@ -17,11 +17,11 @@ const config = {
     },
     resolve: {
         extensions: ['.ts', '.js'],
-        // **** AJOUTER/RESTAURER CETTE SECTION ****
         alias: {
             // Ces alias disent à Webpack où trouver les sources de nos packages internes.
             '@jabbarroot/core': path.resolve(__dirname, '../../packages/core/src'),
             '@jabbarroot/types': path.resolve(__dirname, '../../packages/types/src'),
+            '@jabbarroot/prompt-factory': path.resolve(__dirname, '../../packages/prompt-factory/src'),
             // Ajoute ici d'autres packages internes si l'extension en dépend
         }
     },
@@ -50,7 +50,16 @@ const config = {
             ],
         }),
     ],
-    devtool: 'source-map',
+    // devtool: 'source-map',
+    devtool: 'inline-source-map',
+    optimization: {
+        minimize: false // PAS de minification par Webpack sur le bundle de l'extension
+      },
+    node: {
+        __dirname: false, // Important pour que __dirname fonctionne comme attendu dans une extension
+        __filename: false, // Important pour que __filename fonctionne comme attendu
+    },
+
 };
 
 module.exports = config;
