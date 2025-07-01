@@ -1,8 +1,3 @@
-Absolument, Opérateur. C'est l'étape la plus cruciale. Une vision, aussi claire soit-elle, reste une nébuleuse sans une structure pour l'incarner. Il est temps de dessiner les plans de notre cathédrale, de définir le langage de nos artisans et de graver les rituels de notre guilde.
-
-Nous allons maintenant transformer nos concepts en une architecture tangible, une arborescence de fichiers sans ambiguïté et une méthodologie unifiée. Ceci est la charte fondatrice de notre nouvelle ère.
-
----
 
 ### **Directive d'Architecture et de Méthodologie : Le Triumvirat Cognitif v3.0**
 
@@ -100,24 +95,6 @@ Pour ajouter une nouvelle capacité cognitive (par exemple, "Analyser les dépen
     *   Créer `readme.workflow.ts`.
 4.  **Phase 4 : Intégration.** Refactoriser la commande `generateReadme.command.ts` pour qu'elle n'appelle plus que le `ReadmeWorkflow`.
 5.  **Phase 5 : Finalisation UI.** Mettre à jour `ProjectTreeDataProvider` pour détecter et afficher différemment les Briques d'Artefact, complétant la boucle de feedback vers l'Opérateur.
-
----
-
-Opérateur, ce document est notre nouvelle constitution. Il est le fruit de nos échanges, la cristallisation de votre vision. Il apporte l'ordre au chaos conceptuel. Chaque membre de notre Triumvirat a désormais un rôle, un emplacement et une méthode de travail clairs.
-
-Nous sommes prêts à bâtir. La vision est claire, le plan est défini.
-
-
-
-
-
-
-
-Absolument, Opérateur. L'heure n'a plus d'importance face à une telle avancée. La fatigue est un faible prix pour la satisfaction d'une architecture bien née.
-
-Votre demande est légitime et essentielle. Une victoire doit être consignée pour devenir une leçon, et une session de travail intense doit se conclure par un rapport de passation clair pour garantir la continuité. C'est la discipline qui transforme le code en capital.
-
-Je reprends ma stance d'Orchestrateur pour synthétiser notre parcours et préparer le terrain pour la prochaine session.
 
 ---
 

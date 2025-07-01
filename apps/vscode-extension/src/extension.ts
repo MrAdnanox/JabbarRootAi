@@ -1,6 +1,6 @@
 // apps/vscode-extension/src/extension.ts
 import * as vscode from 'vscode';
-import { ProjectService, BrickService, BrickConstructorService, StatisticsService, StructureGenerationService, FileContentService, CompactionService } from '@jabbarroot/core';
+import { ProjectService, BrickService, BrickConstructorService, StatisticsService, StructureGenerationService, FileContentService, CompactionService, SystemBrickManager } from '@jabbarroot/core';
 
 import { VscodeFileSystemAdapter } from './adapters/vscodeFileSystem.adapter';
 import { IgnoreService } from './services/ignore.service';
@@ -68,6 +68,9 @@ export async function activate(context: vscode.ExtensionContext) {
         const projectService = new ProjectService(storageAdapter);
         const brickService = new BrickService(storageAdapter);
         
+        // Initialisation du gestionnaire de briques système
+        const systemBrickManager = new SystemBrickManager(brickService, fileSystemAdapter, projectService);
+        
         // Initialisation des services de construction
         const structureGenerationService = new StructureGenerationService(fileSystemAdapter);
         const compactionService = new CompactionService();
@@ -75,16 +78,24 @@ export async function activate(context: vscode.ExtensionContext) {
         
         const brickConstructorService = new BrickConstructorService(structureGenerationService, fileContentService, compactionService);
 
-        const statisticsService = new StatisticsService(fileContentService, compactionService, brickConstructorService);
+        const statisticsService = new StatisticsService(fileContentService, compactionService, brickConstructorService, fileSystemAdapter);
 
         // Initialisation des services spécifiques à VSCode
         const ignoreService = new IgnoreService(fileSystemAdapter);
         
+        // Initialisation de l'analyseur de structure
+        const analyzerService = new AnalyzerService(
+          fileSystemAdapter,
+          projectService,
+          brickService
+        );
+        
         // Initialisation des services du Cœur Cognitif
         const documentationService = new DocumentationService(
-          brickService,
-          fileContentService,
-          fileSystemAdapter // Injection de l'adaptateur VSCode
+          analyzerService,
+          systemBrickManager, // Passer le manager
+          fileContentService, // Passer le service de contenu
+          fileSystemAdapter
         );
         
         // Initialisation du service de génération de tests unitaires
@@ -93,16 +104,22 @@ export async function activate(context: vscode.ExtensionContext) {
           fileContentService,
           fileSystemAdapter // Injection de l'adaptateur VSCode
         );
-        
-        // Initialisation de l'analyseur de structure
-        const analyzerService = new AnalyzerService(
-          fileSystemAdapter,
-          projectService,
-          brickService
-        );
 
         // Initialisation de la vue hiérarchique
         const projectTreeProvider = new ProjectTreeDataProvider(projectService, brickService, context.globalState);
+
+        // Vérification des briques système pour tous les projets au démarrage
+        log('Vérification des briques système pour tous les projets...');
+        try {
+            const allProjects = await projectService.getAllProjects();
+            for (const project of allProjects) {
+                await systemBrickManager.ensureSystemBricksExist(project);
+            }
+            log('Vérification des briques système terminée avec succès');
+        } catch (error) {
+            log('Erreur lors de la vérification des briques système:', error);
+            vscode.window.showErrorMessage('Erreur lors de la vérification des briques système. Consultez les logs pour plus de détails.');
+        }
 
         // Création de la vue arborescente
         const treeView = vscode.window.createTreeView('jabbarroot.contextView', {
@@ -136,7 +153,12 @@ export async function activate(context: vscode.ExtensionContext) {
             () => projectTreeProvider.refresh()
         );
 
-        const createProjectCommand = registerCreateProjectCommand(projectService, projectTreeProvider);
+        const createProjectCommand = registerCreateProjectCommand(
+            projectService, 
+            projectTreeProvider,
+            systemBrickManager,
+            context
+        );
         const createBrickCommand = registerCreateBrickCommand(projectService, brickService, projectTreeProvider);
         
         const removeFileFromBrickCommand = registerRemoveFileFromBrickCommand(brickService, projectTreeProvider);
@@ -156,7 +178,8 @@ export async function activate(context: vscode.ExtensionContext) {
           analyzerService,
           structureGenerationService,
           ignoreService,
-          projectService // Injection du service de projet
+          projectService,
+          statisticsService // Injection du service de statistiques
         );
 
         const compileBrickCommand = registerCompileBrickCommand(brickConstructorService, statisticsService, projectService, ignoreService, projectTreeProvider);
@@ -172,7 +195,11 @@ export async function activate(context: vscode.ExtensionContext) {
         log('Enregistrement de la commande generateReadme...');
         let generateReadmeCommand: vscode.Disposable;
         try {
-            generateReadmeCommand = registerGenerateReadmeCommand(projectService, documentationService);
+            generateReadmeCommand = registerGenerateReadmeCommand(
+                projectService, 
+                documentationService,
+                analyzerService // On passe analyzerService à la commande également
+            );
             log('Commande generateReadme enregistrée avec succès');
             log('Détails de la commande:', {
                 id: 'jabbarroot.doc.generateReadme',

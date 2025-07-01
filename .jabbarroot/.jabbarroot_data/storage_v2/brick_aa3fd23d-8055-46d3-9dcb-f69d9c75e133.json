@@ -6,7 +6,6 @@
     "tsconfig.base.json",
     "pnpm-workspace.yaml",
     "package.json",
-    "eslint.config.mjs",
     ".vscode/extensions.json",
     ".vscode/launch.json",
     ".vscode/settings.json",
@@ -26,6 +25,6 @@
   "isDefaultTarget": false,
   "metadata": {
     "createdAt": "2025-06-30T16:30:49.225Z",
-    "updatedAt": "2025-06-30T17:46:29.812Z"
+    "updatedAt": "2025-07-01T16:11:09.486Z"
   }
 }

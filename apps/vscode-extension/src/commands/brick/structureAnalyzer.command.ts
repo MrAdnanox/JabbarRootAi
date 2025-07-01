@@ -3,8 +3,15 @@
 import * as vscode from 'vscode';
 import { AnalyzerService } from '@jabbarroot/prompt-factory';
 import { getProjectRootPath } from '../../utils/workspace';
-import { StructureGenerationService, ProjectService, JabbarProject } from '@jabbarroot/core';
+import { 
+  StructureGenerationService, 
+  ProjectService, 
+  JabbarProject, 
+  StatisticsService 
+} from '@jabbarroot/core';
 import { IgnoreService } from '../../services/ignore.service';
+import * as path from 'path';
+import * as fs from 'fs';
 
 function getApiKey(): string | undefined {
   return vscode.workspace.getConfiguration('jabbarroot').get<string>('gemini.apiKey');
@@ -30,7 +37,8 @@ export function registerStructureAnalyzerCommand(
   analyzerService: AnalyzerService,
   structureService: StructureGenerationService,
   ignoreService: IgnoreService,
-  projectService: ProjectService // S'assurer que c'est bien injecté
+  projectService: ProjectService,
+  statisticsService: StatisticsService
 ): vscode.Disposable {
   return vscode.commands.registerCommand('jabbarroot.brick.structureAnalyzer', async () => {
     const apiKey = getApiKey();
@@ -54,6 +62,23 @@ export function registerStructureAnalyzerCommand(
         progress.report({ message: 'Préparation des règles d\'ignorance...' });
         const shouldIgnore = await ignoreService.createIgnorePredicate(project);
 
+        // ÉTAPE 1 : Calculer les statistiques de structure
+        progress.report({ message: 'Calcul des statistiques de structure...' });
+        const statsReport = await statisticsService.generateStructureStats(
+          project.projectRootPath, 
+          shouldIgnore
+        );
+        
+        // Sauvegarder le rapport de statistiques
+        const statsDir = path.join(project.projectRootPath, '.jabbarroot_data', 'reports');
+        await fs.promises.mkdir(statsDir, { recursive: true });
+        const statsFilePath = path.join(statsDir, 'structure-stats.json');
+        await fs.promises.writeFile(
+          statsFilePath, 
+          JSON.stringify(statsReport, null, 2),
+          'utf-8'
+        );
+
         progress.report({ message: 'Génération de l\'arborescence du projet...' });
         const treeReport = await structureService.generate(project.projectRootPath, {
           maxDepth: 8,
@@ -62,8 +87,13 @@ export function registerStructureAnalyzerCommand(
         const fileTree = treeReport?.tree || '';
 
         progress.report({ message: 'Invocation de l\'analyseur...' });
-        // CORRECTION : On passe le projet sélectionné à l'analyseur
-        const report = await analyzerService.analyzeStructure(project, fileTree, apiKey);
+        // On passe le projet, l'arborescence, les statistiques et la clé API à l'analyseur
+        const report = await analyzerService.analyzeStructure(
+          project, 
+          fileTree, 
+          JSON.stringify(statsReport, null, 2),
+          apiKey
+        );
 
         progress.report({ message: 'Affichage du rapport JSON...' });
         const reportContent = JSON.stringify(report, null, 2);

@@ -181,7 +181,7 @@
       "view/item/context": [
         {
           "command": "jabbarroot.createBrickInProject",
-          "when": "view == jabbarroot.contextView && viewItem == jabbarrootProject",
+          "when": "view == jabbarroot.contextView && (viewItem == jabbarrootProject || viewItem == jabbarrootGroup)",
           "group": "inline"
         },
         {

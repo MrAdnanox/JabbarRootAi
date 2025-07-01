@@ -1,8 +1,10 @@
 import { IFileSystem } from '@jabbarroot/types';
-import { JabbarProject, BrickService, ProjectService } from '@jabbarroot/core';
+import { JabbarProject, BrickService, ProjectService, BrickContext } from '@jabbarroot/core';
 import { StructureAnalyzer } from '../analyzers/structure.analyzer';
 import { ArchitecturalReport } from '../schemas/ArchitecturalReport.schema';
 import { ArtefactService } from './artefact.service';
+
+const ARCHITECTURAL_REPORT_TYPE = 'Architectural Report';
 
 export class AnalyzerService {
   private structureAnalyzer: StructureAnalyzer;
@@ -18,42 +20,51 @@ export class AnalyzerService {
   }
 
   /**
-   * Point d'entrée pour l'analyse de la structure d'un projet.
-   */
-  /**
-   * Analyse la structure d'un projet et génère un rapport architectural
+   * Analyse la structure du projet et génère un rapport architectural
    * @param project Le projet à analyser
    * @param fileTree L'arborescence des fichiers du projet
-   * @param apiKey Clé API pour les services externes
+   * @param statsReportJson Les statistiques de structure du projet au format JSON
+   * @param apiKey La clé API pour les appels externes
    * @returns Le rapport architectural généré
    */
-  public async analyzeStructure(project: JabbarProject, fileTree: string, apiKey: string): Promise<ArchitecturalReport> {
-    // 1. Récupérer l'ancien rapport s'il existe
-    const existingBrick = await this.artefactService.findArtefactBrick(project, 'Architectural Report');
+  public async analyzeStructure(
+    project: JabbarProject, 
+    fileTree: string, 
+    statsReportJson: string,
+    apiKey: string
+  ): Promise<ArchitecturalReport> {
+    // 1. Essayer de lire un rapport précédent pour une analyse itérative
+    const existingBrick = await this.artefactService.findArtefactBrick(project, ARCHITECTURAL_REPORT_TYPE);
     let oldReport: ArchitecturalReport | undefined;
-    
     if (existingBrick) {
       oldReport = await this.artefactService.readArchitecturalReport(existingBrick);
     }
-
-    // 2. Lancer l'analyse en passant l'ancien rapport (sérialisé en JSON)
     const oldReportJson = oldReport ? JSON.stringify(oldReport) : undefined;
-    // @ts-ignore - Accès à une méthode privée pour l'orchestration
+    
+    // 2. Appeler le véritable analyseur pour obtenir le nouveau rapport
     const newReport = await this.structureAnalyzer.analyze(
-      project.projectRootPath, 
-      fileTree, 
-      apiKey, 
+      project.projectRootPath,
+      fileTree,
+      statsReportJson,
+      apiKey,
       oldReportJson
     );
 
-    // 3. Sauvegarder le nouvel artefact avec la nouvelle méthode
+    // 3. Persister le nouveau rapport dans une brique d'artefact
+    // upsertArchitecturalReportArtefact s'occupe de créer OU mettre à jour
+    // et de peupler à la fois les special_sections ET le files_scope
     await this.artefactService.upsertArchitecturalReportArtefact(project, newReport);
     
+    console.log('[AnalyzerService] Rapport architectural sauvegardé avec succès.');
     return newReport;
   }
 
-  // À l'avenir, on pourrait ajouter ici :
-  // - D'autres types d'analyse (qualité de code, sécurité, etc.)
-  // - Des méthodes pour gérer le cache des analyses
-  // - Des méthodes pour comparer différentes versions d'analyse(...) {}
+  // Les méthodes de façade restent correctes
+  public async findArtefactBrick(project: JabbarProject): Promise<BrickContext | undefined> {
+    return this.artefactService.findArtefactBrick(project, ARCHITECTURAL_REPORT_TYPE);
+  }
+
+  public async readArchitecturalReport(artefactBrick: BrickContext): Promise<ArchitecturalReport | undefined> {
+    return this.artefactService.readArchitecturalReport(artefactBrick);
+  }
 }

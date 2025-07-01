@@ -1,12 +1,15 @@
 // apps/vscode-extension/src/commands/createProject.command.ts
 import * as vscode from 'vscode';
-import { ProjectService, JabbarProjectOptions, JabbarProject } from '@jabbarroot/core';
+import * as path from 'path';
+import { ProjectService, JabbarProjectOptions, JabbarProject, SystemBrickManager } from '@jabbarroot/core';
 import { ProjectTreeDataProvider } from '../providers/projectTreeDataProvider'; // Pour rafraîchir
 import { getProjectRootPath } from '../utils/workspace'; // Pour proposer un chemin par défaut
 
 export function registerCreateProjectCommand(
     projectService: ProjectService,
-    treeDataProvider: ProjectTreeDataProvider
+    treeDataProvider: ProjectTreeDataProvider,
+    systemBrickManager: SystemBrickManager,
+    context: vscode.ExtensionContext
 ): vscode.Disposable {
     return vscode.commands.registerCommand('jabbarroot.createProject', async () => {
         const currentWorkspacePath = getProjectRootPath();
@@ -39,7 +42,39 @@ export function registerCreateProjectCommand(
         };
 
         try {
+            // 1. Créer le projet
             const newProject = await projectService.createProject(name.trim(), projectRootPath, defaultProjectOptions);
+            
+            // 2. Créer l'arborescence pour les briques système
+            const systemBricksPath = path.join(projectRootPath, '.jabbarroot', '.jabbarroot_data', 'system', 'bricks');
+            await vscode.workspace.fs.createDirectory(vscode.Uri.file(systemBricksPath));
+            
+            // 3. Copier le manifeste système
+            const manifestPath = path.join(context.extensionPath, '.jabbarroot', '.jabbarroot_data', 'system', 'bricks', 'manifest.json');
+            const targetManifestPath = path.join(systemBricksPath, 'manifest.json');
+            
+            try {
+                await vscode.workspace.fs.copy(
+                    vscode.Uri.file(manifestPath),
+                    vscode.Uri.file(targetManifestPath),
+                    { overwrite: true }
+                );
+            } catch (copyError) {
+                console.warn('Impossible de copier le manifeste système, utilisation du fichier par défaut:', copyError);
+                // Créer un manifeste par défaut si la copie échoue
+                const defaultManifest = {
+                    version: "1.0",
+                    bricks: []
+                };
+                await vscode.workspace.fs.writeFile(
+                    vscode.Uri.file(targetManifestPath),
+                    Buffer.from(JSON.stringify(defaultManifest, null, 2))
+                );
+            }
+            
+            // 4. Initialiser les briques système
+            await systemBrickManager.ensureSystemBricksExist(newProject);
+            
             vscode.window.showInformationMessage(`Projet jabbarroot "${newProject.name}" créé avec succès.`);
             treeDataProvider.refresh();
         } catch (error) {
