@@ -4,10 +4,13 @@ import { BrickContext, JabbarProject } from '../models/project.types';
 import { BrickCompilationReport, FileCompilationStats } from '../models/compilation.types';
 import { StructureGenerationOptions } from './structureGeneration.service';
 import { CompactionService } from './compaction.service';
-import { FileContentService } from './fileContent.service'; // On a besoin de lire les fichiers
+import { FileContentService } from './fileContent.service';
 import { BrickConstructorService } from './brickConstructor.service';
-import { encoding_for_model } from 'tiktoken';
 import * as path from 'path';
+
+// Configuration du chemin pour le cache de tiktoken
+process.env.TIKTOKEN_CACHE_DIR = path.join(__dirname, '..', '..', 'dist');
+import { encoding_for_model } from 'tiktoken';
 import { getMotivationMessage } from './statistics/statistics.formatter';
 import { CompactionInput } from './compaction/types';
 

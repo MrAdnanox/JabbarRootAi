@@ -1,9 +1,9 @@
-// packages/core/src/models/codex/bricks/analytics/ArchitecturalReport.schema.ts
+// packages/prompt-factory/src/schemas/ArchitecturalReport.schema.ts
 import { z } from 'zod';
 
 const KeyFileSchema = z.object({
   path: z.string().describe("Chemin exact du fichier depuis la racine du projet."),
-  justification: z.string().max(80).describe("Brève raison de la sélection de ce fichier."),
+  justification: z.string().describe("Brève raison de la sélection de ce fichier."),
   priority: z.number().int().min(1).max(5).describe("Priorité de 1 (le plus critique) à 5."),
   category: z.enum([
     "manifest", "entrypoint", "config", "docs", "core", "infra"
@@ -26,14 +26,14 @@ const MetricsSchema = z.object({
 });
 
 export const ArchitecturalReportSchema = z.object({
-  keyFiles: z.array(KeyFileSchema).min(4).max(8).describe("Liste des 4 à 8 fichiers les plus importants pour comprendre l'architecture."),
+  keyFiles: z.array(KeyFileSchema).min(4).describe("Liste des fichiers les plus importants pour comprendre l'architecture."),
   pattern: z.string().describe("Pattern architectural principal détecté (ex: 'Monorepo', 'MVC')."),
   stack: StackSchema,
   metrics: MetricsSchema,
   confidence: z.number().min(0).max(1).describe("Niveau de confiance de l'analyse, de 0.0 à 1.0."),
-  summary: z.string().max(150, "Le résumé ne doit pas dépasser 150 mots.").describe("Synthèse de l'architecture."),
-  insights: z.array(z.string()).max(3).describe("Les 3 décisions architecturales les plus importantes."),
-  risks: z.array(z.string()).max(2).describe("Les 2 risques ou préoccupations majeurs.")
+  summary: z.string().describe("Synthèse de l'architecture."),
+  insights: z.array(z.string()).describe("Décisions architecturales importantes."),
+  risks: z.array(z.string()).describe("Risques ou préoccupations majeurs.")
 });
 
 export type ArchitecturalReport = z.infer<typeof ArchitecturalReportSchema>;

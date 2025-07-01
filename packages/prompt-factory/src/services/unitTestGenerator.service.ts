@@ -1,24 +1,20 @@
-// apps/vscode-extension/src/services/unitTestGenerator.service.ts
-import * as vscode from 'vscode';
+// packages/prompt-factory/src/services/unitTestGenerator.service.ts
 import * as path from 'path';
+import * as vscode from 'vscode';
 import { 
-  ProjectService, 
   BrickService, 
-  JabbarProject,
-  FileContentService
+  FileContentService,
+  IFileSystem,
+  JabbarProject
 } from '@jabbarroot/core';
-import { GenericAgentExecutor } from '@jabbarroot/prompt-factory';
-import { VscodeFileSystemAdapter } from '../adapters/vscodeFileSystem.adapter';
+import { GenericAgentExecutor } from '../executors/GenericAgent.executor';
 
 export class UnitTestGeneratorService {
-  private fs: VscodeFileSystemAdapter;
-
   constructor(
     private readonly brickService: BrickService,
-    private readonly fileContentService: FileContentService
-  ) {
-    this.fs = new VscodeFileSystemAdapter();
-  }
+    private readonly fileContentService: FileContentService,
+    private readonly fs: IFileSystem
+  ) {}
 
   private async loadAgentPrompt(agentName: string, projectRoot: string): Promise<string> {
     const promptPath = path.join(projectRoot, '.jabbarroot', 'prompt-factory', 'agents', `${agentName}.agent.md`);
@@ -48,7 +44,7 @@ export class UnitTestGeneratorService {
     const allBricks = await this.brickService.getBricksByProjectId(project.id);
     
     // 3. Préparer le contexte avec le code source
-    const brickContextPromises = allBricks.map(async (brick) => {
+    const brickContextPromises = allBricks.map(async (brick: any) => {
       if (brick.files_scope.length === 0) {
         return `--- BRICK: ${brick.name} (Vide) ---`;
       }

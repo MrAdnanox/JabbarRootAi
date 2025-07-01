@@ -1,8 +1,33 @@
 // apps/vscode-extension/esbuild.mjs
 import esbuild from 'esbuild';
-import { pnpPlugin } from '@yarnpkg/esbuild-plugin-pnp'; // Important pour pnpm
+import { pnpPlugin } from '@yarnpkg/esbuild-plugin-pnp';
+import { copyFileSync, mkdirSync, existsSync } from 'fs';
+import { join, dirname } from 'path';
+import { fileURLToPath } from 'url';
 
+const __dirname = dirname(fileURLToPath(import.meta.url));
 const isWatch = process.argv.includes('--watch');
+
+// Copier le fichier WASM dans le dossier dist
+const copyWasmFile = () => {
+  try {
+    const wasmPath = join(__dirname, '..', '..', 'node_modules', 'tiktoken', 'tiktoken_bg.wasm');
+    const outDir = join(__dirname, 'dist');
+    const outPath = join(outDir, 'tiktoken_bg.wasm');
+    
+    if (!existsSync(outDir)) {
+      mkdirSync(outDir, { recursive: true });
+    }
+    
+    copyFileSync(wasmPath, outPath);
+    console.log('Fichier tiktoken_bg.wasm copié avec succès');
+  } catch (error) {
+    console.error('Erreur lors de la copie du fichier WASM:', error);
+  }
+};
+
+// Exécuter la copie du fichier WASM
+copyWasmFile();
 
 const context = await esbuild.context({
   entryPoints: ['src/extension.ts'],

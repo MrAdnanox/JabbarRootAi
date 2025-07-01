@@ -74,8 +74,10 @@ export interface BrickContextOptions {
     /** Sections spéciales existantes. (Ce champ semble être un vestige de ProgrammableContext, 
      *  sa pertinence ici est à évaluer. Pour l'instant, on le garde s'il est utilisé.) 
      *  Si non utilisé, envisager de le supprimer pour simplifier.
+     *  
+     *  Peut contenir soit une chaîne unique, soit un tableau de chaînes pour chaque section.
      */
-    special_sections?: Record<string, string[]>; // Rendu optionnel pour plus de flexibilité
+    special_sections?: Record<string, string | string[]>; // Rendu optionnel pour plus de flexibilité
 }
 
 /**

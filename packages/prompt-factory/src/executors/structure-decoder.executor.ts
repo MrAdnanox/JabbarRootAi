@@ -3,10 +3,11 @@ import { GoogleGenerativeAI, GenerationConfig } from '@google/generative-ai';
 import { ArchitecturalReport, ArchitecturalReportSchema } from '../schemas/ArchitecturalReport.schema';
 import { ZodError } from 'zod';
 
-// ... (BrickComplianceError reste identique)
 export class BrickComplianceError extends Error {
-  constructor(public readonly attempts: { error: string }[]) {
-    super(`The brick failed to produce a compliant output after ${attempts.length} attempts.`);
+  constructor(public readonly attempts: { attempt: number, prompt: string, rawResponse: string, error: string }[]) {
+    // AMÉLIORATION : Le message d'erreur inclut maintenant un résumé des tentatives.
+    const summary = attempts.map(a => `\n  Tentative ${a.attempt}: ${a.error}`).join('');
+    super(`La brique n'a pas pu produire une sortie conforme après ${attempts.length} tentatives.${summary}`);
     this.name = 'BrickComplianceError';
   }
 }
@@ -14,16 +15,29 @@ export class BrickComplianceError extends Error {
 export class StructureDecoderExecutor {
   private readonly MAX_ATTEMPTS = 3;
   private readonly genAI: GoogleGenerativeAI;
-  private readonly modelName: string = 'gemini-2.5-flash';
+  private readonly modelName: string = 'gemini-2.5-flash'; // Utilisation de la version 1.5-flash, plus courante
 
-  // LE CHANGEMENT CRUCIAL EST ICI
   constructor(
     apiKey: string,
-    private readonly systemPromptContent: string // Le prompt est maintenant injecté
+    private readonly systemPromptContent: string
   ) {
     if (!apiKey) throw new Error("API Key for Gemini is required.");
     if (!systemPromptContent) throw new Error("System prompt content is required.");
     this.genAI = new GoogleGenerativeAI(apiKey);
+  }
+
+  // NOUVELLE MÉTHODE DE BLINDAGE
+  private extractJson(rawText: string): string {
+    console.log('[Executor] Nettoyage de la réponse brute...');
+    // Cherche un bloc de code JSON ```json ... ```
+    const match = rawText.match(/```json\s*([\s\S]*?)\s*```/);
+    if (match && match[1]) {
+      console.log('[Executor] Bloc JSON trouvé et extrait.');
+      return match[1].trim();
+    }
+    // Si pas de bloc, on retourne le texte en espérant qu'il soit du JSON pur
+    console.log('[Executor] Aucun bloc JSON détecté, utilisation du texte brut.');
+    return rawText.trim();
   }
 
   public async execute(fileTree: string): Promise<ArchitecturalReport> {
@@ -37,37 +51,62 @@ export class StructureDecoderExecutor {
     });
 
     let lastError: ZodError | Error | null = null;
-    const errorHistory: { error: string }[] = [];
+    const errorHistory: { attempt: number, prompt: string, rawResponse: string, error: string }[] = [];
 
     for (let attempt = 1; attempt <= this.MAX_ATTEMPTS; attempt++) {
       const userPrompt = this.buildUserPrompt(fileTree, lastError);
-      
-      // Le prompt système est maintenant la propriété de la classe
       const fullPrompt = `${this.systemPromptContent}\n\n${userPrompt}`;
+      let rawJsonText = ''; // Pour le logging
+
+      // INSTRUMENTATION : Log du prompt envoyé
+      console.log(`\n--- [Executor] Tentative ${attempt} : Envoi du Prompt ---`);
+      console.log(fullPrompt);
+      console.log(`--- Fin du Prompt ---`);
 
       try {
         const result = await model.generateContent(fullPrompt);
         const response = await result.response;
-        const rawJsonText = response.text();
-        const jsonData = JSON.parse(rawJsonText);
+        rawJsonText = response.text();
+
+        // INSTRUMENTATION : Log de la réponse BRUTE reçue
+        console.log(`\n--- [Executor] Tentative ${attempt} : Réponse Brute Reçue ---`);
+        console.log(rawJsonText);
+        console.log(`--- Fin de la Réponse Brute ---`);
+
+        // BLINDAGE : Nettoyage de la réponse
+        const cleanedJsonText = this.extractJson(rawJsonText);
+        
+        const jsonData = JSON.parse(cleanedJsonText);
         const validationResult = ArchitecturalReportSchema.safeParse(jsonData);
 
         if (validationResult.success) {
+          console.log(`[Executor] Tentative ${attempt} réussie !`);
           return validationResult.data;
         } else {
           lastError = validationResult.error;
-          errorHistory.push({ error: `Attempt ${attempt}: Zod validation failed. Details: ${validationResult.error.message}` });
+          const errorMsg = `Échec de la validation Zod: ${validationResult.error.message}`;
+          errorHistory.push({ 
+            attempt, 
+            prompt: fullPrompt, 
+            rawResponse: rawJsonText, 
+            error: errorMsg 
+          });
         }
       } catch (e) {
-        lastError = e instanceof Error ? e : new Error('Unknown API or parsing error');
-        errorHistory.push({ error: `Attempt ${attempt}: ${lastError.message}` });
+        lastError = e instanceof Error ? e : new Error('Erreur inconnue');
+        const errorMsg = `Erreur de parsing JSON ou de l'API: ${lastError.message}`;
+        errorHistory.push({ 
+          attempt, 
+          prompt: fullPrompt, 
+          rawResponse: rawJsonText, 
+          error: errorMsg 
+        });
       }
     }
 
     throw new BrickComplianceError(errorHistory);
   }
 
-  // ... (buildUserPrompt reste identique)
   private buildUserPrompt(fileTree: string, error: ZodError | Error | null): string {
     let prompt = `Analyze the following file tree and produce the JSON architectural report.\n\n--- PROJECT TREE ---\n${fileTree}`;
     if (error) {

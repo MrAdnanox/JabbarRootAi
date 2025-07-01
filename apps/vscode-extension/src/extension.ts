@@ -27,7 +27,13 @@ import { registerEditProjectOptionsCommand } from './commands/editProjectOptions
 import { registerCompileProjectCommand } from './commands/compileProject.command';
 import { registerGenerateReadmeCommand } from './commands/doc/generateReadme.command';
 import { registerGenerateTestsCommand } from './commands/test/generateTests.command';
-import { DocumentationService, UnitTestGeneratorService } from './services';
+import { registerStructureAnalyzerCommand } from './commands/brick/structureAnalyzer.command';
+// Import des services depuis le Cœur Cognitif
+import { 
+  AnalyzerService,
+  DocumentationService,
+  UnitTestGeneratorService 
+} from '@jabbarroot/prompt-factory';
 
 
 // Fonction utilitaire de log
@@ -74,11 +80,26 @@ export async function activate(context: vscode.ExtensionContext) {
         // Initialisation des services spécifiques à VSCode
         const ignoreService = new IgnoreService(fileSystemAdapter);
         
-        // Initialisation du service de documentation
-        const documentationService = new DocumentationService(projectService, brickService, statisticsService, ignoreService, fileContentService);
+        // Initialisation des services du Cœur Cognitif
+        const documentationService = new DocumentationService(
+          brickService,
+          fileContentService,
+          fileSystemAdapter // Injection de l'adaptateur VSCode
+        );
         
         // Initialisation du service de génération de tests unitaires
-        const unitTestGeneratorService = new UnitTestGeneratorService(brickService, fileContentService);
+        const unitTestGeneratorService = new UnitTestGeneratorService(
+          brickService, 
+          fileContentService,
+          fileSystemAdapter // Injection de l'adaptateur VSCode
+        );
+        
+        // Initialisation de l'analyseur de structure
+        const analyzerService = new AnalyzerService(
+          fileSystemAdapter,
+          projectService,
+          brickService
+        );
 
         // Initialisation de la vue hiérarchique
         const projectTreeProvider = new ProjectTreeDataProvider(projectService, brickService, context.globalState);
@@ -129,6 +150,14 @@ export async function activate(context: vscode.ExtensionContext) {
         const editProjectOptionsCommand = registerEditProjectOptionsCommand(context, projectService);
 
         const compileProjectCommand = registerCompileProjectCommand(projectService, brickService, statisticsService, ignoreService);
+        
+        // Enregistrement de la commande d'analyse de structure
+        const structureAnalyzerCommand = registerStructureAnalyzerCommand(
+          analyzerService,
+          structureGenerationService,
+          ignoreService,
+          projectService // Injection du service de projet
+        );
 
         const compileBrickCommand = registerCompileBrickCommand(brickConstructorService, statisticsService, projectService, ignoreService, projectTreeProvider);
         
@@ -170,33 +199,36 @@ export async function activate(context: vscode.ExtensionContext) {
 
         // Enregistrement des abonnements
         log('Enregistrement des abonnements...');
-        const subscriptions = [
-            refreshProjectViewCommand,
+        context.subscriptions.push(
+            treeView,
             createProjectCommand,
             createBrickCommand,
             removeFileFromBrickCommand,
             removeSingleFileFromBrickCommand,
             addPathToBrickCommand,
+            activateBrickCommand,
+            deactivateBrickCommand,
+            compileBrickCommand,
+            setAsDefaultTargetBrickCommand,
+            addSelectionToActiveBrickCommand,
             editBrickOptionsCommand,
             deleteBrickCommand,
             deleteProjectCommand,
             editProjectOptionsCommand,
             compileProjectCommand,
-            compileBrickCommand,
+            refreshProjectViewCommand,
             generateReadmeCommand,
             generateTestsCommand,
-            activateBrickCommand,
-            deactivateBrickCommand,
-            setAsDefaultTargetBrickCommand,
-            addSelectionToActiveBrickCommand,
-            vscode.workspace.onDidChangeWorkspaceFolders(() => projectTreeProvider.refresh()),
-            vscode.workspace.onDidSaveTextDocument(() => projectTreeProvider.refresh())
-        ];
+            structureAnalyzerCommand
+        );
 
         // Ajout de tous les abonnements au contexte
         log('Ajout des abonnements au contexte...');
-        context.subscriptions.push(...subscriptions);
-        log(`Extension activée avec succès. ${subscriptions.length} abonnements enregistrés.`);
+        context.subscriptions.push(
+            vscode.workspace.onDidChangeWorkspaceFolders(() => projectTreeProvider.refresh()),
+            vscode.workspace.onDidSaveTextDocument(() => projectTreeProvider.refresh())
+        );
+        log(`Extension activée avec succès. ${context.subscriptions.length} abonnements enregistrés.`);
         
         // Notification de fin d'initialisation
         const successMsg = 'JabbarRoot: Extension activée avec succès !';

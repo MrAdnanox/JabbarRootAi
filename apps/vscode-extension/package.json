@@ -43,6 +43,12 @@
         "icon": "$(test)"
       },
       {
+        "command": "jabbarroot.brick.structureAnalyzer",
+        "title": "JabbarAnalyzer: Analyser la structure du projet",
+        "category": "jabbarroot",
+        "icon": "$(graph)"
+      },
+      {
         "command": "jabbarroot.doc.generateReadme",
         "title": "JabbarDoc: Générer le README du projet",
         "category": "jabbarroot",
