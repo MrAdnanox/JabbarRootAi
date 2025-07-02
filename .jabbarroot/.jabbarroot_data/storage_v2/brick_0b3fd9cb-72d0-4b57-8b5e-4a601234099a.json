@@ -17,7 +17,11 @@
     "apps/vscode-extension/src/commands/editProjectOptions.command.ts",
     "apps/vscode-extension/src/commands/removeFileFromBrick.command.ts",
     "apps/vscode-extension/src/commands/removeSingleFileFromBrick.command.ts",
-    "apps/vscode-extension/src/commands/setAsDefaultTargetBrick.command.ts"
+    "apps/vscode-extension/src/commands/setAsDefaultTargetBrick.command.ts",
+    "packages/types/src/index.ts",
+    "packages/types/src/interfaces/IConfiguration.ts",
+    "packages/types/src/interfaces/IFileSystem.ts",
+    "packages/types/src/interfaces/IStorage.ts"
   ],
   "options": {
     "special_sections": {},
@@ -25,9 +29,9 @@
     "compilationIncludeProjectTree": false
   },
   "isActiveForProjectCompilation": true,
-  "isDefaultTarget": true,
+  "isDefaultTarget": false,
   "metadata": {
     "createdAt": "2025-07-01T17:46:18.426Z",
-    "updatedAt": "2025-07-01T17:47:31.320Z"
+    "updatedAt": "2025-07-02T02:06:42.915Z"
   }
 }

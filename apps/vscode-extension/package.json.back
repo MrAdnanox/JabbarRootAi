@@ -37,6 +37,23 @@
     },
     "commands": [
       {
+        "command": "jabbarroot.runAgent",
+        "title": "JabbarRoot: Exécuter un Agent Cognitif...",
+        "category": "jabbarroot"
+      },
+      {
+        "command": "jabbarroot.test.generateTests",
+        "title": "JabbarTest: Générer les tests unitaires",
+        "category": "jabbarroot",
+        "icon": "$(test)"
+      },
+      {
+        "command": "jabbarroot.brick.structureAnalyzer",
+        "title": "JabbarAnalyzer: Analyser la structure du projet",
+        "category": "jabbarroot",
+        "icon": "$(graph)"
+      },
+      {
         "command": "jabbarroot.doc.generateReadme",
         "title": "JabbarDoc: Générer le README du projet",
         "category": "jabbarroot",
@@ -169,7 +186,7 @@
       "view/item/context": [
         {
           "command": "jabbarroot.createBrickInProject",
-          "when": "view == jabbarroot.contextView && viewItem == jabbarrootProject",
+          "when": "view == jabbarroot.contextView && (viewItem == jabbarrootProject || viewItem == jabbarrootGroup)",
           "group": "inline"
         },
         {
@@ -244,6 +261,11 @@
     "configuration": {
       "title": "jabbarroot",
       "properties": {
+        "jabbarroot.gemini.apiKey": { 
+          "type": "string",
+          "default": null,
+          "description": "Your Google Gemini API key for AI features."
+        },
         "jabbarroot.compilation.includeProjectTree": {
           "type": "boolean",
           "default": true,
@@ -289,32 +311,33 @@
     "onStartupFinished"
   ],
   "scripts": {
-    "vscode:prepublish": "npm run package",
-    "build": "webpack --mode development",
-    "package": "webpack --mode production",
-    "watch": "webpack --watch",
-    "pretest": "npm run build",
+    "vscode:prepublish": "node ./esbuild.mjs",
+    "build": "node ./esbuild.mjs",
+    "package": "node ./esbuild.mjs", 
+    "watch": "node ./esbuild.mjs --watch",
+    "pretest": "pnpm run build",
     "test": "vscode-test"
   },
   "dependencies": {
-    "@jabbarroot/types": "workspace:^",
+    "@jabbarroot/core": "workspace:*",
+    "@jabbarroot/prompt-factory": "workspace:*",
+    "@jabbarroot/types": "workspace:*",
+    "@jridgewell/trace-mapping": "^0.3.26",
     "minimatch": "^10.0.3"
   },
   "devDependencies": {
     "@types/minimatch": "^5.1.2",
     "@types/mocha": "^10.0.10",
-    "@types/node": "^20.19.1",
+    "@types/node": "^20.19.2",
     "@types/sinon": "^17.0.4",
     "@types/vscode": "^1.70.0",
     "@vscode/test-cli": "^0.0.10",
     "@vscode/test-electron": "^2.5.2",
+    "@yarnpkg/esbuild-plugin-pnp": "3.0.0-rc.15",
     "chai": "^5.2.0",
-    "copy-webpack-plugin": "^13.0.0",
+    "esbuild": "^0.25.5",
     "sinon": "^21.0.0",
-    "ts-loader": "^9.5.2",
     "tsd": "^0.7.4",
-    "webpack": "^5.99.7",
-    "webpack-cli": "^6.0.1",
     "xo": "^0.24.0"
   }
 }

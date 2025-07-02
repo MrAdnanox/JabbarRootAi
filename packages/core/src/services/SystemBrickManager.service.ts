@@ -1,27 +1,18 @@
-// packages/core/src/services/SystemBrickManager.service.ts
 import * as path from 'path';
 import { BrickService } from './brick.service';
 import { IFileSystem } from '@jabbarroot/types';
 import { ProjectService } from './project.service';
-import { JabbarProject, BrickContext } from '../models/project.types';
+import { JabbarProject, BrickContext, BrickContextOptions } from '../models/project.types';
 
 export class SystemBrickManager {
   constructor(
     private readonly brickService: BrickService,
-    private readonly fs: IFileSystem,
-    private readonly projectService: ProjectService
+    private readonly projectService: ProjectService,
+    private readonly fs: IFileSystem
   ) {}
 
   private getManifestPath(projectRootPath: string): string {
-    // Le chemin est maintenant plus spécifique et robuste.
-    return path.join(
-      projectRootPath,
-      '.jabbarroot',
-      '.jabbarroot_data',
-      'system',
-      'bricks',
-      'manifest.json'
-    );
+    return path.join(projectRootPath, '.jabbarroot', '.jabbarroot_data', 'system', 'bricks', 'manifest.json');
   }
 
   public async ensureSystemBricksExist(project: JabbarProject): Promise<void> {
@@ -31,50 +22,53 @@ export class SystemBrickManager {
       const manifestContent = await this.fs.readFile(manifestPath);
       manifest = JSON.parse(manifestContent);
     } catch (error) {
-      console.error(`[SystemBrickManager] Manifeste introuvable ou invalide à ${manifestPath}.`, error);
-      // On pourrait ici copier un manifest par défaut depuis l'extension si non trouvé.
+      console.warn(`[SystemBrickManager] Manifeste introuvable ou invalide à ${manifestPath}. Aucune brique système ne sera créée.`);
       return; 
     }
 
+    if (!manifest || !manifest.bricks || !Array.isArray(manifest.bricks)) {
+        console.warn(`[SystemBrickManager] Le format du manifeste est invalide.`);
+        return;
+    }
+
+    // On récupère les briques une seule fois pour optimiser
     const existingBricks = await this.brickService.getBricksByProjectId(project.id);
     const existingBrickNames = new Set(existingBricks.map(b => b.name));
 
     for (const brickDef of manifest.bricks) {
       if (!existingBrickNames.has(brickDef.name)) {
         console.log(`[SystemBrickManager] La brique système "${brickDef.name}" est manquante. Création...`);
+        
         const newBrick = await this.brickService.createBrick(
           project.id,
           brickDef.name,
           brickDef.options || {},
-          false // Les briques système ne sont pas actives pour la compilation par défaut
+          false // Les briques système sont inactives par défaut
         );
         
-        // Peuple le scope avec les fichiers par défaut, SI le chemin existe.
-        const filesToAdd = [];
-        if (brickDef.default_files_scope) {
-          for (const filePath of brickDef.default_files_scope) {
-            const absolutePath = path.join(project.projectRootPath, filePath);
-            // On vérifie si le fichier existe avant de l'ajouter
-            try {
-              // Une lecture rapide est un bon moyen de vérifier l'existence
-              // Note: fs.exists est déprécié, on utilise une lecture dans un try/catch
-              await this.fs.readFile(absolutePath); 
-              filesToAdd.push(filePath);
-            } catch (e) {
-              // Le fichier n'existe pas, on ne l'ajoute pas.
-            }
-          }
-        }
-        
-        if (filesToAdd.length > 0) {
-            await this.brickService.addPathsToBrick(newBrick.id, filesToAdd);
-        }
-
         await this.projectService.addBrickIdToProject(project.id, newBrick.id);
+        
+        // On peuple le scope avec les fichiers par défaut, en vérifiant leur existence
+        if (brickDef.default_files_scope && Array.isArray(brickDef.default_files_scope)) {
+            const filesToAdd: string[] = [];
+            for (const filePath of brickDef.default_files_scope) {
+                const absolutePath = path.join(project.projectRootPath, filePath);
+                try {
+                    // Utiliser l'abstraction IFileSystem pour vérifier l'existence
+                    await this.fs.readFile(absolutePath);
+                    filesToAdd.push(filePath);
+                } catch (e) {
+                    console.log(`[SystemBrickManager] Fichier par défaut "${filePath}" non trouvé, il ne sera pas ajouté à la brique "${brickDef.name}".`);
+                }
+            }
+            if (filesToAdd.length > 0) {
+                await this.brickService.addPathsToBrick(newBrick.id, filesToAdd);
+            }
+        }
+        console.log(`[SystemBrickManager] Brique "${brickDef.name}" créée avec succès.`);
       }
     }
   }
-
   /**
    * Trouve une brique système spécifique par son nom pour un projet donné.
    * @param project Le projet dans lequel chercher.

@@ -37,6 +37,11 @@
     },
     "commands": [
       {
+        "command": "jabbarroot.runAgent",
+        "title": "JabbarRoot: Exécuter un Agent Cognitif...",
+        "category": "jabbarroot"
+      },
+      {
         "command": "jabbarroot.test.generateTests",
         "title": "JabbarTest: Générer les tests unitaires",
         "category": "jabbarroot",
@@ -256,6 +261,11 @@
     "configuration": {
       "title": "jabbarroot",
       "properties": {
+        "jabbarroot.gemini.apiKey": { 
+          "type": "string",
+          "default": null,
+          "description": "Your Google Gemini API key for AI features."
+        },
         "jabbarroot.compilation.includeProjectTree": {
           "type": "boolean",
           "default": true,

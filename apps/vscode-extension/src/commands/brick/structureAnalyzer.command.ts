@@ -1,17 +1,13 @@
-// FICHIER À REMPLACER: apps/vscode-extension/src/commands/brick/structureAnalyzer.command.ts
+// apps/vscode-extension/src/commands/brick/structureAnalyzer.command.ts
 
 import * as vscode from 'vscode';
 import { AnalyzerService } from '@jabbarroot/prompt-factory';
-import { getProjectRootPath } from '../../utils/workspace';
 import { 
   StructureGenerationService, 
   ProjectService, 
-  JabbarProject, 
-  StatisticsService 
+  JabbarProject
 } from '@jabbarroot/core';
 import { IgnoreService } from '../../services/ignore.service';
-import * as path from 'path';
-import * as fs from 'fs';
 
 function getApiKey(): string | undefined {
   return vscode.workspace.getConfiguration('jabbarroot').get<string>('gemini.apiKey');
@@ -33,12 +29,12 @@ async function selectProject(projectService: ProjectService): Promise<JabbarProj
   return picked?.project;
 }
 
+// L'ordre des dépendances est crucial et doit correspondre à celui dans extension.ts
 export function registerStructureAnalyzerCommand(
   analyzerService: AnalyzerService,
   structureService: StructureGenerationService,
   ignoreService: IgnoreService,
-  projectService: ProjectService,
-  statisticsService: StatisticsService
+  projectService: ProjectService
 ): vscode.Disposable {
   return vscode.commands.registerCommand('jabbarroot.brick.structureAnalyzer', async () => {
     const apiKey = getApiKey();
@@ -47,7 +43,6 @@ export function registerStructureAnalyzerCommand(
       return;
     }
 
-    // CORRECTION : On sélectionne un projet utilisateur, on ne crée plus de projet temporaire.
     const project = await selectProject(projectService);
     if (!project) {
       return;
@@ -61,51 +56,39 @@ export function registerStructureAnalyzerCommand(
       try {
         progress.report({ message: 'Préparation des règles d\'ignorance...' });
         const shouldIgnore = await ignoreService.createIgnorePredicate(project);
-
-        // ÉTAPE 1 : Calculer les statistiques de structure
-        progress.report({ message: 'Calcul des statistiques de structure...' });
-        const statsReport = await statisticsService.generateStructureStats(
-          project.projectRootPath, 
-          shouldIgnore
-        );
         
-        // Sauvegarder le rapport de statistiques
-        const statsDir = path.join(project.projectRootPath, '.jabbarroot_data', 'reports');
-        await fs.promises.mkdir(statsDir, { recursive: true });
-        const statsFilePath = path.join(statsDir, 'structure-stats.json');
-        await fs.promises.writeFile(
-          statsFilePath, 
-          JSON.stringify(statsReport, null, 2),
-          'utf-8'
-        );
-
+        // La commande ne fait que générer l'arborescence.
+        // Le calcul des stats et la persistance sont délégués aux services du Cœur Cognitif.
         progress.report({ message: 'Génération de l\'arborescence du projet...' });
         const treeReport = await structureService.generate(project.projectRootPath, {
-          maxDepth: 8,
+          maxDepth: 8, // Cette valeur pourrait venir des options du projet
           shouldIgnore: shouldIgnore
         });
         const fileTree = treeReport?.tree || '';
 
         progress.report({ message: 'Invocation de l\'analyseur...' });
-        // On passe le projet, l'arborescence, les statistiques et la clé API à l'analyseur
-        const report = await analyzerService.analyzeStructure(
+        
+        // On appelle la méthode d'orchestration principale.
+        // La sauvegarde des stats est maintenant une responsabilité interne du service.
+        const finalReport = await analyzerService.analyzeStructureAndPersist(
           project, 
           fileTree, 
-          JSON.stringify(statsReport, null, 2),
           apiKey
         );
+        
+        console.log('[StructureAnalyzerCommand] Analyse de structure et persistance terminées avec succès.');
 
         progress.report({ message: 'Affichage du rapport JSON...' });
-        const reportContent = JSON.stringify(report, null, 2);
+        const reportContent = JSON.stringify(finalReport, null, 2);
         const document = await vscode.workspace.openTextDocument({ content: reportContent, language: 'json' });
         await vscode.window.showTextDocument(document, { preview: false });
         
-        // Rafraîchir la vue pour afficher les nouveaux artefacts
         await vscode.commands.executeCommand('jabbarroot.refreshProjectView');
 
         vscode.window.showInformationMessage('Analyse de structure terminée et mémorisée !');
       } catch (error) {
         const errorMessage = error instanceof Error ? error.message : String(error);
+        console.error(`Erreur de l'analyseur: ${errorMessage}`, error);
         vscode.window.showErrorMessage(`Erreur de l'analyseur: ${errorMessage}`);
       }
     });
