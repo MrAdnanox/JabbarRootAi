@@ -11,12 +11,19 @@
 		"type": "extensionHost",
 		"request": "launch",
 		"args": [
-			"--extensionDevelopmentPath=${workspaceFolder}/apps/vscode-extension"
+			"--extensionDevelopmentPath=${workspaceFolder}/apps/vscode-extension",
+			"--disable-extensions"
 		],
 		"outFiles": [
-			"${workspaceFolder}/apps/vscode-extension/dist/**/*.js"
+			"${workspaceFolder}/apps/vscode-extension/dist/extension.js"
 		],
-		"preLaunchTask": "pnpm: build"
+		"preLaunchTask": "pnpm: build",
+		"internalConsoleOptions": "openOnSessionStart",
+		"skipFiles": [
+			"<node_internals>/**"
+		],
+		"sourceMaps": true,
+		"trace": true
 	  }
 	]
 }

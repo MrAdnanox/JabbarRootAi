@@ -6,8 +6,8 @@ import {
     JabbarProjectOptions,
     CompressionLevel
 } from '../models/project.types';
-// Définition de l'interface ICompactionService localement pour éviter les problèmes d'import
-export interface ICompactionService {
+// Définition de l'interface CompactionService localement pour éviter les problèmes d'import
+export interface CompactionService {
     compact(text: string, level: CompressionLevel, filePath: string): Promise<string>;
 }
 import {
@@ -21,7 +21,7 @@ export class BrickConstructorService {
     constructor(
         private readonly structureGenerationService: StructureGenerationService,
         private readonly fileContentService: FileContentService,
-        private readonly compactionService: ICompactionService
+        private readonly compactionService: CompactionService
     ) {}
 
     // Méthode pour résoudre les options de type CompressionLevel

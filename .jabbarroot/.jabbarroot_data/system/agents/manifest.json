@@ -1,0 +1,36 @@
+{
+    "version": "1.0",
+    "agents": [
+      {
+        "id": "agent.doc.readmeScribe",
+        "commandId": "jabbarroot.agent.execute.readmeScribe",
+        "label": "JabbarScribe: Générer le README du projet",
+        "description": "Synthétise un README.md complet à partir des artefacts du projet.",
+        "promptFile": "doc/ReadmeGenerator.prompt.md",
+        "inputSources": [
+          { "type": "artefact", "name": "[ARTEFACT] Architectural Report" },
+          { "type": "memory", "name": "[MEMORY] Documentation" }
+        ],
+        "output": {
+          "type": "file",
+          "target": "README.md",
+          "language": "markdown"
+        }
+      },
+      {
+        "id": "agent.doc.architectureSynthesizer",
+        "commandId": "jabbarroot.agent.execute.architectureSynthesizer",
+        "label": "JabbarCartographe: Générer le document d'architecture",
+        "description": "Transforme le rapport JSON en un document d'architecture lisible.",
+        "promptFile": "doc/ArchitectureSynthesizer.prompt.md",
+        "inputSources": [
+          { "type": "artefact", "name": "[ARTEFACT] Architectural Report" }
+        ],
+        "output": {
+          "type": "file",
+          "target": "docs/ARCHITECTURE.md",
+          "language": "markdown"
+        }
+      }
+    ]
+  }

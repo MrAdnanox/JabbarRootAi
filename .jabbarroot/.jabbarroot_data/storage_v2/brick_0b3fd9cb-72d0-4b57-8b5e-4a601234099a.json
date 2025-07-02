@@ -1,0 +1,37 @@
+{
+  "id": "0b3fd9cb-72d0-4b57-8b5e-4a601234099a",
+  "projectId": "2eb6f4dd-67c1-48f8-be7c-c9d266c20897",
+  "name": "commandes",
+  "files_scope": [
+    "apps/vscode-extension/src/commands/activateBrick.command.ts",
+    "apps/vscode-extension/src/commands/addPathToBrick.command.ts",
+    "apps/vscode-extension/src/commands/addSelectionToActiveBrick.command.ts",
+    "apps/vscode-extension/src/commands/compileBrick.command.ts",
+    "apps/vscode-extension/src/commands/compileProject.command.ts",
+    "apps/vscode-extension/src/commands/createBrick.command.ts",
+    "apps/vscode-extension/src/commands/createProject.command.ts",
+    "apps/vscode-extension/src/commands/deactivateBrick.command.ts",
+    "apps/vscode-extension/src/commands/deleteBrick.command.ts",
+    "apps/vscode-extension/src/commands/deleteProject.command.ts",
+    "apps/vscode-extension/src/commands/editBrickOptions.command.ts",
+    "apps/vscode-extension/src/commands/editProjectOptions.command.ts",
+    "apps/vscode-extension/src/commands/removeFileFromBrick.command.ts",
+    "apps/vscode-extension/src/commands/removeSingleFileFromBrick.command.ts",
+    "apps/vscode-extension/src/commands/setAsDefaultTargetBrick.command.ts",
+    "packages/types/src/index.ts",
+    "packages/types/src/interfaces/IConfiguration.ts",
+    "packages/types/src/interfaces/IFileSystem.ts",
+    "packages/types/src/interfaces/IStorage.ts"
+  ],
+  "options": {
+    "special_sections": {},
+    "compilationCompressionLevel": "extreme",
+    "compilationIncludeProjectTree": false
+  },
+  "isActiveForProjectCompilation": true,
+  "isDefaultTarget": false,
+  "metadata": {
+    "createdAt": "2025-07-01T17:46:18.426Z",
+    "updatedAt": "2025-07-02T02:06:42.915Z"
+  }
+}

@@ -13,10 +13,25 @@ export * from './models/compilation.types';
 
 // --- Services ---
 // Export sélectif pour éviter les conflits
-export { CompactionService, type ICompactionService } from './services/compaction.service';
-export { FileContentService } from './services/fileContent.service';
-export { StructureGenerationService, type StructureGenerationOptions } from './services/structureGeneration.service';
-export { BrickConstructorService } from './services/brickConstructor.service';
-export { StatisticsService } from './services/statistics.service';
-export { ProjectService } from './services/project.service';
-export { BrickService } from './services/brick.service';
+import { CompactionService } from './services/compaction.service';
+import { FileContentService } from './services/fileContent.service';
+import { StructureGenerationService, type StructureGenerationOptions } from './services/structureGeneration.service';
+import { BrickConstructorService } from './services/brickConstructor.service';
+import { StatisticsService } from './services/statistics.service';
+import { ProjectService } from './services/project.service';
+import { BrickService } from './services/brick.service';
+import { SystemBrickManager } from './services/SystemBrickManager.service';
+export { CompactionService };
+export { FileContentService };
+export { StructureGenerationService, type StructureGenerationOptions };
+export { BrickConstructorService };
+export { StatisticsService };
+export { ProjectService };
+export { BrickService };
+export { SystemBrickManager };
+export { CompactionInput, ICompactor } from './services/compaction/types';
+export { CompressionLevel } from './models/project.types';
+export { BrickContext, JabbarProject } from './models/project.types';
+export { BrickCompilationReport } from './models/compilation.types';
+export { FileCompilationStats } from './models/compilation.types';
+export { GenerationReport } from './services/structureGeneration.service';      

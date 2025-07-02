@@ -2,7 +2,7 @@
 
 import { IFileSystem } from '@jabbarroot/types';
 import * as path from 'path';
-import type { ICompactionService } from './compaction.service';
+import type { CompactionService } from './compaction.service';
 import type { CompressionLevel } from '../models/project.types';
 
 /**
@@ -12,7 +12,7 @@ import type { CompressionLevel } from '../models/project.types';
 export class FileContentService {
     constructor(
         private readonly fs: IFileSystem,
-        private readonly compactionService: ICompactionService
+        private readonly compactionService: CompactionService
     ) {
         if (!fs) {
             throw new Error('FileSystem instance is required');
@@ -50,8 +50,8 @@ export class FileContentService {
             
             try {
                 let content = await this.fs.readFile(absoluteFilePathToRead);
-                content = await this.compactionService.compact(content, compressionLevel, relativeFilePath);
-                contentParts.push(`---FILE:${relativeFilePath}---\n${content}`);
+                const compactedContent = await this.compactionService.compact(content, compressionLevel, relativeFilePath);
+                contentParts.push(`---FILE:${relativeFilePath}---\n${compactedContent}`);
             } catch (error) {
                 const errorMessage = error instanceof Error ? error.message : String(error);
                 contentParts.push(`---ERROR READING FILE:${relativeFilePath}---\n${errorMessage}`);

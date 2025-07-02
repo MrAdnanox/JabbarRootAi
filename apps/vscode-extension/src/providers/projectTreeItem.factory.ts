@@ -3,7 +3,7 @@ import * as vscode from 'vscode';
 import { JabbarProject, BrickContext, BrickContextOptions, JabbarProjectOptions } from '@jabbarroot/core'; // Importer les types du core
 
 // Exportation groupée pour plus de propreté à l'import
-export type ProjectViewTreeItem = ProjectTreeItem | BrickTreeItem | InfoTreeItem | StatTreeItem;
+export type ProjectViewTreeItem = ProjectTreeItem | BrickTreeItem | InfoTreeItem | StatTreeItem | GroupTreeItem;
 
 export class ProjectTreeItem extends vscode.TreeItem {
     public readonly contextValue = 'jabbarrootProject'; // Pour les menus contextuels
@@ -16,6 +16,39 @@ export class ProjectTreeItem extends vscode.TreeItem {
         this.tooltip = `Projet: ${project.name}\nChemin: ${project.projectRootPath}\nBriques: ${project.brickContextIds.length}`;
         // TODO: Choisir une icône pour les projets (ex: 'project', 'server-environment')
         this.iconPath = new vscode.ThemeIcon('symbol-folder'); // Placeholder
+    }
+}
+
+/**
+ * Représente un groupe d'éléments dans l'arborescence (ex: "Briques Utilisateur", "JabbarRoot Système")
+ */
+export class GroupTreeItem extends vscode.TreeItem {
+    public readonly children: (BrickTreeItem | InfoTreeItem)[];
+
+    constructor(
+        public readonly label: string,
+        children: (BrickTreeItem | InfoTreeItem)[] = []
+    ) {
+        super(label, vscode.TreeItemCollapsibleState.Expanded);
+        this.children = children;
+        this.tooltip = `Groupe: ${label}\n${children.length} élément(s)`;
+        
+        // Définition du contextValue en fonction du label du groupe
+        if (label === "Briques Utilisateur") {
+            this.contextValue = 'jabbarrootUserBrickGroup';
+        } else if (label === "JabbarRoot Système") {
+            this.contextValue = 'jabbarrootSystemBrickGroup';
+        } else {
+            this.contextValue = 'jabbarrootGroup';
+        }
+        
+        // Utilisation d'une icône de dossier ou de collection selon le contexte
+        this.iconPath = new vscode.ThemeIcon('folder');
+        
+        // Pour les groupes vides, on ne les rend pas dépliables
+        if (children.length === 0) {
+            this.collapsibleState = vscode.TreeItemCollapsibleState.None;
+        }
     }
 }
 

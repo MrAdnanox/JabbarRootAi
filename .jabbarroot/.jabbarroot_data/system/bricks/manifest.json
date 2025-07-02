@@ -1,0 +1,27 @@
+{
+    "version": "1.0",
+    "bricks": [
+      {
+        "name": "[MEMORY] Documentation",
+        "description": "Index des documents clés du projet (vision, architecture, etc.).",
+        "default_files_scope": [
+          "README.md",
+          "docs/VISION.md",
+          "docs/MISSION_ROADMAP.md",
+          "docs/ARCHITECTURE.md",
+          "docs/TODO.md"
+        ],
+        "options": {
+          "compilationIncludeProjectTree": false
+        }
+      },
+      {
+        "name": "[ARTEFACT] Architectural Report",
+        "description": "Rapport JSON généré par l'IA sur la structure du projet.",
+        "default_files_scope": [],
+        "options": {
+          "compilationIncludeProjectTree": false
+        }
+      }
+    ]
+}

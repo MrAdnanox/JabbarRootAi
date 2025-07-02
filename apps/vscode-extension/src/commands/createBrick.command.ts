@@ -1,22 +1,31 @@
 // apps/vscode-extension/src/commands/createBrick.command.ts
 import * as vscode from 'vscode';
-import { ProjectService, BrickService, BrickContextOptions, BrickContext, JabbarProject } from '@jabbarroot/core';
+import { ProjectService, BrickService, BrickContextOptions, JabbarProject } from '@jabbarroot/core';
 import { ProjectTreeDataProvider } from '../providers/projectTreeDataProvider';
-import { ProjectTreeItem } from '../providers/projectTreeItem.factory'; // Pour le type de l'argument
+import { ProjectTreeItem, GroupTreeItem, BrickTreeItem } from '../providers/projectTreeItem.factory';
 
 export function registerCreateBrickCommand(
     projectService: ProjectService,
     brickService: BrickService,
     treeDataProvider: ProjectTreeDataProvider
 ): vscode.Disposable {
-    return vscode.commands.registerCommand('jabbarroot.createBrickInProject', async (projectItem?: ProjectTreeItem) => {
-        if (!projectItem || !(projectItem instanceof ProjectTreeItem)) {
-            vscode.window.showWarningMessage('Veuillez sélectionner un projet pour y ajouter une brique.');
-            // Idéalement, cette commande ne serait appelée que depuis un ProjectTreeItem,
-            // donc cet avertissement est une sécurité.
+    return vscode.commands.registerCommand('jabbarroot.createBrickInProject', async (item?: ProjectTreeItem | GroupTreeItem) => {
+        let parentProject: JabbarProject | undefined;
+
+        if (item instanceof ProjectTreeItem) {
+            parentProject = item.project;
+        } else if (item instanceof GroupTreeItem) {
+            // Trouver le projet parent en cherchant la première brique enfant
+            const firstBrick = item.children.find(c => c instanceof BrickTreeItem) as BrickTreeItem;
+            if (firstBrick) {
+                parentProject = await projectService.getProject(firstBrick.brick.projectId);
+            }
+        }
+
+        if (!parentProject) {
+            vscode.window.showWarningMessage('Impossible de déterminer le projet parent. Veuillez lancer la commande depuis un projet ou un groupe de briques.');
             return;
         }
-        const parentProject = projectItem.project;
 
         const brickName = await vscode.window.showInputBox({
             prompt: `Entrez le nom de la nouvelle brique pour le projet "${parentProject.name}"`,

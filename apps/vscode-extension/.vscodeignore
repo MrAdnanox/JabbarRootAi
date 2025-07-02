@@ -1,0 +1,21 @@
+# Fichiers de développement
+.gitignore
+.vscode/**
+.eslintrc.*
+.prettierrc.*
+tsconfig.json
+*.ts
+!src/**/*.ts
+!esbuild.mjs
+
+# Fichiers de build
+dist/**/*.map
+!dist/tiktoken_bg.wasm  # Inclure le fichier WASM
+
+# Fichiers de test
+**/*.test.*
+**/test/**
+
+# Fichiers système
+.DS_Store
+Thumbs.db

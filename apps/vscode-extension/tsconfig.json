@@ -3,11 +3,14 @@
   "compilerOptions": {
     "outDir": "dist",
     "baseUrl": ".",
+    "types": ["node", "mocha"],
     "paths": {
       "@jabbarroot/core": ["../../packages/core/src"],
       "@jabbarroot/core/*": ["../../packages/core/src/*"],
       "@jabbarroot/types": ["../../packages/types/src"],
-      "@jabbarroot/types/*": ["../../packages/types/src/*"]
+      "@jabbarroot/types/*": ["../../packages/types/src/*"],
+      "@jabbarroot/prompt-factory": ["../../packages/prompt-factory/src"],
+      "@jabbarroot/prompt-factory/*": ["../../packages/prompt-factory/src/*"]
     },
     "moduleResolution": "node"
   },
@@ -15,6 +18,7 @@
   "exclude": ["node_modules", "dist"],
   "references": [
     { "path": "../../packages/core" },
-    { "path": "../../packages/types" }
+    { "path": "../../packages/types" },
+    { "path": "../../packages/prompt-factory" }
   ]
 }
