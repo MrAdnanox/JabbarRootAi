@@ -60,7 +60,7 @@
         "icon": "$(notebook)"
       },
       {
-        "command": "jabbarroot.refreshProjectView",
+        "command": "jabbarroot.RefreshProjectView",
         "title": "jabbarroot: Refresh Projects View",
         "category": "jabbarroot",
         "icon": "$(refresh)"
@@ -178,7 +178,7 @@
           "group": "navigation@1"
         },
         {
-          "command": "jabbarroot.refreshProjectView",
+          "command": "jabbarroot.RefreshProjectView",
           "when": "view == jabbarroot.contextView",
           "group": "navigation@2"
         }

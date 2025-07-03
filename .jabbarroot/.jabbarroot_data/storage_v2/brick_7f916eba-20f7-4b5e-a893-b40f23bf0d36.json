@@ -11,9 +11,9 @@
     "compilationIncludeProjectTree": false
   },
   "isActiveForProjectCompilation": false,
-  "isDefaultTarget": true,
+  "isDefaultTarget": false,
   "metadata": {
     "createdAt": "2025-07-01T21:20:40.892Z",
-    "updatedAt": "2025-07-02T02:09:04.618Z"
+    "updatedAt": "2025-07-02T20:14:35.370Z"
   }
 }
