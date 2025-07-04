@@ -1,53 +1,113 @@
 // apps/vscode-extension/esbuild.mjs
 import esbuild from 'esbuild';
 import { pnpPlugin } from '@yarnpkg/esbuild-plugin-pnp';
-import { copyFileSync, mkdirSync, existsSync } from 'fs';
-import { join, dirname } from 'path';
+import * as fs from 'fs';
+import * as path from 'path';
 import { fileURLToPath } from 'url';
 
-const __dirname = dirname(fileURLToPath(import.meta.url));
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const isWatch = process.argv.includes('--watch');
+
+/**
+ * Trouve récursivement tous les fichiers .command.ts dans un répertoire.
+ * @param {string} dir - Le répertoire de départ.
+ * @returns {string[]} Liste des chemins complets des fichiers trouvés.
+ */
+const findCommandFiles = (dir) => {
+  let files = [];
+  const items = fs.readdirSync(dir, { withFileTypes: true });
+
+  for (const item of items) {
+    const fullPath = path.join(dir, item.name);
+    if (item.isDirectory()) {
+      files = files.concat(findCommandFiles(fullPath));
+    } else if (item.isFile() && item.name.endsWith('.command.ts')) {
+      files.push(fullPath);
+    }
+  }
+  return files;
+};
 
 // Copier le fichier WASM dans le dossier dist
 const copyWasmFile = () => {
   try {
-    const wasmPath = join(__dirname, '..', '..', 'node_modules', 'tiktoken', 'tiktoken_bg.wasm');
-    const outDir = join(__dirname, 'dist');
-    const outPath = join(outDir, 'tiktoken_bg.wasm');
+    const wasmPath = path.join(__dirname, '..', '..', 'node_modules', 'tiktoken', 'tiktoken_bg.wasm');
+    const outDir = path.join(__dirname, 'dist');
+    const outPath = path.join(outDir, 'tiktoken_bg.wasm');
     
-    if (!existsSync(outDir)) {
-      mkdirSync(outDir, { recursive: true });
+    if (!fs.existsSync(outDir)) {
+      fs.mkdirSync(outDir, { recursive: true });
     }
     
-    copyFileSync(wasmPath, outPath);
+    fs.copyFileSync(wasmPath, outPath);
     console.log('Fichier tiktoken_bg.wasm copié avec succès');
   } catch (error) {
     console.error('Erreur lors de la copie du fichier WASM:', error);
   }
 };
 
-// Exécuter la copie du fichier WASM
+// Exécuter les fonctions d'initialisation
 copyWasmFile();
 
-const context = await esbuild.context({
+// Configuration pour l'extension principale
+const extensionBuild = await esbuild.context({
   entryPoints: ['src/extension.ts'],
   bundle: true,
   outfile: 'dist/extension.js',
-  external: ['vscode'], // Marquer 'vscode' comme module externe
+  external: ['vscode'],
   format: 'cjs',
   platform: 'node',
-  target: 'node16', // Cible compatible avec le runtime de VS Code
-  sourcemap: 'inline', // Source maps intégrées pour un débogage facile
-  plugins: [pnpPlugin()], // Plugin essentiel pour la résolution dans pnpm
-  // La minification peut être activée ici si nécessaire
-  // minify: true,
+  target: 'node16',
+  sourcemap: 'inline',
+  plugins: [pnpPlugin()],
 });
 
-if (isWatch) {
-  await context.watch();
-  console.log('esbuild is watching for changes...');
-} else {
-  await context.rebuild();
-  console.log('esbuild build complete.');
-  await context.dispose();
-}
+// Configuration pour les commandes
+const commandsDir = path.join(__dirname, 'src', 'commands');
+const commandFiles = findCommandFiles(commandsDir);
+
+console.log(`Found ${commandFiles.length} command files to build.`);
+
+const commandBuilds = await Promise.all(
+  commandFiles.map(entry => {
+    // Calcule le chemin de sortie en préservant la structure des sous-dossiers
+    const relativePath = path.relative(commandsDir, entry);
+    const outfile = path.join(__dirname, 'dist', 'commands', relativePath.replace(/\.ts$/, '.js'));
+
+    // S'assurer que le répertoire de sortie existe
+    const outDir = path.dirname(outfile);
+    if (!fs.existsSync(outDir)) {
+      fs.mkdirSync(outDir, { recursive: true });
+    }
+    
+    return esbuild.context({
+      entryPoints: [entry],
+      bundle: true,
+      outfile,
+      external: ['vscode', '@jabbarroot/core', '@jabbarroot/types', '@jabbarroot/prompt-factory'],
+      format: 'cjs',
+      platform: 'node',
+      target: 'node16',
+      sourcemap: 'inline',
+      plugins: [pnpPlugin()],
+    });
+  })
+);
+
+// Combiner tous les contextes de build
+const allContexts = [extensionBuild, ...commandBuilds];
+
+// Fonction pour démarrer tous les builds
+const startBuilds = async () => {
+  if (isWatch) {
+    await Promise.all(allContexts.map(ctx => ctx.watch()));
+    console.log('esbuild is watching for changes...');
+  } else {
+    await Promise.all(allContexts.map(ctx => ctx.rebuild()));
+    await Promise.all(allContexts.map(ctx => ctx.dispose()));
+    console.log('esbuild build complete.');
+  }
+};
+
+// Démarrer les builds
+await startBuilds();

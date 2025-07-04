@@ -168,4 +168,30 @@ export class BrickService {
 
         await this.storage.update(this.getBrickKey(brickId), brick);
     }
+
+    /**
+     * Supprime un chemin spécifique de la liste des fichiers d'une brique.
+     * @param brickId L'identifiant de la brique
+     * @param pathToRemove Le chemin à supprimer de la brique
+     * @returns Une promesse résolue lorsque la suppression est terminée
+     */
+    async removePathFromBrick(brickId: string, pathToRemove: string): Promise<void> {
+        const brick = await this.getBrick(brickId);
+        if (!brick) {
+            throw new Error(`Brique avec l'ID ${brickId} non trouvée.`);
+        }
+
+        const initialLength = brick.files_scope.length;
+        brick.files_scope = brick.files_scope.filter(path => path !== pathToRemove);
+        
+        // Si aucun changement n'a été effectué, on ne fait pas de mise à jour inutile
+        if (brick.files_scope.length === initialLength) {
+            return;
+        }
+
+        // Mise à jour de la date de modification
+        brick.metadata.updatedAt = new Date().toISOString();
+        
+        await this.storage.update(this.getBrickKey(brickId), brick);
+    }
 }

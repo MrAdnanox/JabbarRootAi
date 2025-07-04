@@ -19,12 +19,14 @@
     "packages/prompt-factory/tsconfig.json"
   ],
   "options": {
-    "special_sections": {}
+    "special_sections": {},
+    "compilationCompressionLevel": "extreme",
+    "compilationIncludeProjectTree": true
   },
   "isActiveForProjectCompilation": true,
   "isDefaultTarget": false,
   "metadata": {
     "createdAt": "2025-06-30T16:30:49.225Z",
-    "updatedAt": "2025-07-01T16:11:09.486Z"
+    "updatedAt": "2025-07-02T20:13:33.325Z"
   }
 }
