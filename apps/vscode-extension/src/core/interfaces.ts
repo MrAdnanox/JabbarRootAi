@@ -11,16 +11,16 @@ import {
 } from '@jabbarroot/prompt-factory';
 import { ProjectTreeDataProvider } from '../providers/projectTreeDataProvider';
 import { IgnoreService } from '../services/ignore.service';
-
+import { DialogService } from '../services/ui/dialog.service';
+import { GeminiConfigService } from '../services/config/gemini.config.service';
+import { NotificationService } from '../services/ui/notification.service';
 
 /**
- * Interface de base pour tous les services gérés par le DIContainer.
- * Le typage structurel de TypeScript permet à toute classe d'être un IService
- * si elle a une méthode optionnelle `dispose`.
+ * Interface marqueur pour les services gérés par le ServiceRegistry.
+ * La méthode dispose est optionnelle et sera appelée dynamiquement si elle existe.
  */
-export interface IService {
-  dispose?(): void;
-}
+export interface IService {}
+
 
 /**
  * Contrat pour tout module de commande découvrable par le ModuleRegistry.
@@ -49,11 +49,14 @@ export interface ServiceCollection {
     fileContentService: FileContentService;
     compactionService: CompactionService;
     systemBrickManager: SystemBrickManager;
-    
+    // --- UI Services ---
+    notificationService: NotificationService;
+    dialogService: DialogService;
+    // --- Config Services ---
+    geminiConfigService: GeminiConfigService;
     // --- Extension-specific Services ---
     ignoreService: IgnoreService;
     treeDataProvider: ProjectTreeDataProvider;
-
     // --- Prompt-Factory Services ---
     analyzerService: AnalyzerService;
     documentationService: DocumentationService;
@@ -61,7 +64,6 @@ export interface ServiceCollection {
     artefactService: ArtefactService;
     genericWorkflowEngine: GenericWorkflowEngine;
     promptTemplateService: PromptTemplateService;
-    
     // --- Extension Context ---
     extensionContext: vscode.ExtensionContext;
 }

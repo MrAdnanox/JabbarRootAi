@@ -1,171 +1,10 @@
-// apps/vscode-extension/src/commands/EditProjectOptions.command.ts
-/**
- * @file Commande pour éditer les options d'un projet via une interface web
- * @module EditProjectOptionsCommand
- */
-
 import * as vscode from 'vscode';
 import { ICommandModule, IService, ServiceCollection } from '../core/interfaces';
 import { ProjectService } from '@jabbarroot/core';
 import { ProjectTreeItem } from '../providers/projectTreeItem.factory';
 import { ProjectOptionsViewProvider } from '../webviews/ProjectOptionsViewProvider';
+import { NotificationService } from '../services/ui/notification.service';
 
-// === TYPES & INTERFACES ===
-interface ProjectPanelConfig {
-    panel: vscode.WebviewPanel;
-    project: any;
-}
-
-interface SavePayload {
-    updatedOptions: any;
-}
-
-interface WebviewMessage {
-    type: string;
-    payload: SavePayload;
-}
-
-// === GESTIONNAIRE D'ERREURS CENTRALISÉ ===
-class ErrorHandler {
-    private static readonly LOG_PREFIX = '[EditProjectOptions]';
-
-    static showError(message: string): void {
-        vscode.window.showErrorMessage(message);
-        console.error(`${this.LOG_PREFIX} ${message}`);
-    }
-
-    static showInfo(message: string): void {
-        vscode.window.showInformationMessage(message);
-        console.log(`${this.LOG_PREFIX} ${message}`);
-    }
-
-    static handleError(context: string, error: unknown): void {
-        const errorMessage = error instanceof Error ? error.message : String(error);
-        const fullMessage = `${context}: ${errorMessage}`;
-        
-        console.error(`${this.LOG_PREFIX} ${fullMessage}`, error);
-        vscode.window.showErrorMessage(fullMessage, 'Voir les logs')
-            .then(selection => {
-                if (selection === 'Voir les logs') {
-                    vscode.commands.executeCommand('workbench.action.output.show.extension-output-jabbarroot');
-                }
-            });
-    }
-}
-
-// === GESTIONNAIRE DE SERVICES ===
-class ServiceManager {
-    constructor(private services: Map<keyof ServiceCollection, IService>) {}
-
-    get projectService(): ProjectService {
-        return this.services.get('projectService') as ProjectService;
-    }
-
-    get extensionContext(): vscode.ExtensionContext {
-        return this.services.get('extensionContext') as vscode.ExtensionContext;
-    }
-}
-
-// === GESTIONNAIRE DE WEBVIEW ===
-class WebviewManager {
-    constructor(
-        private serviceManager: ServiceManager,
-        private errorHandler: typeof ErrorHandler
-    ) {}
-
-    async createProjectOptionsPanel(projectItem: ProjectTreeItem): Promise<ProjectPanelConfig | null> {
-        const projectId = projectItem.project!.id;
-        
-        // Récupération des données fraîches
-        const freshProject = await this.serviceManager.projectService.getProject(projectId);
-        if (!freshProject) {
-            this.errorHandler.showError(`Impossible de trouver le projet avec l'ID: ${projectId}`);
-            return null;
-        }
-
-        // Création du panneau
-        const panel = this.createWebviewPanel(freshProject);
-        this.configureWebviewContent(panel, freshProject);
-
-        return { panel, project: freshProject };
-    }
-
-    private createWebviewPanel(project: any): vscode.WebviewPanel {
-        return vscode.window.createWebviewPanel(
-            'jabbarroot.projectOptions',
-            `Options: ${project.name}`,
-            vscode.ViewColumn.One,
-            { enableScripts: true }
-        );
-    }
-
-    private configureWebviewContent(panel: vscode.WebviewPanel, project: any): void {
-        const viewProvider = new ProjectOptionsViewProvider(
-            project, 
-            this.serviceManager.extensionContext.extensionUri
-        );
-        panel.webview.html = viewProvider.getHtmlForWebview(panel.webview);
-    }
-
-    setupMessageHandlers(panel: vscode.WebviewPanel, project: any): void {
-        panel.webview.onDidReceiveMessage(
-            (message: WebviewMessage) => this.handleWebviewMessage(panel, project, message),
-            undefined,
-            this.serviceManager.extensionContext.subscriptions
-        );
-    }
-
-    private async handleWebviewMessage(
-        panel: vscode.WebviewPanel, 
-        project: any, 
-        message: WebviewMessage
-    ): Promise<void> {
-        switch (message.type) {
-            case 'save':
-                await this.handleSaveOptions(panel, project, message.payload);
-                break;
-            default:
-                console.warn(`[WebviewManager] Message type non géré: ${message.type}`);
-        }
-    }
-
-    private async handleSaveOptions(
-        panel: vscode.WebviewPanel,
-        project: any,
-        payload: SavePayload
-    ): Promise<void> {
-        try {
-            await this.serviceManager.projectService.updateProject(project.id, {
-                options: payload.updatedOptions
-            });
-            
-            this.errorHandler.showInfo(`Options pour "${project.name}" enregistrées.`);
-            panel.dispose();
-            await vscode.commands.executeCommand('jabbarroot.RefreshProjectView');
-        } catch (error) {
-            this.errorHandler.handleError('Échec de la sauvegarde des options', error);
-        }
-    }
-}
-
-// === VALIDATEUR ===
-class ProjectValidator {
-    static isValidSelection(projectItem?: ProjectTreeItem): boolean {
-        return !!projectItem && 
-               projectItem instanceof ProjectTreeItem && 
-               !!projectItem.project?.id;
-    }
-
-    static validateOrShowError(projectItem?: ProjectTreeItem): boolean {
-        if (!this.isValidSelection(projectItem)) {
-            ErrorHandler.showError('Veuillez lancer cette commande depuis la vue JabbarRoot sur un projet.');
-            return false;
-        }
-        return true;
-    }
-}
-
-// === COMMANDE PRINCIPALE (SIMPLIFIÉE) ===
 export class EditProjectOptionsCommand implements ICommandModule {
     public readonly metadata = {
         id: 'jabbarroot.EditProjectOptions',
@@ -175,34 +14,61 @@ export class EditProjectOptionsCommand implements ICommandModule {
 
     public readonly dependencies = [
         'projectService',
-        'extensionContext'
+        'extensionContext',
+        'notificationService'
     ] as const;
 
-    async execute(
+    public async execute(
         services: Map<keyof ServiceCollection, IService>,
-        ...args: any[]
+        projectItem?: ProjectTreeItem
     ): Promise<void> {
-        const projectItem = args[0] as ProjectTreeItem | undefined;
-        
+        const projectService = services.get('projectService') as ProjectService;
+        const context = services.get('extensionContext') as vscode.ExtensionContext;
+        const notificationService = services.get('notificationService') as NotificationService;
+
+        if (!projectItem || projectItem.contextValue !== 'jabbarrootProject') {
+            notificationService.showError('Veuillez lancer cette commande depuis la vue JabbarRoot sur un projet.');
+            return;
+        }
+
         try {
-            // Validation
-            if (!ProjectValidator.validateOrShowError(projectItem)) {
-                return;
+            const project = await projectService.getProject(projectItem.project.id);
+            if (!project) {
+                throw new Error(`Impossible de trouver le projet avec l'ID: ${projectItem.project.id}`);
             }
 
-            // Initialisation des gestionnaires
-            const serviceManager = new ServiceManager(services);
-            const webviewManager = new WebviewManager(serviceManager, ErrorHandler);
+            const panel = vscode.window.createWebviewPanel(
+                'jabbarroot.projectOptions',
+                `Options: ${project.name}`,
+                vscode.ViewColumn.One,
+                { 
+                    enableScripts: true,
+                    localResourceRoots: [
+                        vscode.Uri.joinPath(context.extensionUri, 'src', 'webviews', 'assets')
+                    ]
+                }
+            );
 
-            // Configuration du panneau
-            const panelConfig = await webviewManager.createProjectOptionsPanel(projectItem!);
-            if (!panelConfig) return;
+            const viewProvider = new ProjectOptionsViewProvider(project, context.extensionUri);
+            panel.webview.html = viewProvider.getHtmlForWebview(panel.webview);
 
-            // Configuration des événements
-            webviewManager.setupMessageHandlers(panelConfig.panel, panelConfig.project);
+            panel.webview.onDidReceiveMessage(async message => {
+                if (message.type === 'save') {
+                    try {
+                        await projectService.updateProject(project.id, {
+                            options: message.payload.updatedOptions
+                        });
+                        notificationService.showInfo(`Options pour "${project.name}" enregistrées.`);
+                        panel.dispose();
+                        await vscode.commands.executeCommand('jabbarroot.RefreshProjectView');
+                    } catch (saveError) {
+                        notificationService.showError('Échec de la sauvegarde des options', saveError);
+                    }
+                }
+            }, undefined, context.subscriptions);
 
         } catch (error) {
-            ErrorHandler.handleError('Erreur lors de l\'initialisation de l\'éditeur d\'options', error);
+            notificationService.showError("Erreur lors de l'ouverture de l'éditeur d'options", error);
         }
     }
 }

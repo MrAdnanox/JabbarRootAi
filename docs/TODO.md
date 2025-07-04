@@ -284,3 +284,156 @@ apps/vscode-extension/src/services/
 Je vous transmets cette directive, Opérateur. Le chantier "Nexus" est officiellement ouvert. Sa réussite solidifiera notre cathédrale et nous permettra de bâtir plus haut, plus vite, et avec une sérénité renouvelée. Tissons ces ponts de service avec la précision du maître-horloger.
 
 **JabbarRoot-Architecte, Gardien de la Cohérence Systémique.**
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Excellent. Un plan concret est la traduction d'une vision en une action possible. C'est le moment où l'architecte tend le plan directeur au maître d'œuvre.
+
+Nous allons ériger la charpente de notre projet "Nexus v2.5". Chaque répertoire est un pilier, chaque fichier une poutre maîtresse. La clarté de cette structure déterminera la solidité et la pérennité de notre cathédrale.
+
+---
+
+### **Directive de Mise en Œuvre Stratégique : Blueprint de l'Architecture Fichiers "Nexus v2.5"**
+
+#### 1. L'Intention Stratégique Fondamentale
+
+Traduire les concepts architecturaux validés (décomposition des services, pipeline middleware, Result Pattern) en une structure de répertoires et de fichiers concrète, navigable et sans ambiguïté. Ce blueprint servira de carte pour toute la phase de refonte et de développement futur.
+
+#### 2. Le Blueprint Architectural Détaillé
+
+Voici la structure cible pour le répertoire `apps/vscode-extension/src/`.
+
+```
+apps/vscode-extension/src/
+├── bootstrap/              # Pilier 1: L'Initialisation
+├── core/                   # Pilier 2: Le Cœur Mécanique
+├── services/               # Pilier 3: Le Corps des Artisans
+├── commands/               # Pilier 4: Les Maîtres d'Œuvre
+├── webviews/               # (Existant, à conserver)
+├── adapters/               # (Existant, à conserver)
+└── utils/                  # (Existant, à affiner)
+```
+
+---
+#### **Détail des Piliers**
+
+##### **Pilier 1 : `bootstrap/` - Le Point d'Entrée**
+*   **Mission :** Orchestrer le démarrage de l'extension. C'est ici que le monde prend vie. Il assemble les pièces et lance la machine.
+    *   `extension.ts`: (Fichier existant, mais simplifié). Son rôle se limite à appeler le `Bootstrapper`.
+    *   `bootstrapper.ts`: (Fichier existant, mais devient le chef d'orchestre du démarrage).
+        1.  Initialise le `ServiceRegistry`.
+        2.  Appelle `service.loader.ts` pour enregistrer toutes les dépendances.
+        3.  Appelle `command.loader.ts` pour enregistrer toutes les commandes et leur pipeline.
+    *   `service.loader.ts` **(NOUVEAU)**: Responsable de l'enregistrement de **tous** les services (core, UI, config, etc.) dans le conteneur DI (`ServiceRegistry`). C'est le "registre du personnel" de notre application.
+    *   `command.loader.ts` **(NOUVEAU)**: Découvre toutes les commandes, les instancie avec leurs dépendances, et les enregistre auprès de VS Code en les enveloppant dans le pipeline d'exécution.
+
+##### **Pilier 2 : `core/` - Le Cœur Mécanique**
+*   **Mission :** Contenir les mécanismes fondamentaux et agnostiques de l'application. C'est notre moteur, il ne connaît rien au métier, mais il fait tourner la machine.
+    *   `di/` **(NOUVEAU)**
+        *   `service.registry.ts`: Implémentation du `ServiceRegistry` avec chargement paresseux (lazy-loading).
+        *   `service.types.ts`: Définition des identifiants de service pour l'injection.
+    *   `execution/` **(NOUVEAU)**
+        *   `command.pipeline.ts`: Le moteur qui exécute la chaîne de middlewares.
+        *   `command.context.ts`: Définit la structure de l'objet `CommandContext` qui transitera dans le pipeline.
+        *   `middlewares/`:
+            *   `middleware.interface.ts`: Le contrat `CommandMiddleware`.
+            *   `error.handler.middleware.ts`: Le `try/catch` ultime qui utilise le `TelemetryService`.
+            *   `telemetry.middleware.ts`: Chronomètre l'exécution et enregistre le succès/échec.
+            *   `validation.middleware.ts`: Vérifie les pré-conditions (ex: clé API configurée).
+    *   `result/` **(NOUVEAU)**
+        *   `result.ts`: Implémentation du `Result Pattern` (`Success`, `Failure`).
+        *   `errors.ts`: Catalogue de nos erreurs métier typées (`ApiKeyNotConfiguredError`, `ProjectNotFoundError`, etc.).
+
+##### **Pilier 3 : `services/` - Le Corps des Artisans**
+*   **Mission :** Fournir des fonctionnalités spécifiques et réutilisables. Chaque service est un artisan spécialisé.
+    *   `index.ts`: Fichier "baril" pour exporter tous les services et faciliter les imports.
+    *   `ui/` **(NOUVEAU)**
+        *   `dialog.service.ts`: Spécialiste des interactions bloquantes (`showQuickPick`, `showInputBox`, `showWarningMessage` avec options).
+        *   `notification.service.ts`: Spécialiste des notifications non-bloquantes (`showInformationMessage`, `withProgress`).
+        *   `document.service.ts`: Spécialiste de la manipulation de l'éditeur (`openTextDocument`, `showTextDocument`).
+    *   `config/` **(NOUVEAU)**
+        *   `gemini.config.service.ts`: Spécialiste de la configuration liée à Gemini.
+        *   `project.config.service.ts`: Spécialiste de la configuration par défaut des projets.
+    *   `context/` **(NOUVEAU)**
+        *   `context.service.ts`: Le gestionnaire d'état de session (projet actif, etc.).
+    *   `telemetry/` **(NOUVEAU)**
+        *   `telemetry.service.ts`: Le service de journalisation des événements pour l'observabilité locale.
+    *   `ignore.service.ts`: (Fichier existant, il trouve sa place naturelle ici).
+
+##### **Pilier 4 : `commands/` - Les Maîtres d'Œuvre**
+*   **Mission :** Orchestrer les services pour répondre à une intention de l'utilisateur. Les fichiers de commande deviennent légers, déclaratifs et lisibles.
+    *   `generate-tests.command.ts`: (Exemple de commande refactorisée). Ne contient que la logique d'orchestration, en appelant les services injectés.
+    *   `...` (toutes les autres commandes, à refactoriser sur ce modèle).
+
+---
+
+#### 3. Le Flux de Vie d'une Commande (Exemple)
+
+Pour valider cette structure, traçons le parcours d'une commande :
+
+1.  **Démarrage (VS Code lance l'extension)**
+    *   `bootstrap/extension.ts` -> `bootstrap/bootstrapper.ts`.
+    *   `bootstrapper` appelle `service.loader.ts` qui remplit le `core/di/service.registry.ts`.
+    *   `bootstrapper` appelle `command.loader.ts`.
+    *   `command.loader` récupère `GenerateTestsCommand`, l'instancie avec ses dépendances via le `ServiceRegistry`, et l'enregistre auprès de VS Code, en l'enveloppant dans le `core/execution/command.pipeline.ts`.
+
+2.  **Exécution (L'utilisateur clique sur "Générer les tests")**
+    *   VS Code appelle la fonction enregistrée par le `command.loader`.
+    *   Le `core/execution/command.pipeline.ts` démarre.
+    *   Le `TelemetryMiddleware` démarre son chronomètre.
+    *   Le `ValidationMiddleware` vérifie les prérequis (ex: appelle `config/gemini.config.service.ts`).
+    *   Le `ErrorHandlerMiddleware` prépare son `try/catch`.
+    *   Le code de `commands/generate-tests.command.ts` est enfin exécuté.
+    *   La commande appelle `services/ui/dialog.service.ts` pour choisir un projet.
+    *   La commande appelle `services/ui/notification.service.ts` pour afficher la barre de progression.
+    *   La commande utilise le `core/result/result.ts` pour gérer le succès ou l'échec de l'opération.
+    *   Le pipeline se termine, le `TelemetryMiddleware` enregistre le temps, le `ErrorHandlerMiddleware` se détend.
+
+#### 4. Prochaines Étapes Concrètes
+
+1.  **Phase 1 - Fondation :** Créer la structure des répertoires du `core/`. Implémenter le `ServiceRegistry`, le `Result Pattern`, et les interfaces du pipeline (`CommandMiddleware`, `CommandContext`).
+2.  **Phase 2 - Services Utilitaires :** Créer la structure des `services/` et commencer à implémenter les services UI (`DialogService`, `NotificationService`) et `ConfigService`. Ces services n'auront pas encore de consommateurs, mais pourront être testés unitairement.
+3.  **Phase 3 - Intégration :** Mettre en place le `bootstrap/` pour charger les services. Implémenter le `CommandPipeline` et les middlewares.
+4.  **Phase 4 - Refonte :** Choisir **une seule commande** (ex: `GenerateTestsCommand`) et la refactoriser entièrement selon le nouveau modèle. Ce sera notre preuve de concept.
+5.  **Phase 5 - Généralisation :** Appliquer le pattern à toutes les autres commandes.
+
+Ce blueprint est notre étoile polaire. Il est ambitieux, mais chaque étape est logique et nous rapproche d'un système d'une clarté, d'une robustesse et d'une élégance exceptionnelles.
+
+Le plan est tracé. Le chantier peut commencer.

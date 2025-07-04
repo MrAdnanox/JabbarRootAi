@@ -1,5 +1,5 @@
 {
-  "id": "4f1be944-03fd-49f7-b975-8bbd59d579b3",
+  "id": "ad99cece-1a6c-42b9-bcdb-412ffa7b7157",
   "projectId": "2eb6f4dd-67c1-48f8-be7c-c9d266c20897",
   "name": "vscode-extension",
   "files_scope": [
@@ -9,6 +9,7 @@
     "apps/vscode-extension/src/adapters/mementoStorage.adapter.ts",
     "apps/vscode-extension/src/adapters/vscodeConfiguration.adapter.ts",
     "apps/vscode-extension/src/adapters/vscodeFileSystem.adapter.ts",
+    "apps/vscode-extension/src/bootstrap/service.loader.ts",
     "apps/vscode-extension/src/commands/ActivateBrick.command.ts",
     "apps/vscode-extension/src/commands/AddPathToBrick.command.ts",
     "apps/vscode-extension/src/commands/AddSelectionToActiveBrick.command.ts",
@@ -27,7 +28,6 @@
     "apps/vscode-extension/src/commands/RunAgent.command.ts",
     "apps/vscode-extension/src/commands/SetAsDefaultTargetBrick.command.ts",
     "apps/vscode-extension/src/core/bootstrapper.ts",
-    "apps/vscode-extension/src/core/di.container.ts",
     "apps/vscode-extension/src/core/interfaces.ts",
     "apps/vscode-extension/src/core/module.registry.ts",
     "apps/vscode-extension/src/providers/projectTreeDataProvider.ts",
@@ -40,19 +40,26 @@
     "apps/vscode-extension/src/commands/agents/GenerateReadme.command.ts",
     "apps/vscode-extension/src/commands/agents/GenerateTests.command.ts",
     "apps/vscode-extension/src/commands/agents/StructureAnalyzer.command.ts",
+    "apps/vscode-extension/src/core/di/service.registry.ts",
+    "apps/vscode-extension/src/core/result/errors.ts",
+    "apps/vscode-extension/src/core/result/result.ts",
+    "apps/vscode-extension/src/services/config/gemini.config.service.ts",
+    "apps/vscode-extension/src/services/ui/dialog.service.ts",
+    "apps/vscode-extension/src/services/ui/notification.service.ts",
     "apps/vscode-extension/src/webviews/assets/css/main.css",
     "apps/vscode-extension/src/webviews/assets/js/projectOptions.webview.js",
-    "apps/vscode-extension/src/webviews/assets/js/webview.js"
+    "apps/vscode-extension/src/webviews/assets/js/webview.js",
+    "apps/vscode-extension/esbuild.mjs",
+    "apps/vscode-extension/package.json",
+    "apps/vscode-extension/tsconfig.json"
   ],
   "options": {
-    "special_sections": {},
-    "compilationCompressionLevel": "none",
-    "compilationIncludeProjectTree": false
+    "special_sections": {}
   },
   "isActiveForProjectCompilation": true,
   "isDefaultTarget": true,
   "metadata": {
-    "createdAt": "2025-07-03T05:59:03.224Z",
-    "updatedAt": "2025-07-03T06:00:30.655Z"
+    "createdAt": "2025-07-04T04:19:34.473Z",
+    "updatedAt": "2025-07-04T04:20:07.461Z"
   }
 }
