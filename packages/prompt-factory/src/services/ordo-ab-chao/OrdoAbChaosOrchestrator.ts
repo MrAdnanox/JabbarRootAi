@@ -5,6 +5,7 @@ import { SemanticAnalysisService } from './SemanticAnalysisService';
 import { v4 as uuidv4 } from 'uuid';
 import { AnalysisJob, SemanticAnalysisResult } from './types';
 import * as crypto from 'crypto';
+import { FileContentService } from '@jabbarroot/core'; // Importer si nécessaire
 
 export class OrdoAbChaosOrchestrator {
     private cacheService: CacheService;
@@ -12,15 +13,22 @@ export class OrdoAbChaosOrchestrator {
     private semanticAnalyzer: SemanticAnalysisService;
     private readonly concurrencyService: ConcurrencyService;
     private readonly projectRootPath: string;
-
-    // CORRECTION : Le constructeur reçoit le service comme un paramètre normal
-    // et l'assigne explicitement à la propriété de la classe.
+    private readonly parsersPath: string;
+    
+    /**
+     * Crée une nouvelle instance de l'orchestrateur OrdoAbChaos
+     * @param projectRootPath Chemin racine du projet
+     * @param concurrencyService Service de concurrence pour exécuter des tâches en parallèle
+     * @param parsersPath Chemin vers le répertoire des parsers Tree-sitter
+     */
     constructor(
         projectRootPath: string,
-        concurrencyService: ConcurrencyService
+        concurrencyService: ConcurrencyService,
+        parsersPath: string
     ) {
         this.projectRootPath = projectRootPath;
         this.concurrencyService = concurrencyService;
+        this.parsersPath = parsersPath;
         this.cacheService = new CacheService(projectRootPath);
         this.graphBuilder = new GraphBuilderService();
         this.semanticAnalyzer = new SemanticAnalysisService();
@@ -45,50 +53,89 @@ export class OrdoAbChaosOrchestrator {
         return `Cache OK, Worker a répondu pour ${workerResult.filePath}.`;
     }
 
-    // ... le reste de la classe reste inchangé ...
-    public async runAnalysis(projectPath: string, filePaths: string[]): Promise<AnalysisJob> {
+    public async runAnalysis(
+        projectPath: string, 
+        files: { path: string; content: string }[]
+    ): Promise<AnalysisJob> {
         const jobId = uuidv4();
-        const db = this.cacheService.getDbConnection();
-        const createJobStmt = db.prepare("INSERT INTO analysis_jobs (job_id, project_path, status, progress_total) VALUES (?, ?, 'pending', ?)");
-        createJobStmt.run(jobId, projectPath, filePaths.length);
+        
+        // Création du job d'analyse
+        await this.cacheService.createAnalysisJob(jobId, projectPath, files.length);
+
         const analysisConfig = { version: '1.0', parser: 'tree-sitter' }; 
-        const analysisPromises = filePaths.map(async (filePath): Promise<SemanticAnalysisResult | undefined> => {
-            const fileContent = "..."; 
-            const contentHash = crypto.createHash('sha256').update(fileContent).digest('hex');
-            const signature = crypto.createHash('sha256').update(fileContent + JSON.stringify(analysisConfig)).digest('hex');
+        console.log(`[Orchestrator] Utilisation du chemin des parsers : ${this.parsersPath}`);
+
+        // Traitement parallèle des fichiers
+        const analysisPromises = files.map(async (file): Promise<SemanticAnalysisResult | undefined> => {
+            const contentHash = crypto.createHash('sha256').update(file.content).digest('hex');
+            const signature = crypto.createHash('sha256')
+                .update(file.content + JSON.stringify(analysisConfig))
+                .digest('hex');
+            
+            // Vérification du cache
             const cachedResult = await this.cacheService.get<SemanticAnalysisResult>(signature);
             if (cachedResult) {
                 return cachedResult;
             }
-            const parsersPath = path.join(this.projectRootPath, '.jabbarroot', '.jabbarroot_data', 'system', 'parsers');
+
+            // Exécution de l'analyse dans un worker
             const analysisResult = await this.concurrencyService.runTaskInWorker<SemanticAnalysisResult>({
-                filePath,
-                fileContent,
-                parsersPath: parsersPath
+                filePath: file.path,
+                fileContent: file.content,
+                parsersPath: this.parsersPath
             });
-            if(analysisResult) {
-                await this.cacheService.set(signature, analysisResult, filePath, contentHash, analysisConfig);
+
+            // Mise en cache du résultat si valide
+            if (analysisResult && !analysisResult.error) {
+                await this.cacheService.set(
+                    signature, 
+                    analysisResult, 
+                    file.path, 
+                    contentHash, 
+                    analysisConfig
+                );
             }
-            return analysisResult;
+            
+            return analysisResult || undefined;
         });
-        const results = (await Promise.all(analysisPromises)).filter((result): result is SemanticAnalysisResult => result !== undefined);
-        if (results.length === 0) {
-            throw new Error('Aucune analyse sémantique valide n\'a pu être effectuée');
+
+        // Attente de la fin de toutes les analyses et filtrage des résultats valides
+        const results = (await Promise.all(analysisPromises))
+            .filter((result): result is SemanticAnalysisResult => !!result && !result.error);
+        
+        if (results.length === 0 && files.length > 0) {
+            console.warn('[Orchestrator] Aucune analyse sémantique valide n\'a pu être effectuée. Tous les fichiers étaient peut-être non supportés.');
         }
+
+        // Construction du graphe de connaissances
         const candidateGraph = this.graphBuilder.buildGraph(results);
-        const confidenceScore = this.graphBuilder.calculateConfidenceScore(filePaths.length, results.length, []);
+        const confidenceScore = this.graphBuilder.calculateConfidenceScore(
+            files.length, 
+            results.length, 
+            []
+        );
+        
+        // Sauvegarde et promotion du graphe
         const graphId = uuidv4();
-        const saveGraphStmt = db.prepare("INSERT INTO knowledge_graphs (graph_id, job_id, project_path, graph_data_blob, metadata_json) VALUES (?, ?, ?, ?, ?)");
-        saveGraphStmt.run(graphId, jobId, projectPath, Buffer.from(JSON.stringify(candidateGraph)), JSON.stringify({ confidence_score: confidenceScore }));
-        const promoteStmt = db.prepare("UPDATE knowledge_graphs SET is_promoted = 1 WHERE graph_id = ?");
-        promoteStmt.run(graphId);
-        const updateJobStmt = db.prepare("UPDATE analysis_jobs SET status = 'promoted', confidence_score = ?, completed_at = strftime('%Y-%m-%dT%H:%M:%fZ', 'now') WHERE job_id = ?");
-        updateJobStmt.run(confidenceScore, jobId);
-        const finalJobStmt = db.prepare("SELECT * FROM analysis_jobs WHERE job_id = ?");
-        const job = finalJobStmt.get(jobId);
-        if (!job) {
-            throw new Error('Impossible de récupérer le travail d\'analyse après sa création');
+        await this.cacheService.saveKnowledgeGraph(
+            graphId, 
+            jobId, 
+            projectPath, 
+            Buffer.from(JSON.stringify(candidateGraph)), 
+            { confidence_score: confidenceScore }
+        );
+        
+        // Promotion du graphe avec vérification du projet
+        await this.cacheService.promoteGraph(graphId, projectPath);
+        await this.cacheService.completeJob(jobId, confidenceScore);
+        
+        // Récupération du job final
+        const finalJob = await this.cacheService.getJob(jobId);
+        
+        if (!finalJob) {
+            throw new Error(`CRITICAL: Impossible de récupérer le travail d'analyse ${jobId} après sa complétion.`);
         }
-        return job as unknown as AnalysisJob;
+        
+        return finalJob;
     }
 }

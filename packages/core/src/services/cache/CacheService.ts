@@ -1,9 +1,157 @@
-// packages/core/src/services/cache/CacheService.ts
 import sqlite3 from '@vscode/sqlite3';
 import { LRUCache } from 'lru-cache';
 import * as path from 'path';
 import * as fs from 'fs';
-import { promisify } from 'util';
+
+export type JobStatus = 'pending' | 'running' | 'partially_completed' | 'completed' | 'failed' | 'promoted';
+
+export interface AnalysisJob {
+    job_id: string;
+    project_path: string;
+    status: JobStatus;
+    confidence_score: number;
+    progress_processed: number;
+    progress_total: number;
+    cache_hit_rate: number;
+    avg_time_per_file_ms: number;
+    peak_memory_usage_mb: number;
+    error_log_json: string | undefined;
+    created_at: string;
+    completed_at: string | undefined; 
+}
+
+export class CacheService {
+    private l1Cache: LRUCache<string, any>; 
+    private l2Db: sqlite3.Database;         
+    
+    private dbRun: (sql: string, params?: any[]) => Promise<void>;
+    private dbGet: <T>(sql: string, params?: any[]) => Promise<T | undefined>;
+    private dbAll: <T>(sql: string, params?: any[]) => Promise<T[]>;
+    private dbExec: (sql: string) => Promise<void>;
+
+    constructor(projectRootPath: string, l1CacheSize: number = 500) {
+        this.l1Cache = new LRUCache({ max: l1CacheSize });
+        const dbPath = path.join(projectRootPath, '.jabbarroot', '.jabbarroot_data', 'cache.sqlite');
+        fs.mkdirSync(path.dirname(dbPath), { recursive: true });
+        
+        this.l2Db = new sqlite3.Database(dbPath, (err) => {
+            if (err) {
+                console.error('[CacheService] Erreur lors de l\'ouverture de la base de données:', err);
+                throw err;
+            }
+        });
+
+        // --- CORRECTION DE LA SYNTAXE DE PROMESSE ---
+        this.dbRun = (sql: string, params: any[] = []) => new Promise((resolve, reject) => {
+            this.l2Db.run(sql, params, (err) => {
+                if (err) reject(err);
+                else resolve();
+            });
+        });
+
+        this.dbGet = <T>(sql: string, params: any[] = []) => new Promise<T | undefined>((resolve, reject) => {
+            this.l2Db.get(sql, params, (err: Error | null, row: T) => {
+                if (err) reject(err);
+                else resolve(row);
+            });
+        });
+
+        this.dbAll = <T>(sql: string, params: any[] = []) => new Promise<T[]>((resolve, reject) => {
+            this.l2Db.all(sql, params, (err: Error | null, rows: T[]) => {
+                if (err) reject(err);
+                else resolve(rows);
+            });
+        });
+
+        this.dbExec = (sql: string) => new Promise<void>((resolve, reject) => {
+            this.l2Db.exec(sql, (err: Error | null) => {
+                if (err) reject(err);
+                else resolve();
+            });
+        });
+        // --- FIN DE LA CORRECTION ---
+
+        this.initDatabase();
+        console.log(`[CacheService] Initialisé. L1 (LRU): ${l1CacheSize} items. L2 (SQLite): ${dbPath}`);
+    }
+
+    // ... Le reste de la classe reste inchangé ...
+    private async initDatabase(): Promise<void> {
+        try {
+            await this.dbRun('PRAGMA journal_mode = WAL');
+            await this.dbExec(DB_SCHEMA);
+        } catch (error) {
+            console.error('[CacheService] Erreur lors de l\'initialisation de la base de données:', error);
+            throw error;
+        }
+    }
+    public async get<T>(key: string): Promise<T | undefined> {
+        const l1Result = this.l1Cache.get(key);
+        if (l1Result) {
+            return l1Result as T;
+        }
+        try {
+            const row = await this.dbGet<{ analysis_result_json: string }>(
+                'SELECT analysis_result_json FROM analysis_cache WHERE signature = ?',
+                [key]
+            );
+            if (row) {
+                const result = JSON.parse(row.analysis_result_json);
+                this.l1Cache.set(key, result);
+                return result as T;
+            }
+        } catch (error) {
+            console.error('[CacheService] Erreur lors de la récupération:', error);
+        }
+        return undefined;
+    }
+    public async set(key: string, value: any, filePath: string, contentHash: string, config: any): Promise<void> {
+        this.l1Cache.set(key, value);
+        try {
+            await this.dbRun(`
+                INSERT OR REPLACE INTO analysis_cache 
+                (signature, file_path, file_content_hash, analysis_config_json, analysis_result_json) 
+                VALUES (?, ?, ?, ?, ?)
+            `, [key, filePath, contentHash, JSON.stringify(config), JSON.stringify(value)]);
+        } catch (error) {
+            console.error('[CacheService] Erreur lors de la sauvegarde:', error);
+        }
+    }
+    public getDbConnection(): sqlite3.Database {
+        return this.l2Db;
+    }
+    public dispose(): void {
+        this.l2Db.close((err) => {
+            if (err) {
+                console.error('[CacheService] Erreur lors de la fermeture de la base de données:', err);
+            } else {
+                console.log('[CacheService] Connexion à la base de données fermée.');
+            }
+        });
+    }
+    public async createAnalysisJob(jobId: string, projectPath: string, totalFiles: number): Promise<void> {
+        const sql = "INSERT INTO analysis_jobs (job_id, project_path, status, progress_total) VALUES (?, ?, 'pending', ?)";
+        await this.dbRun(sql, [jobId, projectPath, totalFiles]);
+    }
+    public async saveKnowledgeGraph(graphId: string, jobId: string, projectPath: string, graphData: Buffer, metadata: object): Promise<void> {
+        const sql = "INSERT INTO knowledge_graphs (graph_id, job_id, project_path, graph_data_blob, metadata_json) VALUES (?, ?, ?, ?, ?)";
+        await this.dbRun(sql, [graphId, jobId, projectPath, graphData, JSON.stringify(metadata)]);
+    }
+    public async promoteGraph(graphId: string, projectPath: string): Promise<void> {
+        const demoteSql = "UPDATE knowledge_graphs SET is_promoted = 0 WHERE project_path = ?";
+        await this.dbRun(demoteSql, [projectPath]);
+        const promoteSql = "UPDATE knowledge_graphs SET is_promoted = 1 WHERE graph_id = ?";
+        await this.dbRun(promoteSql, [graphId]);
+    }
+    public async completeJob(jobId: string, confidenceScore: number): Promise<void> {
+        const sql = "UPDATE analysis_jobs SET status = 'promoted', confidence_score = ?, completed_at = strftime('%Y-%m-%dT%H:%M:%fZ', 'now') WHERE job_id = ?";
+        await this.dbRun(sql, [confidenceScore, jobId]);
+    }
+    public async getJob(jobId: string): Promise<AnalysisJob | undefined> {
+        const sql = "SELECT * FROM analysis_jobs WHERE job_id = ?";
+        return this.dbGet(sql, [jobId]);
+    }
+}
 
 const DB_SCHEMA = `
 CREATE TABLE IF NOT EXISTS analysis_jobs (
@@ -21,7 +169,6 @@ CREATE TABLE IF NOT EXISTS analysis_jobs (
     completed_at TEXT
 );
 CREATE INDEX IF NOT EXISTS idx_jobs_project_path ON analysis_jobs(project_path);
-
 CREATE TABLE IF NOT EXISTS analysis_cache (
     signature TEXT PRIMARY KEY NOT NULL,
     file_path TEXT NOT NULL,
@@ -30,7 +177,6 @@ CREATE TABLE IF NOT EXISTS analysis_cache (
     analysis_result_json TEXT NOT NULL,
     created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))
 );
-
 CREATE TABLE IF NOT EXISTS knowledge_graphs (
     graph_id TEXT PRIMARY KEY NOT NULL,
     job_id TEXT NOT NULL,
@@ -43,107 +189,3 @@ CREATE TABLE IF NOT EXISTS knowledge_graphs (
 );
 CREATE UNIQUE INDEX IF NOT EXISTS idx_promoted_graph_per_project ON knowledge_graphs(project_path) WHERE is_promoted = 1;
 `;
-
-export class CacheService {
-    private l1Cache: LRUCache<string, any>; // Cache en mémoire (L1)
-    private l2Db: sqlite3.Database;         // Base de données SQLite (L2)
-    private dbAll: Function;
-    private dbGet: Function;
-    private dbRun: Function;
-    private dbExec: Function;
-
-    constructor(projectRootPath: string, l1CacheSize: number = 500) {
-        this.l1Cache = new LRUCache({ max: l1CacheSize });
-
-        const dbPath = path.join(projectRootPath, '.jabbarroot_data', 'cache.sqlite');
-        fs.mkdirSync(path.dirname(dbPath), { recursive: true });
-
-        this.l2Db = new sqlite3.Database(dbPath, (err) => {
-            if (err) {
-                console.error('[CacheService] Erreur lors de l\'ouverture de la base de données:', err);
-                throw err;
-            }
-        });
-
-        // Promisification des méthodes SQLite
-        this.dbAll = promisify(this.l2Db.all.bind(this.l2Db));
-        this.dbGet = promisify(this.l2Db.get.bind(this.l2Db));
-        this.dbRun = promisify(this.l2Db.run.bind(this.l2Db));
-        this.dbExec = promisify(this.l2Db.exec.bind(this.l2Db));
-
-        // Initialisation du schéma de la base de données
-        this.initDatabase();
-
-        console.log(`[CacheService] Initialisé. L1 (LRU): ${l1CacheSize} items. L2 (SQLite): ${dbPath}`);
-    }
-
-    private async initDatabase(): Promise<void> {
-        try {
-            // Activation du mode WAL pour la haute concurrence
-            await this.dbRun('PRAGMA journal_mode = WAL');
-            
-            // Initialisation du schéma
-            await this.dbExec(DB_SCHEMA);
-        } catch (error) {
-            console.error('[CacheService] Erreur lors de l\'initialisation de la base de données:', error);
-            throw error;
-        }
-    }
-
-    public async get<T>(key: string): Promise<T | undefined> {
-        // 1. Tenter de récupérer depuis le cache L1
-        const l1Result = this.l1Cache.get(key);
-        if (l1Result) {
-            return l1Result as T;
-        }
-
-        // 2. Si échec, tenter de récupérer depuis le cache L2
-        try {
-            const row = await this.dbGet(
-                'SELECT analysis_result_json FROM analysis_cache WHERE signature = ?',
-                [key]
-            ) as { analysis_result_json: string } | undefined;
-
-            if (row) {
-                const result = JSON.parse(row.analysis_result_json);
-                // Mettre à jour le cache L1 avec le résultat du L2
-                this.l1Cache.set(key, result);
-                return result as T;
-            }
-        } catch (error) {
-            console.error('[CacheService] Erreur lors de la récupération:', error);
-        }
-
-        return undefined;
-    }
-
-    public async set(key: string, value: any, filePath: string, contentHash: string, config: any): Promise<void> {
-        // 1. Mettre à jour le cache L1
-        this.l1Cache.set(key, value);
-
-        // 2. Mettre à jour le cache L2
-        try {
-            await this.dbRun(`
-                INSERT OR REPLACE INTO analysis_cache 
-                (signature, file_path, file_content_hash, analysis_config_json, analysis_result_json) 
-                VALUES (?, ?, ?, ?, ?)
-            `, [key, filePath, contentHash, JSON.stringify(config), JSON.stringify(value)]);
-        } catch (error) {
-            console.error('[CacheService] Erreur lors de la sauvegarde:', error);
-        }
-    }
-
-    public getDbConnection(): sqlite3.Database {
-        return this.l2Db;
-    }
-
-    public dispose(): void {
-        this.l2Db.close((err) => {
-            if (err) {
-                console.error('[CacheService] Erreur lors de la fermeture de la base de données:', err);
-            } else {
-                console.log('[CacheService] Connexion à la base de données fermée.');
-            }
-        });
-    }
-}

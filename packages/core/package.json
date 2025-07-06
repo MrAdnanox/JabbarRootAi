@@ -8,6 +8,7 @@
     "watch": "tsc -b -w"
   },
   "dependencies": {
+    "@jabbarroot/prompt-factory": "workspace:^",
     "@jabbarroot/types": "workspace:^",
     "@swc/core": "^1.12.7",
     "@types/uuid": "^10.0.0",

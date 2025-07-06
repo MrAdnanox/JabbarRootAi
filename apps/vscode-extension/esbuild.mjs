@@ -97,6 +97,7 @@ const extensionBuild = await esbuild.context({
   ...baseConfig,
   entryPoints: ['src/extension.ts'],
   outfile: path.join(outDir, 'extension.cjs'),
+  external: [ ...baseConfig.external, './commands/*' ],
 });
 
 // Ajout des contextes de build des commandes
@@ -104,6 +105,20 @@ const allContexts = [extensionBuild, workerBuild, ...commandBuilds];
 
 const startBuilds = async () => {
   console.log('🔧 Starting corrected build process...');
+  
+  // Copier le répertoire des parsers
+  const parsersSrc = path.join(__dirname, 'parsers');
+  const parsersDest = path.join(outDir, 'parsers');
+  if (fs.existsSync(parsersSrc)) {
+    fs.mkdirSync(parsersDest, { recursive: true });
+    fs.readdirSync(parsersSrc).forEach(file => {
+      fs.copyFileSync(path.join(parsersSrc, file), path.join(parsersDest, file));
+    });
+    console.log('✅ Copied parsers to dist/parsers');
+  } else {
+    console.warn('⚠️  Parsers directory not found at:', parsersSrc);
+  }
+
   if (isWatch) {
     await Promise.all(allContexts.map(ctx => ctx.watch()));
     console.log('👁️  esbuild is watching for changes...');

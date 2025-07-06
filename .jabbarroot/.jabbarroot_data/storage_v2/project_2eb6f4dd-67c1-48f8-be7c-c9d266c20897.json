@@ -5,8 +5,7 @@
   "brickContextIds": [
     "aa3fd23d-8055-46d3-9dcb-f69d9c75e133",
     "7f916eba-20f7-4b5e-a893-b40f23bf0d36",
-    "c040d048-5605-4335-818b-7fd5412aa673",
-    "a2ae7e51-e96a-4285-8a49-e243bf271b0e"
+    "c040d048-5605-4335-818b-7fd5412aa673"
   ],
   "options": {
     "compilationCompressionLevel": "none",
@@ -23,6 +22,6 @@
   },
   "metadata": {
     "createdAt": "2025-06-28T16:59:20.205Z",
-    "updatedAt": "2025-07-06T01:14:15.439Z"
+    "updatedAt": "2025-07-06T21:30:12.327Z"
   }
 }

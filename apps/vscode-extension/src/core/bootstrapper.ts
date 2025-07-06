@@ -56,7 +56,15 @@ export class ExtensionBootstrapper {
         const workerScriptPath = context.asAbsolutePath(path.join('dist', 'worker-task.js'));
         console.log(`[Bootstrapper] Chemin du worker résolu : ${workerScriptPath}`);
         const concurrencyService = new ConcurrencyService(workerScriptPath);
-        const ordoAbChaosOrchestrator = new OrdoAbChaosOrchestrator(projectRootPath, concurrencyService);
+        
+        const parsersPath = context.asAbsolutePath(path.join('dist', 'parsers'));
+        console.log(`[Bootstrapper] Chemin des parsers résolu : ${parsersPath}`);
+        
+        const ordoAbChaosOrchestrator = new OrdoAbChaosOrchestrator(
+            projectRootPath, 
+            concurrencyService,
+            parsersPath
+        );
 
         // CORRECTION : Instancier les services UI ici aussi
         const notificationService = new NotificationService();
