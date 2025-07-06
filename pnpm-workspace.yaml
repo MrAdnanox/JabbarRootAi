@@ -2,5 +2,11 @@ packages:
   - packages/*
   - apps/*
 
+ignoredBuiltDependencies:
+  - core-js
+  - esbuild
+
 onlyBuiltDependencies:
   - '@swc/core'
+  - better-sqlite3
+  - tree-sitter

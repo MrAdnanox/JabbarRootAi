@@ -28,7 +28,7 @@ export class ArtefactService {
   ): Promise<BrickContext | undefined> {
     const artefactName = this.getArtefactBrickName(artefactType);
     const bricks = await this.brickService.getBricksByProjectId(project.id);
-    return bricks.find(b => b.name === artefactName);
+    return bricks.find((b: BrickContext) => b.name === artefactName);
   }
 
   /**

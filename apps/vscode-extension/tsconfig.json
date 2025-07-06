@@ -4,15 +4,18 @@
     "outDir": "dist",
     "baseUrl": ".",
     "types": ["node", "mocha"],
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
     "paths": {
       "@jabbarroot/core": ["../../packages/core/src"],
       "@jabbarroot/core/*": ["../../packages/core/src/*"],
-      "@jabbarroot/types": ["../../packages/types/src"],
-      "@jabbarroot/types/*": ["../../packages/types/src/*"],
       "@jabbarroot/prompt-factory": ["../../packages/prompt-factory/src"],
-      "@jabbarroot/prompt-factory/*": ["../../packages/prompt-factory/src/*"]
-    },
-    "moduleResolution": "node"
+      "@jabbarroot/prompt-factory/*": ["../../packages/prompt-factory/src/*"],
+      "@jabbarroot/types": ["../../packages/types/src"],
+      "@jabbarroot/types/*": ["../../packages/types/src/*"]
+    }
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules", "dist"],
