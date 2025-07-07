@@ -1,22 +1,55 @@
-// apps/vscode-extension/esbuild.mjs
 import esbuild from 'esbuild';
-import { pnpPlugin } from '@yarnpkg/esbuild-plugin-pnp';
-import * as fs from 'fs';
+import { nativeNodeModulesPlugin } from 'esbuild-native-node-modules-plugin';
+
+import * as fs from 'fs'; // Import de fs
 import * as path from 'path';
 import { fileURLToPath } from 'url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const isWatch = process.argv.includes('--watch');
+const outDir = path.join(__dirname, 'dist');
 
-/**
- * Trouve récursivement tous les fichiers .command.ts dans un répertoire.
- * @param {string} dir - Le répertoire de départ.
- * @returns {string[]} Liste des chemins complets des fichiers trouvés.
- */
+const nativeExternals = [
+    'vscode', 
+    'tree-sitter', 
+    'web-tree-sitter', 
+    'tiktoken',
+    '@vscode/sqlite3'
+];
+
+// Votre plugin personnalisé, c'est la bonne approche.
+const monorepoPathsPlugin = {
+  name: 'monorepo-paths',
+  setup(build) {
+    build.onResolve({ filter: /^@jabbarroot\/.*/ }, (args) => {
+      const packageName = args.path.replace('@jabbarroot/', '');
+      const packagePath = path.resolve(__dirname, `../../packages/${packageName}/src/index.ts`);
+      return { path: packagePath };
+    });
+  }
+};
+
+const baseConfig = {
+  bundle: true,
+  external: nativeExternals,
+  format: 'cjs',
+  platform: 'node',
+  target: 'node16',
+  sourcemap: 'inline',
+  plugins: [
+    monorepoPathsPlugin,
+    nativeNodeModulesPlugin 
+  ],
+  define: {
+    'process.env.NODE_ENV': '"production"'
+  },
+  logLevel: 'info'
+};
+
+// --- RÉINTRODUCTION DE LA LOGIQUE DE BUILD DES COMMANDES ---
 const findCommandFiles = (dir) => {
   let files = [];
   const items = fs.readdirSync(dir, { withFileTypes: true });
-
   for (const item of items) {
     const fullPath = path.join(dir, item.name);
     if (item.isDirectory()) {
@@ -28,86 +61,72 @@ const findCommandFiles = (dir) => {
   return files;
 };
 
-// Copier le fichier WASM dans le dossier dist
-const copyWasmFile = () => {
-  try {
-    const wasmPath = path.join(__dirname, '..', '..', 'node_modules', 'tiktoken', 'tiktoken_bg.wasm');
-    const outDir = path.join(__dirname, 'dist');
-    const outPath = path.join(outDir, 'tiktoken_bg.wasm');
-    
-    if (!fs.existsSync(outDir)) {
-      fs.mkdirSync(outDir, { recursive: true });
-    }
-    
-    fs.copyFileSync(wasmPath, outPath);
-    console.log('Fichier tiktoken_bg.wasm copié avec succès');
-  } catch (error) {
-    console.error('Erreur lors de la copie du fichier WASM:', error);
-  }
-};
-
-// Exécuter les fonctions d'initialisation
-copyWasmFile();
-
-// Configuration pour l'extension principale
-const extensionBuild = await esbuild.context({
-  entryPoints: ['src/extension.ts'],
-  bundle: true,
-  outfile: 'dist/extension.js',
-  external: ['vscode'],
-  format: 'cjs',
-  platform: 'node',
-  target: 'node16',
-  sourcemap: 'inline',
-  plugins: [pnpPlugin()],
-});
-
-// Configuration pour les commandes
 const commandsDir = path.join(__dirname, 'src', 'commands');
 const commandFiles = findCommandFiles(commandsDir);
-
 console.log(`Found ${commandFiles.length} command files to build.`);
 
 const commandBuilds = await Promise.all(
   commandFiles.map(entry => {
-    // Calcule le chemin de sortie en préservant la structure des sous-dossiers
     const relativePath = path.relative(commandsDir, entry);
-    const outfile = path.join(__dirname, 'dist', 'commands', relativePath.replace(/\.ts$/, '.js'));
-
-    // S'assurer que le répertoire de sortie existe
-    const outDir = path.dirname(outfile);
-    if (!fs.existsSync(outDir)) {
-      fs.mkdirSync(outDir, { recursive: true });
+    const outfile = path.join(outDir, 'commands', relativePath.replace(/\.ts$/, '.cjs'));
+    const outfileDir = path.dirname(outfile);
+    if (!fs.existsSync(outfileDir)) {
+      fs.mkdirSync(outfileDir, { recursive: true });
     }
-    
     return esbuild.context({
+      ...baseConfig,
       entryPoints: [entry],
-      bundle: true,
       outfile,
-      external: ['vscode', '@jabbarroot/core', '@jabbarroot/types', '@jabbarroot/prompt-factory'],
-      format: 'cjs',
-      platform: 'node',
-      target: 'node16',
-      sourcemap: 'inline',
-      plugins: [pnpPlugin()],
+      // Les commandes doivent traiter les packages du monorepo comme externes
+      // car ils sont déjà dans le bundle principal de l'extension.
+      // Cela évite de dupliquer le code.
+      external: [ ...nativeExternals, '@jabbarroot/core', '@jabbarroot/types', '@jabbarroot/prompt-factory' ],
     });
   })
 );
+// --- FIN DE LA LOGIQUE DE BUILD DES COMMANDES ---
 
-// Combiner tous les contextes de build
-const allContexts = [extensionBuild, ...commandBuilds];
+const workerBuild = await esbuild.context({
+    ...baseConfig,
+    entryPoints: ['../../packages/core/src/services/concurrency/worker-task.ts'],
+    outfile: path.join(outDir, 'worker-task.js'),
+    external: ['web-tree-sitter'] 
+});
 
-// Fonction pour démarrer tous les builds
+const extensionBuild = await esbuild.context({
+  ...baseConfig,
+  entryPoints: ['src/extension.ts'],
+  outfile: path.join(outDir, 'extension.cjs'),
+  external: [ ...baseConfig.external, './commands/*' ],
+});
+
+// Ajout des contextes de build des commandes
+const allContexts = [extensionBuild, workerBuild, ...commandBuilds];
+
 const startBuilds = async () => {
+  console.log('🔧 Starting corrected build process...');
+  
+  // Copier le répertoire des parsers
+  const parsersSrc = path.join(__dirname, 'parsers');
+  const parsersDest = path.join(outDir, 'parsers');
+  if (fs.existsSync(parsersSrc)) {
+    fs.mkdirSync(parsersDest, { recursive: true });
+    fs.readdirSync(parsersSrc).forEach(file => {
+      fs.copyFileSync(path.join(parsersSrc, file), path.join(parsersDest, file));
+    });
+    console.log('✅ Copied parsers to dist/parsers');
+  } else {
+    console.warn('⚠️  Parsers directory not found at:', parsersSrc);
+  }
+
   if (isWatch) {
     await Promise.all(allContexts.map(ctx => ctx.watch()));
-    console.log('esbuild is watching for changes...');
+    console.log('👁️  esbuild is watching for changes...');
   } else {
     await Promise.all(allContexts.map(ctx => ctx.rebuild()));
     await Promise.all(allContexts.map(ctx => ctx.dispose()));
-    console.log('esbuild build complete.');
+    console.log('✅ esbuild build complete.');
   }
 };
 
-// Démarrer les builds
 await startBuilds();

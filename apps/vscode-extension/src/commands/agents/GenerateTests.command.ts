@@ -7,7 +7,7 @@ import { NotificationService } from '../../services/ui/notification.service';
 
 export class GenerateTestsCommand implements ICommandModule {
   public readonly metadata = {
-    id: 'jabbarroot.test.GenerateTests',
+    id: 'jabbarroot.agents.GenerateTests',
     title: 'Générer des tests unitaires',
     category: 'jabbarroot' as const,
   };

@@ -3,7 +3,9 @@
   "compilerOptions": {
     "outDir": "dist",
     "rootDir": "src",
-    "composite": true
+    "composite": true,
+    "declaration": true,
+    "types": ["node"]
   },
   "include": [
     "src/**/*"
@@ -12,7 +14,7 @@
     "node_modules",
     "dist"
   ],
-  "references": [
+  "references": [ 
     {
       "path": "../types"
     }

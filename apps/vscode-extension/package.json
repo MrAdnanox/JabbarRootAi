@@ -14,7 +14,7 @@
   "engines": {
     "vscode": "^1.70.0"
   },
-  "main": "./dist/extension.js",
+  "main": "./dist/extension.cjs",
   "contributes": {
     "viewsContainers": {
       "activitybar": [
@@ -37,24 +37,29 @@
     },
     "commands": [
       {
+        "command": "jabbarroot.orchestration.OrdoAbChaos",
+        "title": "JabbarRoot: Ordo Ab Chaos",
+        "category": "jabbarroot"
+      },
+      {
         "command": "jabbarroot.RunAgent",
         "title": "JabbarRoot: Exécuter un Agent Cognitif...",
         "category": "jabbarroot"
       },
       {
-        "command": "jabbarroot.test.GenerateTests",
+        "command": "jabbarroot.agents.GenerateTests",
         "title": "JabbarTest: Générer les tests unitaires",
         "category": "jabbarroot",
         "icon": "$(test)"
       },
       {
-        "command": "jabbarroot.brick.StructureAnalyzer",
+        "command": "jabbarroot.agents.StructureAnalyzer",
         "title": "JabbarAnalyzer: Analyser la structure du projet",
         "category": "jabbarroot",
         "icon": "$(graph)"
       },
       {
-        "command": "jabbarroot.doc.GenerateReadme",
+        "command": "jabbarroot.agents.GenerateReadme",
         "title": "JabbarDoc: Générer le README du projet",
         "category": "jabbarroot",
         "icon": "$(notebook)"
@@ -184,72 +189,72 @@
         }
       ],
       "view/item/context": [
-    {
-        "command": "jabbarroot.CreateBrickInProject",
-        "when": "view == jabbarroot.contextView && (viewItem == 'jabbarrootProject' || viewItem == 'jabbarrootUserBrickGroup')",
-        "group": "inline"
-    },
-    {
-        "command": "jabbarroot.CompileProject",
-        "when": "view == jabbarroot.contextView && viewItem == 'jabbarrootProject'",
-        "group": "inline"
-    },
-    {
-        "command": "jabbarroot.EditProjectOptions",
-        "when": "view == jabbarroot.contextView && viewItem == 'jabbarrootProject'",
-        "group": "inline"
-    },
-    {
-        "command": "jabbarroot.DeleteProject",
-        "when": "view == jabbarroot.contextView && viewItem == 'jabbarrootProject'",
-        "group": "inline"
-    },
-    {
-        "command": "jabbarroot.CompileBrick",
-        "when": "view == jabbarroot.contextView && viewItem == 'jabbarrootBrick'",
-        "group": "inline@1"
-    },
-    {
-        "command": "jabbarroot.ActivateBrick",
-        "when": "view == jabbarroot.contextView && viewItem == 'jabbarrootBrick' && !jabbarroot:selectedBrickIsActive",
-        "group": "inline@2"
-    },
-    {
-        "command": "jabbarroot.DeactivateBrick",
-        "when": "view == jabbarroot.contextView && viewItem == 'jabbarrootBrick' && jabbarroot:selectedBrickIsActive",
-        "group": "inline@2"
-    },
-    {
-        "command": "jabbarroot.SetAsDefaultTargetBrick",
-        "when": "view == jabbarroot.contextView && viewItem == 'jabbarrootBrick'",
-        "group": "inline@3"
-    },
-    {
-        "command": "jabbarroot.AddPathToBrick",
-        "when": "view == jabbarroot.contextView && viewItem == 'jabbarrootBrick'",
-        "group": "inline@4"
-    },
-    {
-        "command": "jabbarroot.RemoveFileFromBrick",
-        "when": "view == jabbarroot.contextView && viewItem == 'jabbarrootBrick'",
-        "group": "inline@5"
-    },
-    {
-        "command": "jabbarroot.DeleteBrick",
-        "when": "view == jabbarroot.contextView && viewItem == 'jabbarrootBrick'",
-        "group": "inline@6"
-    },
-    {
-        "command": "jabbarroot.EditBrickOptions",
-        "when": "view == jabbarroot.contextView && viewItem == 'jabbarrootBrick'",
-        "group": "inline@7"
-    },
-    {
-        "command": "jabbarroot.RemoveSingleFileFromBrick",
-        "when": "view == jabbarroot.contextView && viewItem == 'jabbarrootFileInBrick'",
-        "group": "inline"
-    }
-],
+        {
+          "command": "jabbarroot.CreateBrickInProject",
+          "when": "view == jabbarroot.contextView && (viewItem == 'jabbarrootProject' || viewItem == 'jabbarrootUserBrickGroup')",
+          "group": "inline"
+        },
+        {
+          "command": "jabbarroot.CompileProject",
+          "when": "view == jabbarroot.contextView && viewItem == 'jabbarrootProject'",
+          "group": "inline"
+        },
+        {
+          "command": "jabbarroot.EditProjectOptions",
+          "when": "view == jabbarroot.contextView && viewItem == 'jabbarrootProject'",
+          "group": "inline"
+        },
+        {
+          "command": "jabbarroot.DeleteProject",
+          "when": "view == jabbarroot.contextView && viewItem == 'jabbarrootProject'",
+          "group": "inline"
+        },
+        {
+          "command": "jabbarroot.CompileBrick",
+          "when": "view == jabbarroot.contextView && viewItem == 'jabbarrootBrick'",
+          "group": "inline@1"
+        },
+        {
+          "command": "jabbarroot.ActivateBrick",
+          "when": "view == jabbarroot.contextView && viewItem == 'jabbarrootBrick' && !jabbarroot:selectedBrickIsActive",
+          "group": "inline@2"
+        },
+        {
+          "command": "jabbarroot.DeactivateBrick",
+          "when": "view == jabbarroot.contextView && viewItem == 'jabbarrootBrick' && jabbarroot:selectedBrickIsActive",
+          "group": "inline@2"
+        },
+        {
+          "command": "jabbarroot.SetAsDefaultTargetBrick",
+          "when": "view == jabbarroot.contextView && viewItem == 'jabbarrootBrick'",
+          "group": "inline@3"
+        },
+        {
+          "command": "jabbarroot.AddPathToBrick",
+          "when": "view == jabbarroot.contextView && viewItem == 'jabbarrootBrick'",
+          "group": "inline@4"
+        },
+        {
+          "command": "jabbarroot.RemoveFileFromBrick",
+          "when": "view == jabbarroot.contextView && viewItem == 'jabbarrootBrick'",
+          "group": "inline@5"
+        },
+        {
+          "command": "jabbarroot.DeleteBrick",
+          "when": "view == jabbarroot.contextView && viewItem == 'jabbarrootBrick'",
+          "group": "inline@6"
+        },
+        {
+          "command": "jabbarroot.EditBrickOptions",
+          "when": "view == jabbarroot.contextView && viewItem == 'jabbarrootBrick'",
+          "group": "inline@7"
+        },
+        {
+          "command": "jabbarroot.RemoveSingleFileFromBrick",
+          "when": "view == jabbarroot.contextView && viewItem == 'jabbarrootFileInBrick'",
+          "group": "inline"
+        }
+      ],
       "explorer/context": [
         {
           "command": "jabbarroot.AddSelectionToActiveBrick",
@@ -261,7 +266,7 @@
     "configuration": {
       "title": "jabbarroot",
       "properties": {
-        "jabbarroot.gemini.apiKey": { 
+        "jabbarroot.gemini.apiKey": {
           "type": "string",
           "default": null,
           "description": "Your Google Gemini API key for AI features."
@@ -311,9 +316,11 @@
     "onStartupFinished"
   ],
   "scripts": {
-    "vscode:prepublish": "node ./esbuild.mjs",
-    "build": "node ./esbuild.mjs",
-    "package": "node ./esbuild.mjs", 
+    "vscode:prepublish": "pnpm run build",
+    "rebuild:native": "electron-rebuild -v 31.2.0",
+    "build:esbuild": "node ./esbuild.mjs",
+    "build": "pnpm run rebuild:native && pnpm run build:esbuild",
+    "package": "pnpm run build",
     "watch": "node ./esbuild.mjs --watch",
     "pretest": "pnpm run build",
     "test": "vscode-test"
@@ -323,7 +330,12 @@
     "@jabbarroot/prompt-factory": "workspace:*",
     "@jabbarroot/types": "workspace:*",
     "@jridgewell/trace-mapping": "^0.3.26",
-    "minimatch": "^10.0.3"
+    "@vscode/sqlite3": "5.1.8-vscode",
+    "lru-cache": "^11.1.0",
+    "minimatch": "^10.0.3",
+    "tiktoken": "^1.0.21",
+    "tree-sitter": "^0.25.0",
+    "web-tree-sitter": "^0.24.7"
   },
   "devDependencies": {
     "@types/minimatch": "^5.1.2",
@@ -335,7 +347,9 @@
     "@vscode/test-electron": "^2.5.2",
     "@yarnpkg/esbuild-plugin-pnp": "3.0.0-rc.15",
     "chai": "^5.2.0",
+    "electron-rebuild": "^3.2.9",
     "esbuild": "^0.25.5",
+    "esbuild-native-node-modules-plugin": "^1.0.3",
     "sinon": "^21.0.0",
     "tsd": "^0.7.4",
     "xo": "^0.24.0"

@@ -11,10 +11,12 @@
     "@google/generative-ai": "^0.15.0",
     "@jabbarroot/core": "workspace:*",
     "@jabbarroot/types": "workspace:*",
+    "uuid": "^9.0.1",
     "zod": "^3.25.67"
   },
   "devDependencies": {
-    "@types/node": "^20.14.9",
+    "@types/uuid": "^9.0.8",
+    "@types/vscode": "^1.95.0",
     "typescript": "^5.5.2"
   }
 }

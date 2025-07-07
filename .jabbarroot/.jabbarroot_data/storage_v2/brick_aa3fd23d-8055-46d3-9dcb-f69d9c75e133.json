@@ -16,7 +16,8 @@
     "packages/core/package.json",
     "packages/core/tsconfig.json",
     "packages/prompt-factory/package.json",
-    "packages/prompt-factory/tsconfig.json"
+    "packages/prompt-factory/tsconfig.json",
+    "tsconfig.solution.json"
   ],
   "options": {
     "special_sections": {},
@@ -24,9 +25,9 @@
     "compilationIncludeProjectTree": true
   },
   "isActiveForProjectCompilation": true,
-  "isDefaultTarget": false,
+  "isDefaultTarget": true,
   "metadata": {
     "createdAt": "2025-06-30T16:30:49.225Z",
-    "updatedAt": "2025-07-02T20:13:33.325Z"
+    "updatedAt": "2025-07-06T21:35:15.739Z"
   }
 }

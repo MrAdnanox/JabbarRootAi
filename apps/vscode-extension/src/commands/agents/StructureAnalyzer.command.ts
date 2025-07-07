@@ -9,7 +9,7 @@ import { GeminiConfigService } from '../../services/config/gemini.config.service
 
 export class StructureAnalyzerCommand implements ICommandModule {
     public readonly metadata = {
-        id: 'jabbarroot.brick.StructureAnalyzer',
+        id: 'jabbarroot.agents.StructureAnalyzer',
         title: 'Analyser la structure du projet',
         category: 'jabbarroot' as const,
     };

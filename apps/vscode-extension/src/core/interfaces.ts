@@ -14,7 +14,8 @@ import { IgnoreService } from '../services/ignore.service';
 import { DialogService } from '../services/ui/dialog.service';
 import { GeminiConfigService } from '../services/config/gemini.config.service';
 import { NotificationService } from '../services/ui/notification.service';
-
+import { ConcurrencyService } from '@jabbarroot/core';
+import { OrdoAbChaosOrchestrator } from '@jabbarroot/prompt-factory';
 /**
  * Interface marqueur pour les services gérés par le ServiceRegistry.
  * La méthode dispose est optionnelle et sera appelée dynamiquement si elle existe.
@@ -66,4 +67,7 @@ export interface ServiceCollection {
     promptTemplateService: PromptTemplateService;
     // --- Extension Context ---
     extensionContext: vscode.ExtensionContext;
+
+    concurrencyService: ConcurrencyService;
+    ordoAbChaosOrchestrator: OrdoAbChaosOrchestrator;
 }

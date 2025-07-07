@@ -1,80 +1,109 @@
 import * as vscode from 'vscode';
+import * as path from 'path';
 import { ServiceRegistry } from './di/service.registry';
 import { ModuleRegistry } from './module.registry';
 import { ServiceCollection, IService } from './interfaces';
-// Importations de tous les services existants...
 import {
     ProjectService, BrickService, BrickConstructorService, StatisticsService, StructureGenerationService,
-    FileContentService, CompactionService, SystemBrickManager
+    FileContentService, CompactionService, SystemBrickManager, ConcurrencyService
 } from '@jabbarroot/core';
-import { AnalyzerService, DocumentationService, UnitTestGeneratorService, ArtefactService, GenericWorkflowEngine, PromptTemplateService } from '@jabbarroot/prompt-factory';
+import { 
+    AnalyzerService, DocumentationService, UnitTestGeneratorService, ArtefactService, 
+    GenericWorkflowEngine, PromptTemplateService, OrdoAbChaosOrchestrator 
+} from '@jabbarroot/prompt-factory';
 import { VscodeFileSystemAdapter } from '../adapters/vscodeFileSystem.adapter';
 import { FileSystemStorageAdapter } from '../adapters/fileSystemStorage.adapter';
 import { loadServices } from '../bootstrap/service.loader';
 import { IgnoreService } from '../services/ignore.service';
 import { ProjectTreeDataProvider } from '../providers/projectTreeDataProvider';
 import { BrickTreeItem } from '../providers/projectTreeItem.factory';
+import { NotificationService } from '../services/ui/notification.service';
+import { DialogService } from '../services/ui/dialog.service';
+import { GeminiConfigService } from '../services/config/gemini.config.service';
 
-// Extension du type vscode.ExtensionContext pour implémenter IService
 declare module 'vscode' {
     interface ExtensionContext extends IService {}
 }
-
 
 export class ExtensionBootstrapper {
 
     public static async activate(context: vscode.ExtensionContext, projectRootPath: string): Promise<{ container: ServiceRegistry; dispose: () => void }> {
         console.log('[Bootstrapper] Starting activation sequence...');
-        
-        // 1. Initialiser le registre de services
         const container = new ServiceRegistry();
-        
-        // 2. Enregistrer le contexte d'extension
         container.register('extensionContext', context);
 
-        // 3. Instancier tous les services
-        // --- Adapters
+        // --- Instanciation de tous les services ---
         const fileSystemAdapter = new VscodeFileSystemAdapter();
         const storageAdapter = new FileSystemStorageAdapter(fileSystemAdapter, projectRootPath, '.jabbarroot_data/storage_v2');
-        // --- Core Services
+        
         const projectService = new ProjectService(storageAdapter);
-        container.register('projectService', projectService);
         const brickService = new BrickService(storageAdapter);
-        container.register('brickService', brickService);
         const compactionService = new CompactionService();
-        container.register('compactionService', compactionService);
         const fileContentService = new FileContentService(fileSystemAdapter, compactionService);
-        container.register('fileContentService', fileContentService);
         const structureGenerationService = new StructureGenerationService(fileSystemAdapter);
-        container.register('structureGenerationService', structureGenerationService);
         const brickConstructorService = new BrickConstructorService(structureGenerationService, fileContentService, compactionService);
-        container.register('brickConstructorService', brickConstructorService);
         const statisticsService = new StatisticsService(fileContentService, compactionService, brickConstructorService, fileSystemAdapter);
-        container.register('statisticsService', statisticsService);
         const systemBrickManager = new SystemBrickManager(brickService, projectService, fileSystemAdapter);
-        container.register('systemBrickManager', systemBrickManager);
-        // --- Extension-specific Services
         const ignoreService = new IgnoreService(fileSystemAdapter);
-        container.register('ignoreService', ignoreService);
-        // --- Prompt-Factory Services
         const analyzerService = new AnalyzerService(fileSystemAdapter, projectService, brickService, statisticsService);
-        container.register('analyzerService', analyzerService);
         const documentationService = new DocumentationService(analyzerService, systemBrickManager, fileContentService, fileSystemAdapter);
-        container.register('documentationService', documentationService);
         const unitTestGeneratorService = new UnitTestGeneratorService(brickService, fileContentService, fileSystemAdapter);
-        container.register('unitTestGeneratorService', unitTestGeneratorService);
         const artefactService = new ArtefactService(projectService, brickService);
-        container.register('artefactService', artefactService);
         const promptTemplateService = new PromptTemplateService(fileSystemAdapter);
-        container.register('promptTemplateService', promptTemplateService);
         const genericWorkflowEngine = new GenericWorkflowEngine(fileSystemAdapter, systemBrickManager, artefactService, fileContentService, promptTemplateService);
-        container.register('genericWorkflowEngine', genericWorkflowEngine);
-
-        // --- Vues et Providers
         const projectTreeProvider = new ProjectTreeDataProvider(projectService, brickService, context.globalState);
-        container.register('treeDataProvider', projectTreeProvider);
+        
+        const workerScriptPath = context.asAbsolutePath(path.join('dist', 'worker-task.js'));
+        console.log(`[Bootstrapper] Chemin du worker résolu : ${workerScriptPath}`);
+        const concurrencyService = new ConcurrencyService(workerScriptPath);
+        
+        const parsersPath = context.asAbsolutePath(path.join('dist', 'parsers'));
+        console.log(`[Bootstrapper] Chemin des parsers résolu : ${parsersPath}`);
+        
+        const ordoAbChaosOrchestrator = new OrdoAbChaosOrchestrator(
+            projectRootPath, 
+            concurrencyService,
+            fileContentService,
+            parsersPath
+        );
 
-        // Création de la vue avec gestion de la sélection
+        // CORRECTION : Instancier les services UI ici aussi
+        const notificationService = new NotificationService();
+        const dialogService = new DialogService(projectService);
+        const geminiConfigService = new GeminiConfigService();
+
+        // --- Création de la collection complète ---
+        const services: Record<string, any> = {
+            extensionContext: context,
+            projectService,
+            brickService,
+            compactionService,
+            fileContentService,
+            structureGenerationService,
+            brickConstructorService,
+            statisticsService,
+            systemBrickManager,
+            ignoreService,
+            analyzerService,
+            documentationService,
+            unitTestGeneratorService,
+            artefactService,
+            promptTemplateService,
+            genericWorkflowEngine,
+            treeDataProvider: projectTreeProvider,
+            concurrencyService,
+            ordoAbChaosOrchestrator,
+            notificationService,
+            dialogService,
+            geminiConfigService
+        };
+
+        // --- Enregistrement de tous les services dans le conteneur ---
+        Object.entries(services).forEach(([key, service]) => {
+            container.register(key as keyof ServiceCollection, service);
+        });
+
+        // ... (le reste de la fonction, la partie avec treeView, etc.)
         const treeView = vscode.window.createTreeView('jabbarroot.contextView', { 
             treeDataProvider: projectTreeProvider, 
             showCollapseAll: true 
@@ -111,7 +140,9 @@ export class ExtensionBootstrapper {
             artefactService: artefactService as unknown as IService,
             promptTemplateService: promptTemplateService as unknown as IService,
             genericWorkflowEngine: genericWorkflowEngine as unknown as IService,
-            treeDataProvider: projectTreeProvider as unknown as IService
+            treeDataProvider: projectTreeProvider as unknown as IService,
+            concurrencyService: concurrencyService as unknown as IService,
+            ordoAbChaosOrchestrator: ordoAbChaosOrchestrator as unknown as IService
         } as ServiceCollection;
         
         loadServices(container, serviceCollection);
