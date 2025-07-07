@@ -63,6 +63,7 @@ export class ExtensionBootstrapper {
         const ordoAbChaosOrchestrator = new OrdoAbChaosOrchestrator(
             projectRootPath, 
             concurrencyService,
+            fileContentService,
             parsersPath
         );
 

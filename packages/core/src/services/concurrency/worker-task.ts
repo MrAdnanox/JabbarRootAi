@@ -1,32 +1,84 @@
+// --- FICHIER : packages/core/src/services/concurrency/worker-task.ts ---
+
 import { parentPort } from 'worker_threads';
-import { Parser, Language } from 'web-tree-sitter';
+import { Language, SyntaxNode } from 'web-tree-sitter';
+import Parser = require('web-tree-sitter'); // CORRECTION : Import CJS-compatible
 import * as path from 'path';
 
-const runAnalysis = async (filePath: string, fileContent: string, parsersPath: string): Promise<any> => {
-    const getLanguageFromPath = (fp: string): string | null => {
-        const ext = path.extname(fp).toLowerCase(); // Convertir en minuscule pour la robustesse
-        switch (ext) {
-            case '.ts':
-            case '.tsx':
-                return 'typescript';
-            case '.js':
-            case '.jsx':
-            case '.mjs':
-            case '.cjs':
-                return 'javascript';
-            // On pourrait ajouter d'autres langages ici à l'avenir (python, go, etc.)
-            default:
-                return null;
-        }
-    };
+// Définition d'une structure de retour claire pour le worker
+interface SemanticSymbol {
+    name: string;
+    kind: 'class' | 'function' | 'interface' | 'const' | 'module';
+    isExported: boolean;
+}
 
-    const language = getLanguageFromPath(filePath);
+interface SemanticAnalysisPayload {
+    filePath: string;
+    language: string;
+    dependencies: string[];
+    symbols: SemanticSymbol[];
+    error?: string;
+    stack?: string;
+}
+
+// Fonction récursive pour parcourir l'AST
+function traverseAst(node: SyntaxNode, results: { dependencies: Set<string>, symbols: Map<string, SemanticSymbol> }) {
+    // Extraction des dépendances (imports/requires)
+    if (node.type === 'import_statement' && node.childForFieldName('source')) {
+        const sourceNode = node.childForFieldName('source')!;
+        if (sourceNode.type === 'string_literal') {
+            results.dependencies.add(sourceNode.text.slice(1, -1));
+        }
+    } else if (node.type === 'call_expression' && node.childForFieldName('function')?.text === 'require') {
+        const arg = node.childForFieldName('arguments')?.children[1];
+        if (arg?.type === 'string_literal') {
+            results.dependencies.add(arg.text.slice(1, -1));
+        }
+    }
+
+    // Extraction des déclarations et exports
+    let isExported = node.parent?.type === 'export_statement';
+    let declarationNode = isExported ? node.childForFieldName('declaration') || node : node;
     
-    // CORRECTION : Si le langage n'est pas supporté, on retourne simplement null.
-    // Le thread principal saura ignorer ce résultat.
+    if (node.type === 'export_statement' && !declarationNode) {
+        const namedExports = node.descendantsOfType('identifier');
+        for(const id of namedExports) {
+            if(results.symbols.has(id.text)) {
+                results.symbols.get(id.text)!.isExported = true;
+            }
+        }
+    }
+
+    let symbol: SemanticSymbol | undefined;
+    switch (declarationNode.type) {
+        case 'class_declaration':
+        case 'function_declaration':
+        case 'interface_declaration':
+            const nameNode = declarationNode.childForFieldName('name');
+            if (nameNode) {
+                symbol = {
+                    name: nameNode.text,
+                    kind: declarationNode.type.split('_')[0] as any,
+                    isExported: isExported
+                };
+            }
+            break;
+    }
+
+    if (symbol && !results.symbols.has(symbol.name)) {
+        results.symbols.set(symbol.name, symbol);
+    }
+
+    // Appel récursif sur les enfants
+    node.children?.forEach((child: SyntaxNode) => {
+        traverseAst(child, results);
+    });
+}
+
+
+const runAnalysis = async (filePath: string, fileContent: string, language: string | null, parsersPath: string): Promise<SemanticAnalysisPayload> => {
     if (!language) {
-        // console.log(`[Worker] Fichier non supporté, ignoré : ${filePath}`);
-        return null; 
+        return { filePath, language: 'unknown', dependencies: [], symbols: [], error: "Language not specified for analysis." };
     }
 
     try {
@@ -36,29 +88,44 @@ const runAnalysis = async (filePath: string, fileContent: string, parsersPath: s
         const Lang = await Language.load(wasmPath);
         parser.setLanguage(Lang);
         const tree = parser.parse(fileContent);
-        
-        // Logique d'analyse sémantique (placeholder pour l'instant)
-        const symbols = fileContent.match(/export\s+(class|function|const)\s+(\w+)/g) || [];
-        
-        const result = {
-            filePath,
-            symbols: symbols.map(s => s.split(' ').pop()),
-            ast_size: fileContent.length, // Placeholder
+
+        if (!tree?.rootNode) {
+            return {
+                filePath,
+                language: language || 'unknown',
+                dependencies: [],
+                symbols: [],
+                error: 'Failed to parse file: could not generate syntax tree'
+            };
+        }
+
+        const analysisResults = {
+            dependencies: new Set<string>(),
+            symbols: new Map<string, SemanticSymbol>()
         };
-        return result;
+
+        traverseAst(tree.rootNode, analysisResults);
+
+        return {
+            filePath,
+            language,
+            dependencies: Array.from(analysisResults.dependencies),
+            symbols: Array.from(analysisResults.symbols.values()),
+        };
     } catch (e: any) {
-        // Retourner un objet conforme au schéma SemanticAnalysisResult
-        return { 
-            filePath: filePath,
-            language: language || undefined,
-            error: e.message, 
-            stack: e.stack 
+        return {
+            filePath,
+            language,
+            dependencies: [],
+            symbols: [],
+            error: e.message,
+            stack: e.stack
         };
     }
 };
 
 parentPort?.on('message', async (task) => {
-    const { filePath, fileContent, parsersPath } = task;
-    const result = await runAnalysis(filePath, fileContent, parsersPath);
+    const { filePath, fileContent, language, parsersPath } = task;
+    const result = await runAnalysis(filePath, fileContent, language, parsersPath);
     parentPort?.postMessage(result);
 });

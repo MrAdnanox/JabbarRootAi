@@ -1,12 +1,12 @@
+// apps/vscode-extension/src/commands/orchestration/OrdoAbChaos.command.ts
 import * as vscode from 'vscode';
 import { ICommandModule, IService, ServiceCollection } from '../../core/interfaces';
-import { OrdoAbChaosOrchestrator } from '@jabbarroot/prompt-factory';
+import { OrdoAbChaosOrchestrator, AnalyzerService } from '@jabbarroot/prompt-factory';
 import { NotificationService } from '../../services/ui/notification.service';
 import { DialogService } from '../../services/ui/dialog.service';
+import { GeminiConfigService } from '../../services/config/gemini.config.service';
+import { StructureGenerationService } from '@jabbarroot/core';
 import { IgnoreService } from '../../services/ignore.service';
-import { getFilesRecursively } from '../../utils/workspace';
-// AJOUT : Importer le service de contenu de fichier
-import { FileContentService } from '@jabbarroot/core';
 
 export class OrdoAbChaosCommand implements ICommandModule {
     public readonly metadata = {
@@ -15,22 +15,25 @@ export class OrdoAbChaosCommand implements ICommandModule {
         category: 'jabbarroot' as const,
     };
 
+    // <-- CORRECTION : Dépendances mises à jour pour la nouvelle logique
     public readonly dependencies = [
         'ordoAbChaosOrchestrator',
         'notificationService',
         'dialogService',
-        'ignoreService',
-        // AJOUT : Déclarer la dépendance
-        'fileContentService'
+        'analyzerService',
+        'geminiConfigService',
+        'structureGenerationService',
+        'ignoreService'
     ] as const;
 
     public async execute(services: Map<keyof ServiceCollection, IService>): Promise<void> {
         const orchestrator = services.get('ordoAbChaosOrchestrator') as OrdoAbChaosOrchestrator;
         const notificationService = services.get('notificationService') as NotificationService;
         const dialogService = services.get('dialogService') as DialogService;
+        const analyzerService = services.get('analyzerService') as AnalyzerService;
+        const geminiConfigService = services.get('geminiConfigService') as GeminiConfigService;
+        const structureService = services.get('structureGenerationService') as StructureGenerationService;
         const ignoreService = services.get('ignoreService') as IgnoreService;
-        // AJOUT : Obtenir le service
-        const fileContentService = services.get('fileContentService') as FileContentService;
 
         try {
             const project = await dialogService.showProjectPicker();
@@ -39,41 +42,42 @@ export class OrdoAbChaosCommand implements ICommandModule {
                 return;
             }
 
-            await notificationService.withProgress(`Analyse sémantique de "${project.name}"`, async (progress) => {
-                progress.report({ message: 'Préparation de l\'analyse...' });
+            const apiKeyResult = await geminiConfigService.getApiKey();
+            if (apiKeyResult.isFailure()) {
+                await dialogService.showConfigureApiKeyDialog();
+                return;
+            }
+            const apiKey = apiKeyResult.value;
 
-                const projectRootUri = vscode.Uri.file(project.projectRootPath);
+            await notificationService.withProgress(`Analyse de "${project.name}"`, async (progress) => {
+                // <-- CORRECTION : Implémentation de la nouvelle pipeline
+                // Étape 1: Analyse Stratégique
+                progress.report({ message: 'Phase 1/3 : Analyse architecturale...' });
                 const shouldIgnore = await ignoreService.createIgnorePredicate(project);
+                const treeReport = await structureService.generate(project.projectRootPath, {
+                    maxDepth: 8,
+                    shouldIgnore: shouldIgnore
+                });
+                const fileTree = treeReport?.tree || '';
+                const architecturalReport = await analyzerService.analyzeStructureAndPersist(project, fileTree, apiKey);
                 
-                progress.report({ message: 'Scan des fichiers du projet...' });
-                const allFilesUris = await getFilesRecursively(projectRootUri, shouldIgnore, project.projectRootPath);
-                
-                if (allFilesUris.length === 0) {
-                    notificationService.showWarning('Aucun fichier à analyser dans le projet.');
+                if (!architecturalReport || !architecturalReport.keyFiles || architecturalReport.keyFiles.length === 0) {
+                    notificationService.showWarning("L'analyse architecturale n'a identifié aucun fichier clé. Impossible de continuer.");
                     return;
                 }
 
-                progress.report({ message: `Lecture du contenu de ${allFilesUris.length} fichiers...` });
-                // CORRECTION : Lire le contenu des fichiers ici
-                const filesWithContent = await Promise.all(
-                    allFilesUris.map(async (uri) => {
-                        const relativePath = vscode.workspace.asRelativePath(uri, false);
-                        const content = await fileContentService.readFileContent(project.projectRootPath, relativePath);
-                        return { path: uri.fsPath, content: content || '' };
-                    })
-                );
+                // Étape 2 & 3: Planification et Analyse en Profondeur
+                progress.report({ message: `Phase 2/3 : Analyse sémantique de ${architecturalReport.keyFiles.length} fichiers clés...` });
+                // L'appel utilise maintenant le projet et le rapport, pas une liste de fichiers
+                const analysisJob = await orchestrator.runAnalysis(project, architecturalReport);
 
-                progress.report({ message: `Analyse de ${filesWithContent.length} fichiers...` });
-                // CORRECTION : Passer la nouvelle structure de données à l'orchestrateur
-                const analysisJob = await orchestrator.runAnalysis(project.projectRootPath, filesWithContent);
-                
-                notificationService.showInfo(`Analyse terminée ! Job ID: ${analysisJob.job_id}, Score de confiance: ${analysisJob.confidence_score}`);
+                // Étape 4: Synthèse (implicite dans runAnalysis)
+                progress.report({ message: 'Phase 3/3 : Finalisation du graphe de connaissance...' });
+                notificationService.showInfo(`Analyse terminée ! Job ID: ${analysisJob.job_id}, Score de confiance: ${analysisJob.confidence_score.toFixed(2)}`);
             });
-
         } catch (error) {
-            notificationService.showError("L'analyse sémantique a échoué", error);
+            notificationService.showError("La pipeline d'analyse 'Ordo Ab Chaos' a échoué", error);
         }
     }
 }
-
 export default new OrdoAbChaosCommand();

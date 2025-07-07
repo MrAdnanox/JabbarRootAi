@@ -335,7 +335,7 @@
     "minimatch": "^10.0.3",
     "tiktoken": "^1.0.21",
     "tree-sitter": "^0.25.0",
-    "web-tree-sitter": "^0.25.6"
+    "web-tree-sitter": "^0.24.7"
   },
   "devDependencies": {
     "@types/minimatch": "^5.1.2",

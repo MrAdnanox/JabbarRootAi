@@ -11,9 +11,7 @@
     "@google/generative-ai": "^0.15.0",
     "@jabbarroot/core": "workspace:*",
     "@jabbarroot/types": "workspace:*",
-    "tree-sitter": "^0.25.0",
     "uuid": "^9.0.1",
-    "web-tree-sitter": "^0.25.6",
     "zod": "^3.25.67"
   },
   "devDependencies": {

@@ -8,7 +8,7 @@ import { NotificationService } from '../../services/ui/notification.service';
 
 export class GenerateReadmeCommand implements ICommandModule {
     public readonly metadata = {
-        id: 'jabbarroot.doc.GenerateReadme',
+        id: 'jabbarroot.agents.GenerateReadme',
         title: 'Générer un README',
         category: 'jabbarroot' as const,
     };

@@ -44,15 +44,14 @@ export type KnowledgeGraph = z.infer<typeof KnowledgeGraphSchema>;
 // Représente le résultat d'une analyse sémantique sur un seul fichier
 export const SemanticAnalysisResultSchema = z.object({
     filePath: z.string(),
-    language: z.string().optional(), // Le langage peut être absent si le fichier n'est pas supporté
+    language: z.string().optional(), 
     symbols: z.array(z.object({ 
         name: z.string(), 
         kind: z.string(), 
-        position: z.any() 
+        isExported: z.boolean(), 
     })).optional(),
     dependencies: z.array(z.string()).optional(),
-    // Propriétés ajoutées pour la gestion des erreurs
     error: z.string().optional(),
-    stack: z.string().optional() // Utile pour le débogage
+    stack: z.string().optional() 
 });
 export type SemanticAnalysisResult = z.infer<typeof SemanticAnalysisResultSchema>;
