@@ -159,6 +159,12 @@
         "title": "Retirer ce fichier de la brique",
         "category": "JabbarRoot",
         "icon": "$(trash)"
+      },
+      {
+        "command": "jabbarroot.showSanctuary",
+        "title": "JabbarRoot: Ouvrir le Sanctuaire",
+        "category": "jabbarroot",
+        "icon": "$(home)"
       }
     ],
     "menus": {
@@ -186,6 +192,11 @@
           "command": "jabbarroot.RefreshProjectView",
           "when": "view == jabbarroot.contextView",
           "group": "navigation@2"
+        },
+        {
+          "command": "jabbarroot.showSanctuary",
+          "when": "view == jabbarroot.contextView",
+          "group": "navigation@3"
         }
       ],
       "view/item/context": [
@@ -331,6 +342,7 @@
     "@jabbarroot/types": "workspace:*",
     "@jridgewell/trace-mapping": "^0.3.26",
     "@vscode/sqlite3": "5.1.8-vscode",
+    "d3": "^7.9.0",
     "lru-cache": "^11.1.0",
     "minimatch": "^10.0.3",
     "tiktoken": "^1.0.21",
@@ -338,6 +350,7 @@
     "web-tree-sitter": "^0.24.7"
   },
   "devDependencies": {
+    "@types/d3": "^7.4.3",
     "@types/minimatch": "^5.1.2",
     "@types/mocha": "^10.0.10",
     "@types/node": "^20.19.2",

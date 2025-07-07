@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Le Sanctuaire</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <link rel="stylesheet" href="{{SANCTUARY_CSS_URI}}">
+</head>
+<body class="antialiased">
+    <div class="dashboard-container">
+        <!-- Header -->
+        <div class="flex items-center justify-between p-4 bg-[#2c2c2d] border-b border-[#3a3a3a]">
+            <h1 class="text-xl font-semibold text-white">Dashboard du Projet : <span id="project-name">Chargement...</span></h1>
+            <div class="flex space-x-2">
+                <button id="overview-tab" class="tab-button active">Vue d'Ensemble</button>
+                <button id="graph-tab" class="tab-button">Graphe de Connaissance</button>
+            </div>
+        </div>
+
+        <!-- Content Area -->
+        <div id="dashboard-content" class="p-6">
+            <!-- Overview Tab -->
+            <div id="overview-view" class="flex flex-col lg:flex-row gap-6 w-full">
+                <!-- Contenu généré par overview.controller.js -->
+            </div>
+            <!-- Graph Tab -->
+            <div id="graph-view" class="hidden w-full flex-col items-center justify-center">
+                <div class="graph-container">
+                    <svg id="knowledge-graph"></svg>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        window.vscode = acquireVsCodeApi();
+        window.initialData = '{{INITIAL_DATA}}';
+    </script>
+    <script type="module" src="{{MAIN_JS_URI}}"></script>
+</body>
+</html>

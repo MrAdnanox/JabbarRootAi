@@ -20,7 +20,7 @@ export class ProjectOptionsViewProvider {
 
     public getHtmlForWebview(webview: vscode.Webview): string {
         const cssUri = webview.asWebviewUri(vscode.Uri.joinPath(this.extensionUri, 'src', 'webviews', 'assets', 'css', 'main.css'));
-        const scriptUri = webview.asWebviewUri(vscode.Uri.joinPath(this.extensionUri, 'src', 'webviews', 'assets', 'js', 'projectOptions.webview.js'));
+        const scriptUri = webview.asWebviewUri(vscode.Uri.joinPath(this.extensionUri, 'src', 'webviews', 'components', 'project-options', 'project-options.js'));
         const nonce = getNonce();
 
         // Nous passons directement les options du projet, car il n'y a pas de concept d'héritage ici.

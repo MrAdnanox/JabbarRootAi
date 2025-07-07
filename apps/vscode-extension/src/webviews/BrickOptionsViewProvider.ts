@@ -34,8 +34,8 @@ export class BrickOptionsViewProvider {
         };
 
         // 2. Créer les URIs sécurisées pour les assets
-        const scriptUri = webview.asWebviewUri(vscode.Uri.joinPath(this.extensionUri, 'src', 'webviews', 'assets', 'js', 'webview.js'));
-        const cssUri = webview.asWebviewUri(vscode.Uri.joinPath(this.extensionUri, 'src', 'webviews', 'assets', 'css', 'main.css'));
+        const scriptUri = webview.asWebviewUri(vscode.Uri.joinPath(this.extensionUri, 'src', 'webviews', 'components', 'brick-options', 'brick-options.js'));
+        const commonCssUri = webview.asWebviewUri(vscode.Uri.joinPath(this.extensionUri, 'src', 'webviews', 'components', 'shared', 'css', 'common.css'));
         const nonce = getNonce();
 
         // 3. Construire l'HTML final, en injectant l'état et le script
@@ -46,7 +46,7 @@ export class BrickOptionsViewProvider {
     <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src ${webview.cspSource}; script-src 'nonce-${nonce}';">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Options: ${this.brick.name}</title>
-    <link rel="stylesheet" href="${cssUri}">
+    <link rel="stylesheet" href="${commonCssUri}">
 </head>
 <body>
     <h1>Options pour la brique : <em>${this.brick.name}</em></h1>

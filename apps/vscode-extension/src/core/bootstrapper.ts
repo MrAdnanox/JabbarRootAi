@@ -18,8 +18,14 @@ import { IgnoreService } from '../services/ignore.service';
 import { ProjectTreeDataProvider } from '../providers/projectTreeDataProvider';
 import { BrickTreeItem } from '../providers/projectTreeItem.factory';
 import { NotificationService } from '../services/ui/notification.service';
+import { CacheService } from '@jabbarroot/core';
+
+function getCacheFromOrchestrator(orchestrator: any): CacheService | undefined {
+    return orchestrator['cacheService'];
+}
 import { DialogService } from '../services/ui/dialog.service';
 import { GeminiConfigService } from '../services/config/gemini.config.service';
+import { SanctuaryViewProvider } from '../webviews/SanctuaryViewProvider';
 
 declare module 'vscode' {
     interface ExtensionContext extends IService {}
@@ -96,11 +102,14 @@ export class ExtensionBootstrapper {
             notificationService,
             dialogService,
             geminiConfigService
+            // Le service 'sanctuaryViewProvider' n'est plus enregistré au démarrage.
         };
 
         // --- Enregistrement de tous les services dans le conteneur ---
         Object.entries(services).forEach(([key, service]) => {
-            container.register(key as keyof ServiceCollection, service);
+            // Le type 'sanctuaryViewProvider' n'existe plus dans ServiceCollection pour l'instant
+            // car il n'est plus un service singleton géré par le conteneur.
+            container.register(key as keyof Omit<ServiceCollection, 'sanctuaryViewProvider'>, service);
         });
 
         // ... (le reste de la fonction, la partie avec treeView, etc.)

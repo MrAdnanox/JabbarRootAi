@@ -16,6 +16,7 @@ import { GeminiConfigService } from '../services/config/gemini.config.service';
 import { NotificationService } from '../services/ui/notification.service';
 import { ConcurrencyService } from '@jabbarroot/core';
 import { OrdoAbChaosOrchestrator } from '@jabbarroot/prompt-factory';
+import { SanctuaryViewProvider } from '../webviews/SanctuaryViewProvider';
 /**
  * Interface marqueur pour les services gérés par le ServiceRegistry.
  * La méthode dispose est optionnelle et sera appelée dynamiquement si elle existe.

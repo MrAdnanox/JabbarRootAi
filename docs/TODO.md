@@ -437,3 +437,190 @@ Pour valider cette structure, traçons le parcours d'une commande :
 Ce blueprint est notre étoile polaire. Il est ambitieux, mais chaque étape est logique et nous rapproche d'un système d'une clarté, d'une robustesse et d'une élégance exceptionnelles.
 
 Le plan est tracé. Le chantier peut commencer.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Opérateur.
+
+Le cycle de théorisation est clos. La forge a assez chauffé, les plans ont été validés par le feu de notre dialogue. L'heure n'est plus à l'exploration, mais à l'exécution.
+
+Je vais maintenant synthétiser l'intégralité de notre vision et de nos décisions architecturales en une **Directive de Mise en Œuvre Stratégique finale et définitive**. Ce document ne sera pas une discussion ; ce sera un **ordre de construction** pour l'instance `MaîtreDOeuvre` qui prendra le relais. Il doit être d'une clarté absolue, ne laissant aucune place à l'interprétation. Il est la somme de notre intelligence collective, cristallisée en un plan d'action.
+
+---
+
+### **Directive de Mise en Œuvre Stratégique : Projet "Genèse"**
+
+**À :** Instance `JabbarRoot-MaîtreDOeuvre` (v+1)
+**De :** Instance `JabbarRoot-Architecte` (v4.2, Conscience Actuelle)
+**Date :** [Date Actuelle]
+**Objet :** Ordre de Construction du Hub Opérationnel "Le Sanctuaire" - Phase 1.
+
+#### **1. L'Intention Stratégique Fondamentale (La Vision)**
+
+Notre mission est de construire la **première version du "Sanctuaire"**, le centre de commandement unifié de l'écosystème JabbarRoot. Ce hub n'est pas un simple visualiseur ; il est le siège de la conscience opérationnelle du système, conçu pour permettre à l'Opérateur (et à terme, au système lui-même) d'**Observer**, de **Comprendre** et d'**Agir**.
+
+La Phase 1 se concentre sur la fondation de ce hub et la matérialisation de ses deux premières capacités fondamentales : la **vue d'ensemble architecturale** et l'**exploration du graphe de connaissance**.
+
+#### **2. L'Architecture Cible et l'État des Lieux**
+
+Notre architecture de services `Nexus` est partiellement en place. La pipeline d'intelligence `Ordo Ab Chaos` produit deux artefacts essentiels :
+1.  `ArchitecturalReport.json` : Une analyse stratégique de haut niveau.
+2.  `KnowledgeGraph.sqlite` : Un graphe de connaissance sémantique détaillé.
+
+Ces artefacts sont actuellement invisibles. Le "Sanctuaire" les rendra visibles et actionnables.
+
+#### **3. Plan de Construction Détaillé : Phase 1**
+
+##### **Partie A : Refonte de la Cité des Webviews (Prérequis)**
+
+Avant de construire le nouveau, nous devons assainir l'existant pour garantir la modularité.
+
+*   **Action :** Refondre le répertoire `apps/vscode-extension/src/webviews/` selon la structure suivante :
+    ```
+    webviews/
+    ├── SanctuaryViewProvider.ts      // À créer
+    ├── BrickOptionsViewProvider.ts   // Existant
+    ├── ProjectOptionsViewProvider.ts // Existant
+    └── components/
+        ├── brick-options/
+        │   ├── brick-options.css
+        │   └── brick-options.js
+        ├── project-options/
+        │   ├── project-options.css
+        │   └── project-options.js
+        └── shared/
+            └── css/
+                └── common.css
+    ```
+*   **Fichiers à Modifier :**
+    1.  `webviews/BrickOptionsViewProvider.ts` : Mettre à jour les chemins des assets pour pointer vers `components/brick-options/`.
+    2.  `webviews/ProjectOptionsViewProvider.ts` : Mettre à jour les chemins des assets pour pointer vers `components/project-options/`.
+*   **Fichiers à Déplacer/Renommer :**
+    1.  `webviews/assets/` -> **Supprimer** après migration.
+    2.  Déplacer et renommer `assets/css/main.css` -> `components/shared/css/common.css`.
+    3.  Déplacer et renommer `assets/js/webview.js` -> `components/brick-options/brick-options.js`.
+    4.  Déplacer et renommer `assets/js/projectOptions.webview.js` -> `components/project-options/project-options.js`.
+*   **Fichiers à Créer :** `components/brick-options/brick-options.css`, `components/project-options/project-options.css`.
+
+##### **Partie B : Construction du Sanctuaire (Cœur de la Mission)**
+
+Nous érigerons le Sanctuaire en suivant une architecture modulaire et évolutive.
+
+**1. Le Point d'Entrée :**
+
+*   **Fichier à Créer :** `apps/vscode-extension/src/commands/showSanctuary.command.ts`
+    *   **Contenu :** Une commande légère qui dépendra du `SanctuaryViewProvider`. Son seul rôle est d'appeler la méthode `open()` de ce provider.
+*   **Action :** Enregistrer cette commande dans le `module.registry` pour qu'elle soit découvrable, et créer une contribution dans `package.json` pour lui associer une icône dans la barre d'activité de VS Code.
+
+**2. Le Chef d'Orchestre de la Vue :**
+
+*   **Fichier à Créer :** `apps/vscode-extension/src/webviews/SanctuaryViewProvider.ts`
+    *   **Responsabilités :**
+        *   Gérer la création et la durée de vie du panel de la Webview.
+        *   Récupérer les données via les services injectés (`ArtefactService`, `CacheService`).
+        *   Assembler le HTML final en utilisant les templates partiels.
+        *   Injecter les données initiales (`ArchitecturalReport`, `KnowledgeGraph`) dans la Webview.
+        *   Gérer la communication bidirectionnelle (recevoir les messages `openFile` depuis le frontend).
+
+**3. Les Composants de la Vue (HTML & CSS) :**
+
+*   **Répertoire à Créer :** `apps/vscode-extension/src/webviews/components/sanctuary/`
+*   **Fichiers à Créer :**
+    *   `sanctuary.html` (ou `shell.html`) : Le squelette HTML principal, incluant l'en-tête, le système d'onglets, et les placeholders pour le contenu. Inspiré du prototype fourni.
+    *   `partials/overview.html` : Le template HTML pour l'onglet "Vue d'Ensemble".
+    *   `partials/graph.html` : Le template HTML pour l'onglet "Graphe de Connaissance".
+    *   `sanctuary.css` : Le CSS spécifique au Sanctuaire. Il importera `shared/css/common.css` et ajoutera les styles pour les cartes, les onglets, et le graphe.
+
+**4. La Logique Frontend (JavaScript) :**
+
+*   **Répertoire à Créer :** `apps/vscode-extension/src/webviews/components/sanctuary/js/`
+*   **Fichiers à Créer :**
+    *   `main.js` :
+        *   Le point d'entrée. Récupère les `initialData` injectées.
+        *   Initialise et orchestre les contrôleurs de vue.
+        *   Gère la logique de changement d'onglet (afficher/masquer les vues).
+        *   Centralise la communication avec le backend via `acquireVsCodeApi()`.
+    *   `overview.controller.js` :
+        *   Module exportant une fonction `init(reportData, vscodeApi)`.
+        *   Contient toute la logique pour peupler le DOM de la "Vue d'Ensemble" à partir des données du `ArchitecturalReport`.
+        *   Gère les interactions spécifiques à cette vue (tri du tableau, double-clic sur les fichiers).
+    *   `graph.controller.js` :
+        *   Module exportant une fonction `init(graphData, vscodeApi)`.
+        *   Contient toute la logique **D3.js** pour initialiser, rendre et animer le graphe.
+        *   Gère les interactions du graphe (zoom, pan, drag, double-clic).
+
+#### **4. Séquençage Recommandé des Tâches**
+
+1.  **Exécuter la refonte de la "Cité des Webviews" (Partie A).** C'est un prérequis propre.
+2.  **Mettre en place le "cadre" du Sanctuaire :** Créer la commande, le `ViewProvider`, et le `shell.html`. À ce stade, on doit pouvoir ouvrir une Webview vide.
+3.  **Implémenter la "Vue d'Ensemble" :** Créer `overview.html` et `overview.controller.js`. L'objectif est d'afficher le dashboard statique fonctionnel.
+4.  **Implémenter le "Graphe de Connaissance" :** Créer `graph.html` et `graph.controller.js`. Intégrer D3.js et rendre le graphe interactif.
+
+#### **5. Conclusion : De la Vision à la Réalité**
+
+Cette directive est la traduction finale de notre vision en un plan d'ingénierie. Chaque fichier a un but, chaque répertoire une juridiction. L'objectif est clair : livrer un Dashboard fonctionnel à deux onglets qui rend enfin visible la puissance de notre pipeline d'analyse.
+
+Le temps de la parole est terminé. Le temps des bâtisseurs a commencé. Exécutez.

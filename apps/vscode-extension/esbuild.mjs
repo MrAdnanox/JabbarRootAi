@@ -1,14 +1,17 @@
+// --- FICHIER : apps/vscode-extension/esbuild.mjs ---
 import esbuild from 'esbuild';
 import { nativeNodeModulesPlugin } from 'esbuild-native-node-modules-plugin';
-
-import * as fs from 'fs'; // Import de fs
+import * as fs from 'fs'; 
 import * as path from 'path';
 import { fileURLToPath } from 'url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const isWatch = process.argv.includes('--watch');
+const isPackage = process.argv.includes('--package'); // Bonne pratique : option pour le build final
 const outDir = path.join(__dirname, 'dist');
 
+// CORRECTION : Ces dépendances sont natives à l'environnement VS Code ou contiennent
+// des binaires. Elles DOIVENT impérativement rester externes et ne pas être "bundlées".
 const nativeExternals = [
     'vscode', 
     'tree-sitter', 
@@ -17,27 +20,26 @@ const nativeExternals = [
     '@vscode/sqlite3'
 ];
 
-// Votre plugin personnalisé, c'est la bonne approche.
-const monorepoPathsPlugin = {
-  name: 'monorepo-paths',
-  setup(build) {
-    build.onResolve({ filter: /^@jabbarroot\/.*/ }, (args) => {
-      const packageName = args.path.replace('@jabbarroot/', '');
-      const packagePath = path.resolve(__dirname, `../../packages/${packageName}/src/index.ts`);
-      return { path: packagePath };
-    });
-  }
-};
+// SUPPRESSION : Le plugin personnalisé pour les chemins du monorepo est maintenant obsolète.
+// esbuild est capable de résoudre les "workspaces" d'un monorepo tout seul (via les 
+// package.json) tant qu'on ne lui dit PAS de les traiter comme des paquets externes.
+/*
+const monorepoPathsPlugin = { ... };
+*/
 
 const baseConfig = {
   bundle: true,
+  // CORRECTION : La seule liste d'externals nécessaire est celle des dépendances natives.
+  // En ne déclarant pas nos propres packages (@jabbarroot/...) ici, on demande à esbuild
+  // de les trouver et de les inclure dans le bundle.
   external: nativeExternals,
   format: 'cjs',
   platform: 'node',
   target: 'node16',
-  sourcemap: 'inline',
+  // Amélioration : on désactive les sourcemaps pour le package final pour réduire sa taille.
+  sourcemap: isPackage ? false : 'inline', 
   plugins: [
-    monorepoPathsPlugin,
+    // On retire le plugin monorepo devenu inutile.
     nativeNodeModulesPlugin 
   ],
   define: {
@@ -46,71 +48,43 @@ const baseConfig = {
   logLevel: 'info'
 };
 
-// --- RÉINTRODUCTION DE LA LOGIQUE DE BUILD DES COMMANDES ---
-const findCommandFiles = (dir) => {
-  let files = [];
-  const items = fs.readdirSync(dir, { withFileTypes: true });
-  for (const item of items) {
-    const fullPath = path.join(dir, item.name);
-    if (item.isDirectory()) {
-      files = files.concat(findCommandFiles(fullPath));
-    } else if (item.isFile() && item.name.endsWith('.command.ts')) {
-      files.push(fullPath);
-    }
-  }
-  return files;
-};
+// SIMPLIFICATION MAJEURE :
+// Toute la logique de build séparé pour les commandes a été supprimée.
+// C'était une complexité inutile. esbuild va maintenant créer un seul et unique
+// fichier `extension.cjs` qui contiendra tout le code nécessaire (celui de l'extension
+// ET celui des commandes), ce qui est beaucoup plus simple et robuste.
 
-const commandsDir = path.join(__dirname, 'src', 'commands');
-const commandFiles = findCommandFiles(commandsDir);
-console.log(`Found ${commandFiles.length} command files to build.`);
+const extensionBuild = await esbuild.context({
+  ...baseConfig,
+  // Le seul point d'entrée nécessaire est celui de l'extension.
+  // esbuild suivra tous les `import` à partir de ce fichier.
+  entryPoints: ['src/extension.ts'],
+  outfile: path.join(outDir, 'extension.cjs'),
+  // Plus besoin de déclarer les commandes ou les packages du monorepo comme externes.
+});
 
-const commandBuilds = await Promise.all(
-  commandFiles.map(entry => {
-    const relativePath = path.relative(commandsDir, entry);
-    const outfile = path.join(outDir, 'commands', relativePath.replace(/\.ts$/, '.cjs'));
-    const outfileDir = path.dirname(outfile);
-    if (!fs.existsSync(outfileDir)) {
-      fs.mkdirSync(outfileDir, { recursive: true });
-    }
-    return esbuild.context({
-      ...baseConfig,
-      entryPoints: [entry],
-      outfile,
-      // Les commandes doivent traiter les packages du monorepo comme externes
-      // car ils sont déjà dans le bundle principal de l'extension.
-      // Cela évite de dupliquer le code.
-      external: [ ...nativeExternals, '@jabbarroot/core', '@jabbarroot/types', '@jabbarroot/prompt-factory' ],
-    });
-  })
-);
-// --- FIN DE LA LOGIQUE DE BUILD DES COMMANDES ---
-
+// Le build du worker reste pertinent s'il doit s'exécuter dans un processus séparé.
 const workerBuild = await esbuild.context({
     ...baseConfig,
     entryPoints: ['../../packages/core/src/services/concurrency/worker-task.ts'],
     outfile: path.join(outDir, 'worker-task.js'),
+    // 'web-tree-sitter' peut rester externe ici si le worker le charge d'une manière spécifique.
     external: ['web-tree-sitter'] 
 });
 
-const extensionBuild = await esbuild.context({
-  ...baseConfig,
-  entryPoints: ['src/extension.ts'],
-  outfile: path.join(outDir, 'extension.cjs'),
-  external: [ ...baseConfig.external, './commands/*' ],
-});
-
-// Ajout des contextes de build des commandes
-const allContexts = [extensionBuild, workerBuild, ...commandBuilds];
+// La liste des contextes est maintenant bien plus simple.
+const allContexts = [extensionBuild, workerBuild];
 
 const startBuilds = async () => {
-  console.log('🔧 Starting corrected build process...');
+  console.log('🔧 Starting simplified build process...');
   
-  // Copier le répertoire des parsers
+  // La logique de copie des parsers est conservée, car ce sont des assets.
   const parsersSrc = path.join(__dirname, 'parsers');
   const parsersDest = path.join(outDir, 'parsers');
   if (fs.existsSync(parsersSrc)) {
+    // S'assurer que le répertoire de destination existe
     fs.mkdirSync(parsersDest, { recursive: true });
+    // Copier les fichiers
     fs.readdirSync(parsersSrc).forEach(file => {
       fs.copyFileSync(path.join(parsersSrc, file), path.join(parsersDest, file));
     });
