@@ -1,3 +1,4 @@
+tree-sitter-wasm/
 .jabbarroot
 # Dossiers de dépendances et de sortie
 **/node_modules
