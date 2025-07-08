@@ -5,7 +5,8 @@ import {
   BrickContext, 
   BrickContextOptions 
 } from '@jabbarroot/core';
-import { ArchitecturalReport } from '../schemas/ArchitecturalReport.schema';
+// CORRECTION : S'assurer que l'import vient de la source de vérité
+import { ArchitecturalReportV2 } from '@jabbarroot/types';
 import * as path from 'path';
 
 export const ARTEFACT_BRICK_PREFIX = '[ARTEFACT]';
@@ -31,35 +32,21 @@ export class ArtefactService {
     return bricks.find((b: BrickContext) => b.name === artefactName);
   }
 
-  /**
-   * Crée ou met à jour un rapport architectural
-   * @param project Projet concerné
-   * @param report Objet rapport architectural
-   * @returns La brique mise à jour
-   */
   public async upsertArchitecturalReportArtefact(
     project: JabbarProject,
-    report: ArchitecturalReport
+    // CORRECTION : La signature accepte maintenant le type flexible
+    report: ArchitecturalReportV2
   ): Promise<BrickContext> {
     const brickToUpdate = await this.findArtefactBrick(project, ARCHITECTURAL_REPORT_TYPE);
-    
-    // 1. Extraire le nom du dossier racine du projet
     const projectRootName = path.basename(project.projectRootPath);
-
-    // 2. Extraire et NORMALISER les chemins des fichiers clés
     const keyFilePaths = (report.keyFiles || []).map(kf => {
       const parts = kf.path.replace(/\\/g, '/').split('/');
-      // Si le premier segment du chemin est le nom du dossier racine, on le retire
       if (parts[0] === projectRootName) {
         return parts.slice(1).join('/');
       }
       return kf.path;
     });
-    
-    // Sérialisation du rapport
     const reportContent = JSON.stringify(report, null, 2);
-    
-    // Préparation des options de la brique
     const currentOptions = brickToUpdate?.options || {};
     const updatedOptions: BrickContextOptions = {
       ...currentOptions,
@@ -77,44 +64,32 @@ export class ArtefactService {
         updatedOptions,
         false
       );
-      
-      // Mise à jour du files_scope avec les chemins des fichiers clés
       if (keyFilePaths.length > 0) {
         await this.brickService.updateBrick(newBrick.id, { 
           files_scope: keyFilePaths 
         });
       }
-      
       await this.projectService.addBrickIdToProject(project.id, newBrick.id);
       return newBrick;
     }
 
-    // Mise à jour de la brique existante
     const updatedBrick = await this.brickService.updateBrick(brickToUpdate.id, { 
       options: updatedOptions,
       files_scope: keyFilePaths
     });
-    
     if (!updatedBrick) {
       throw new Error(`[ArtefactService] Échec de la mise à jour du rapport architectural`);
     }
-    
     return updatedBrick;
   }
 
-  /**
-   * Récupère un rapport architectural depuis une brique
-   * @param artefactBrick Brique contenant le rapport
-   * @returns Le rapport architectural ou undefined si non trouvé
-   */
   public async readArchitecturalReport(
     artefactBrick: BrickContext
-  ): Promise<ArchitecturalReport | undefined> {
+  ): Promise<ArchitecturalReportV2 | undefined> {
     const content = artefactBrick.options?.special_sections?.[ARCHITECTURAL_REPORT_FILENAME];
     if (!content) return undefined;
-    
     try {
-      return JSON.parse(content as string) as ArchitecturalReport;
+      return JSON.parse(content as string) as ArchitecturalReportV2;
     } catch (error) {
       console.error('[ArtefactService] Erreur lors de la lecture du rapport architectural:', error);
       return undefined;

@@ -1,0 +1,22 @@
+{
+  "name": "JabbarRoot",
+  "description": "Espace de travail principal pour le projet JabbarRoot",
+  "version": "1.0.0",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "build": "pnpm -r build",
+    "dev": "pnpm --filter @jabbarroot/vscode-extension dev",
+    "test": "pnpm -r test",
+    "lint": "pnpm -r lint"
+  },
+  "dependencies": {
+    "@jabbarroot/prompt-factory": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "^5.0.0"
+  },
+  "private": true
+}

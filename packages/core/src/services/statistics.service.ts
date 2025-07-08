@@ -14,6 +14,7 @@ process.env.TIKTOKEN_CACHE_DIR = path.join(__dirname, '..', '..', 'dist');
 import { encoding_for_model } from 'tiktoken';
 import { getMotivationMessage } from './statistics/statistics.formatter';
 import { CompactionInput } from './compaction/types';
+import { ProjectStructureStats } from '@jabbarroot/types';
 
 export class StatisticsService {
     constructor(
@@ -169,11 +170,11 @@ export class StatisticsService {
         const byExtension: Record<string, number> = {};
         
         for (const [ext, count] of Object.entries(filesByExtension)) {
-            byExtension[ext] = totalCount > 0 ? (count / totalCount) * 100 : 0; // Pourcentage
+            byExtension[ext] = totalCount > 0 ? Number(((count / totalCount) * 100).toFixed(1)) : 0; // Pourcentage arrondi à 1 décimale
         }
 
         const testToCodeRatio = sourceFileCount > 0 
-            ? (testFileCount / sourceFileCount) * 100 
+            ? Number(((testFileCount / sourceFileCount) * 100).toFixed(1))
             : 0;
 
         return {
@@ -189,14 +190,4 @@ export class StatisticsService {
     }
 }
 
-// Interface pour les statistiques de structure de projet
-export interface ProjectStructureStats {
-    totalFiles: number;
-    totalDirectories: number;
-    maxDepth: number;
-    filesByExtension: Record<string, number>;
-    ratios: {
-        byExtension: Record<string, number>; // en pourcentage
-        testToCodeRatio: number; // en pourcentage
-    };
-}
+// L'interface ProjectStructureStats est maintenant importée depuis @jabbarroot/prompt-factory

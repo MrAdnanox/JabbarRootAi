@@ -133,6 +133,12 @@ export class CacheService {
         const sql = "INSERT INTO analysis_jobs (job_id, project_path, status, progress_total) VALUES (?, ?, 'pending', ?)";
         await this.dbRun(sql, [jobId, projectPath, totalFiles]);
     }
+
+    // AJOUT : Méthode pour mettre à jour le statut d'un job
+    public async updateJobStatus(jobId: string, status: JobStatus): Promise<void> {
+        const sql = "UPDATE analysis_jobs SET status = ? WHERE job_id = ?";
+        await this.dbRun(sql, [status, jobId]);
+    }
     public async saveKnowledgeGraph(graphId: string, jobId: string, projectPath: string, graphData: Buffer, metadata: object): Promise<void> {
         const sql = "INSERT INTO knowledge_graphs (graph_id, job_id, project_path, graph_data_blob, metadata_json) VALUES (?, ?, ?, ?, ?)";
         await this.dbRun(sql, [graphId, jobId, projectPath, graphData, JSON.stringify(metadata)]);

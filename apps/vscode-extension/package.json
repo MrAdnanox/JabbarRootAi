@@ -12,8 +12,20 @@
     "url": "https://github.com/MrAdnanox/JabbarRootAi/issues"
   },
   "engines": {
-    "vscode": "^1.70.0"
+    "vscode": "^1.70.0",
+    "node": ">=16.0.0"
   },
+  "categories": [
+    "Other",
+    "AI"
+  ],
+  "keywords": [
+    "ai",
+    "assistant",
+    "productivity",
+    "jabbarroot"
+  ],
+  "icon": "resources/JabbarRoot-icon.png",
   "main": "./dist/extension.cjs",
   "contributes": {
     "viewsContainers": {
@@ -35,6 +47,7 @@
         }
       ]
     },
+
     "commands": [
       {
         "command": "jabbarroot.orchestration.OrdoAbChaos",
@@ -275,12 +288,13 @@
       ]
     },
     "configuration": {
-      "title": "jabbarroot",
+      "title": "JabbarRoot",
       "properties": {
         "jabbarroot.gemini.apiKey": {
           "type": "string",
-          "default": null,
-          "description": "Your Google Gemini API key for AI features."
+          "default": "",
+          "description": "Your Google Gemini API key for AI features.",
+          "scope": "machine-overridable"
         },
         "jabbarroot.compilation.includeProjectTree": {
           "type": "boolean",
@@ -313,12 +327,14 @@
           "description": "Show or hide the 'Motivation' line."
         },
         "jabbarroot.activeContextId": {
-          "type": [
-            "string",
-            "null"
-          ],
+          "type": ["string", "null"],
           "default": null,
           "description": "DO NOT EDIT MANUALLY. The ID of the currently active context."
+        },
+        "jabbarroot.debug.enabled": {
+          "type": "boolean",
+          "default": false,
+          "description": "Enable debug logging for development purposes."
         }
       }
     }
@@ -328,18 +344,28 @@
   ],
   "scripts": {
     "vscode:prepublish": "pnpm run build",
-    "rebuild:native": "electron-rebuild -v 31.2.0",
-    "build:esbuild": "node ./esbuild.mjs",
-    "build": "pnpm run rebuild:native && pnpm run build:esbuild",
-    "package": "pnpm run build",
-    "watch": "node ./esbuild.mjs --watch",
+    "rebuild:native": "electron-rebuild -v 31.2.0 --force",
+    "clean": "rimraf dist src/generated",
+    "prebuild": "pnpm run clean",
+    "generate:entries": "node scripts/generate-entries.mjs",
+    "build:deps": "pnpm run --filter='@jabbarroot/*' build",
+    "build:esbuild": "pnpm run generate:entries && node ./esbuild.mjs",
+    "build": "pnpm run build:deps && pnpm run build:esbuild",
+    "package": "node package.mjs",
+    "watch": "pnpm run generate:entries && node ./esbuild.mjs --watch",
+    "dev": "pnpm run build:deps && pnpm run watch",
     "pretest": "pnpm run build",
-    "test": "vscode-test"
+    "test": "vscode-test",
+    "lint": "eslint src --ext ts",
+    "lint:fix": "eslint src --ext ts --fix",
+    "type-check": "tsc --noEmit",
+    "validate": "pnpm run type-check && pnpm run lint"
   },
   "dependencies": {
     "@jabbarroot/core": "workspace:*",
     "@jabbarroot/prompt-factory": "workspace:*",
     "@jabbarroot/types": "workspace:*",
+    "@jabbarroot/vector-engine": "workspace:*",
     "@jridgewell/trace-mapping": "^0.3.26",
     "@vscode/sqlite3": "5.1.8-vscode",
     "d3": "^7.9.0",
@@ -356,6 +382,8 @@
     "@types/node": "^20.19.2",
     "@types/sinon": "^17.0.4",
     "@types/vscode": "^1.70.0",
+    "@typescript-eslint/eslint-plugin": "^8.31.1",
+    "@typescript-eslint/parser": "^8.31.1",
     "@vscode/test-cli": "^0.0.10",
     "@vscode/test-electron": "^2.5.2",
     "@yarnpkg/esbuild-plugin-pnp": "3.0.0-rc.15",
@@ -363,8 +391,20 @@
     "electron-rebuild": "^3.2.9",
     "esbuild": "^0.25.5",
     "esbuild-native-node-modules-plugin": "^1.0.3",
+    "eslint": "^9.25.1",
+    "rimraf": "^6.0.1",
     "sinon": "^21.0.0",
     "tsd": "^0.7.4",
+    "typescript": "^5.8.3",
     "xo": "^0.24.0"
-  }
+  },
+  "optionalDependencies": {
+    "vscode": "^1.70.0"
+  },
+  "bundledDependencies": [
+    "@jabbarroot/core",
+    "@jabbarroot/prompt-factory",
+    "@jabbarroot/types",
+    "@jabbarroot/vector-engine"
+  ]
 }

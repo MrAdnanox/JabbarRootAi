@@ -23,6 +23,15 @@ async function deleteNodeModulesAndDist(rootDir) {
                     // Explorer les sous-dossiers
                     await deleteNodeModulesAndDist(fullPath);
                 }
+            } else if (item.isFile() && item.name === 'tsconfig.tsbuildinfo') {
+                // Supprimer les fichiers tsconfig.tsbuildinfo
+                console.log(`Suppression du fichier ${fullPath}...`);
+                try {
+                    await fs.unlink(fullPath);
+                    console.log(`✓ ${fullPath} supprimé avec succès`);
+                } catch (err) {
+                    console.error(`Erreur lors de la suppression de ${fullPath}:`, err.message);
+                }
             }
         }
     } catch (err) {

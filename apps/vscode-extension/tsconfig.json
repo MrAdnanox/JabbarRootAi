@@ -3,25 +3,48 @@
   "compilerOptions": {
     "outDir": "dist",
     "baseUrl": ".",
-    "types": ["node", "mocha"],
+    "types": ["node", "mocha", "vscode"],
     "module": "commonjs",
     "moduleResolution": "node",
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "declaration": false,
+    "sourceMap": true,
+    "removeComments": false,
+    "preserveConstEnums": true,
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "resolveJsonModule": true,
+    "allowJs": true,
+    "checkJs": false,
+    "noEmit": true,
     "paths": {
-      "@jabbarroot/core": ["../../packages/core/src"],
+      "@jabbarroot/core": ["../../packages/core/src/index.ts"],
       "@jabbarroot/core/*": ["../../packages/core/src/*"],
-      "@jabbarroot/prompt-factory": ["../../packages/prompt-factory/src"],
+      "@jabbarroot/prompt-factory": ["../../packages/prompt-factory/src/index.ts"],
       "@jabbarroot/prompt-factory/*": ["../../packages/prompt-factory/src/*"],
-      "@jabbarroot/types": ["../../packages/types/src"],
-      "@jabbarroot/types/*": ["../../packages/types/src/*"]
+      "@jabbarroot/types": ["../../packages/types/src/index.ts"],
+      "@jabbarroot/types/*": ["../../packages/types/src/*"],
+      "@jabbarroot/vector-engine": ["../../packages/vector-engine/src/index.ts"],
+      "@jabbarroot/vector-engine/*": ["../../packages/vector-engine/src/*"]
     }
   },
-  "include": ["src/**/*"],
-  "exclude": ["node_modules", "dist"],
+  "include": [
+    "src/**/*",
+    "../../packages/*/src/**/*"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist",
+    "**/*.test.ts",
+    "**/*.spec.ts"
+  ],
   "references": [
-    { "path": "../../packages/core" },
     { "path": "../../packages/types" },
-    { "path": "../../packages/prompt-factory" }
+    { "path": "../../packages/core" },
+    { "path": "../../packages/prompt-factory" },
+    { "path": "../../packages/vector-engine" }
   ]
 }

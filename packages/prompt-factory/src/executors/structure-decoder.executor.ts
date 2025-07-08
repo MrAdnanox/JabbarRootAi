@@ -1,6 +1,6 @@
 // packages/prompt-factory/src/executors/structure-decoder.executor.ts
 import { GoogleGenerativeAI, GenerationConfig } from '@google/generative-ai';
-import { ArchitecturalReport, ArchitecturalReportSchema } from '../schemas/ArchitecturalReport.schema';
+import { ArchitecturalReportV2 as ArchitecturalReport, ArchitecturalReportSchemaV2 } from '@jabbarroot/types';
 import { ZodError } from 'zod';
 
 export class BrickComplianceError extends Error {
@@ -77,7 +77,7 @@ export class StructureDecoderExecutor {
         const cleanedJsonText = this.extractJson(rawJsonText);
         
         const jsonData = JSON.parse(cleanedJsonText);
-        const validationResult = ArchitecturalReportSchema.safeParse(jsonData);
+        const validationResult = ArchitecturalReportSchemaV2.safeParse(jsonData);
 
         if (validationResult.success) {
           console.log(`[Executor] Tentative ${attempt} réussie !`);

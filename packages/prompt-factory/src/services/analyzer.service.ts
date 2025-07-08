@@ -7,7 +7,7 @@ import {
   StatisticsService
 } from '@jabbarroot/core';
 import { StructureAnalyzer } from '../analyzers/structure.analyzer';
-import { ArchitecturalReport, ProjectStructureStats } from '../schemas/ArchitecturalReport.schema';
+import { ArchitecturalReportV2, ProjectStructureStats } from '@jabbarroot/types';
 import { ArtefactService } from './artefact.service';
 import * as path from 'path';
 
@@ -35,7 +35,7 @@ export class AnalyzerService {
     project: JabbarProject, 
     fileTree: string, 
     apiKey: string
-  ): Promise<ArchitecturalReport> {
+  ): Promise<ArchitecturalReportV2> {
     
     console.log('[AnalyzerService] Début de l\'orchestration de l\'analyse...');
     
@@ -75,11 +75,11 @@ export class AnalyzerService {
     fileTree: string, 
     statsReport: ProjectStructureStats,
     apiKey: string
-  ): Promise<ArchitecturalReport> {
+  ): Promise<ArchitecturalReportV2> {
     
     // 1. Essayer de lire un rapport précédent pour une analyse itérative
     const existingBrick = await this.artefactService.findArtefactBrick(project, ARCHITECTURAL_REPORT_TYPE);
-    let oldReport: ArchitecturalReport | undefined;
+    let oldReport: ArchitecturalReportV2 | undefined;
     if (existingBrick) {
       oldReport = await this.artefactService.readArchitecturalReport(existingBrick);
     }
@@ -97,7 +97,7 @@ export class AnalyzerService {
     );
 
     // 3. Enrichir le rapport avec les stats sources pour la traçabilité
-    const finalReport: ArchitecturalReport = {
+    const finalReport: ArchitecturalReportV2 = {
       ...newReport,
       source_statistics: statsReport
     };
@@ -114,7 +114,7 @@ export class AnalyzerService {
     return this.artefactService.findArtefactBrick(project, ARCHITECTURAL_REPORT_TYPE);
   }
 
-  public async readArchitecturalReport(artefactBrick: BrickContext): Promise<ArchitecturalReport | undefined> {
+  public async readArchitecturalReport(artefactBrick: BrickContext): Promise<ArchitecturalReportV2 | undefined> {
     return this.artefactService.readArchitecturalReport(artefactBrick);
   }
 }

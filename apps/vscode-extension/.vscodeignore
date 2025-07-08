@@ -19,3 +19,8 @@ dist/**/*.map
 # Fichiers système
 .DS_Store
 Thumbs.db
+
+# Inclure explicitement les fichiers du dashboard Sanctuary
+!src/webviews/components/sanctuary/**/*.{js,css,html}
+!src/webviews/components/sanctuary/js/**/*
+!src/webviews/components/sanctuary/*.{css,html}

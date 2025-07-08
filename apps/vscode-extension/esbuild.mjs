@@ -1,106 +1,253 @@
-// --- FICHIER : apps/vscode-extension/esbuild.mjs ---
 import esbuild from 'esbuild';
 import { nativeNodeModulesPlugin } from 'esbuild-native-node-modules-plugin';
-import * as fs from 'fs'; 
+import * as fs from 'fs';
 import * as path from 'path';
 import { fileURLToPath } from 'url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const isWatch = process.argv.includes('--watch');
-const isPackage = process.argv.includes('--package'); // Bonne pratique : option pour le build final
+const isPackage = process.argv.includes('--package');
 const outDir = path.join(__dirname, 'dist');
 
-// CORRECTION : Ces dépendances sont natives à l'environnement VS Code ou contiennent
-// des binaires. Elles DOIVENT impérativement rester externes et ne pas être "bundlées".
+// Chemins vers les packages internes
+const workspaceRoot = path.resolve(__dirname, '../../');
+const packagePaths = {
+  '@jabbarroot/core': path.join(workspaceRoot, 'packages/core/src'),
+  '@jabbarroot/types': path.join(workspaceRoot, 'packages/types/src'),
+  '@jabbarroot/prompt-factory': path.join(workspaceRoot, 'packages/prompt-factory/src'),
+};
+
+// Externals natifs VSCode
 const nativeExternals = [
-    'vscode', 
-    'tree-sitter', 
-    'web-tree-sitter', 
-    'tiktoken',
-    '@vscode/sqlite3'
+  'vscode',
+  'tree-sitter',
+  'web-tree-sitter',
+  'tiktoken',
+  '@vscode/sqlite3'
 ];
 
-// SUPPRESSION : Le plugin personnalisé pour les chemins du monorepo est maintenant obsolète.
-// esbuild est capable de résoudre les "workspaces" d'un monorepo tout seul (via les 
-// package.json) tant qu'on ne lui dit PAS de les traiter comme des paquets externes.
-/*
-const monorepoPathsPlugin = { ... };
-*/
+// Plugin pour résoudre les packages workspace
+const workspacePlugin = {
+  name: 'workspace-resolver',
+  setup(build) {
+    // Résolution des packages workspace
+    build.onResolve({ filter: /^@jabbarroot\/.*/ }, (args) => {
+      const packagePath = packagePaths[args.path];
+      if (packagePath) {
+        const indexPath = path.join(packagePath, 'index.ts');
+        const indexJsPath = path.join(packagePath, 'index.js');
+        
+        // Vérifier si index.ts existe, sinon essayer index.js
+        if (fs.existsSync(indexPath)) {
+          return { path: indexPath };
+        } else if (fs.existsSync(indexJsPath)) {
+          return { path: indexJsPath };
+        }
+      }
+      return null;
+    });
 
+    // Résolution des sous-modules (ex: @jabbarroot/core/services/...)
+    build.onResolve({ filter: /^@jabbarroot\/.*\/.*/ }, (args) => {
+      const parts = args.path.split('/');
+      const packageName = parts.slice(0, 2).join('/'); // @jabbarroot/core
+      const subPath = parts.slice(2).join('/'); // services/...
+      
+      const packagePath = packagePaths[packageName];
+      if (packagePath) {
+        const fullPath = path.join(packagePath, subPath);
+        const tsPath = fullPath + '.ts';
+        const jsPath = fullPath + '.js';
+        const indexTsPath = path.join(fullPath, 'index.ts');
+        const indexJsPath = path.join(fullPath, 'index.js');
+        
+        // Essayer différentes résolutions
+        if (fs.existsSync(tsPath)) {
+          return { path: tsPath };
+        } else if (fs.existsSync(jsPath)) {
+          return { path: jsPath };
+        } else if (fs.existsSync(indexTsPath)) {
+          return { path: indexTsPath };
+        } else if (fs.existsSync(indexJsPath)) {
+          return { path: indexJsPath };
+        }
+      }
+      return null;
+    });
+  }
+};
+
+// Configuration de base
 const baseConfig = {
   bundle: true,
-  // CORRECTION : La seule liste d'externals nécessaire est celle des dépendances natives.
-  // En ne déclarant pas nos propres packages (@jabbarroot/...) ici, on demande à esbuild
-  // de les trouver et de les inclure dans le bundle.
   external: nativeExternals,
   format: 'cjs',
   platform: 'node',
   target: 'node16',
-  // Amélioration : on désactive les sourcemaps pour le package final pour réduire sa taille.
-  sourcemap: isPackage ? false : 'inline', 
+  sourcemap: isPackage ? false : 'inline',
   plugins: [
-    // On retire le plugin monorepo devenu inutile.
-    nativeNodeModulesPlugin 
+    workspacePlugin,
+    nativeNodeModulesPlugin
   ],
   define: {
     'process.env.NODE_ENV': '"production"'
   },
-  logLevel: 'info'
+  logLevel: 'info',
+  resolveExtensions: ['.ts', '.js', '.json'],
+  // Résolution des chemins TypeScript
+  tsconfig: path.join(__dirname, 'tsconfig.json'),
+  // Optimisations pour les extensions VSCode
+  keepNames: true,
+  minify: isPackage ? true : false,
+  treeShaking: true
 };
 
-// SIMPLIFICATION MAJEURE :
-// Toute la logique de build séparé pour les commandes a été supprimée.
-// C'était une complexité inutile. esbuild va maintenant créer un seul et unique
-// fichier `extension.cjs` qui contiendra tout le code nécessaire (celui de l'extension
-// ET celui des commandes), ce qui est beaucoup plus simple et robuste.
-
+// Configuration pour l'extension principale
 const extensionBuild = await esbuild.context({
   ...baseConfig,
-  // Le seul point d'entrée nécessaire est celui de l'extension.
-  // esbuild suivra tous les `import` à partir de ce fichier.
   entryPoints: ['src/extension.ts'],
   outfile: path.join(outDir, 'extension.cjs'),
-  // Plus besoin de déclarer les commandes ou les packages du monorepo comme externes.
+  banner: {
+    js: '// VSCode Extension Build - Generated by esbuild'
+  }
 });
 
-// Le build du worker reste pertinent s'il doit s'exécuter dans un processus séparé.
+// Configuration pour le worker
 const workerBuild = await esbuild.context({
-    ...baseConfig,
-    entryPoints: ['../../packages/core/src/services/concurrency/worker-task.ts'],
-    outfile: path.join(outDir, 'worker-task.js'),
-    // 'web-tree-sitter' peut rester externe ici si le worker le charge d'une manière spécifique.
-    external: ['web-tree-sitter'] 
+  ...baseConfig,
+  entryPoints: ['../../packages/core/src/services/concurrency/worker-task.ts'],
+  outfile: path.join(outDir, 'worker-task.js'),
+  external: [...nativeExternals, 'web-tree-sitter'],
+  platform: 'node',
+  target: 'node16'
 });
 
-// La liste des contextes est maintenant bien plus simple.
-const allContexts = [extensionBuild, workerBuild];
+// Configuration pour les commandes
+const commandsBuild = await esbuild.context({
+  ...baseConfig,
+  entryPoints: ['src/commands/**/*.command.ts'],
+  outdir: path.join(outDir, 'commands'),
+  entryNames: '[dir]/[name]',
+  outExtension: { '.js': '.cjs' },
+  format: 'cjs',
+  bundle: true,
+  minify: isPackage,
+  external: [...nativeExternals, 'vscode'],
+  plugins: [
+    ...baseConfig.plugins,
+    {
+      name: 'command-file-namer',
+      setup(build) {
+        build.onResolve({ filter: /.*/ }, (args) => {
+          // Préserver la structure des dossiers pour les commandes
+          if (args.kind === 'entry-point') {
+            const relPath = path.relative(process.cwd(), args.path);
+            const outPath = path.join(
+              'commands',
+              path.dirname(relPath).replace(/^src\/commands\/?/, '')
+            );
+            return { path: args.path, namespace: 'file', pluginData: { outPath } };
+          }
+          return null;
+        });
+      }
+    }
+  ]
+});
 
-const startBuilds = async () => {
-  console.log('🔧 Starting simplified build process...');
+const allContexts = [extensionBuild, workerBuild, commandsBuild];
+
+// Fonction pour copier les ressources
+const copyResources = () => {
+  console.log('📦 Copying resources...');
   
-  // La logique de copie des parsers est conservée, car ce sont des assets.
+  // Copier les parsers
   const parsersSrc = path.join(__dirname, 'parsers');
   const parsersDest = path.join(outDir, 'parsers');
+  
   if (fs.existsSync(parsersSrc)) {
-    // S'assurer que le répertoire de destination existe
     fs.mkdirSync(parsersDest, { recursive: true });
-    // Copier les fichiers
     fs.readdirSync(parsersSrc).forEach(file => {
       fs.copyFileSync(path.join(parsersSrc, file), path.join(parsersDest, file));
     });
-    console.log('✅ Copied parsers to dist/parsers');
+    console.log('✅ Parsers copied to dist/parsers');
   } else {
     console.warn('⚠️  Parsers directory not found at:', parsersSrc);
   }
 
-  if (isWatch) {
-    await Promise.all(allContexts.map(ctx => ctx.watch()));
-    console.log('👁️  esbuild is watching for changes...');
-  } else {
-    await Promise.all(allContexts.map(ctx => ctx.rebuild()));
-    await Promise.all(allContexts.map(ctx => ctx.dispose()));
-    console.log('✅ esbuild build complete.');
+  // Copier d'autres ressources si nécessaire
+  const resourcesSrc = path.join(__dirname, 'resources');
+  const resourcesDest = path.join(outDir, 'resources');
+  
+  if (fs.existsSync(resourcesSrc)) {
+    fs.mkdirSync(resourcesDest, { recursive: true });
+    fs.readdirSync(resourcesSrc).forEach(file => {
+      fs.copyFileSync(path.join(resourcesSrc, file), path.join(resourcesDest, file));
+    });
+    console.log('✅ Resources copied to dist/resources');
   }
 };
 
+// Fonction de validation pré-build
+const validateBuild = () => {
+  console.log('🔍 Validating workspace packages...');
+  
+  for (const [packageName, packagePath] of Object.entries(packagePaths)) {
+    const indexPath = path.join(packagePath, 'index.ts');
+    const indexJsPath = path.join(packagePath, 'index.js');
+    
+    if (!fs.existsSync(indexPath) && !fs.existsSync(indexJsPath)) {
+      console.warn(`⚠️  Package ${packageName} missing index file at ${packagePath}`);
+    } else {
+      console.log(`✅ Package ${packageName} found at ${packagePath}`);
+    }
+  }
+};
+
+// Fonction principale de build
+const startBuilds = async () => {
+  try {
+    console.log('🚀 Starting JabbarRoot VSCode Extension Build...');
+    console.log(`📍 Build mode: ${isWatch ? 'WATCH' : 'BUILD'}`);
+    console.log(`📦 Package mode: ${isPackage ? 'ENABLED' : 'DISABLED'}`);
+    
+    // Validation pré-build
+    validateBuild();
+    
+    // Création du dossier de sortie
+    fs.mkdirSync(outDir, { recursive: true });
+    
+    // Copie des ressources
+    copyResources();
+    
+    if (isWatch) {
+      console.log('👁️  Starting watch mode...');
+      await Promise.all(allContexts.map(ctx => ctx.watch()));
+      console.log('✅ esbuild is watching for changes...');
+      
+      // Garder le processus vivant en mode watch
+      process.on('SIGINT', async () => {
+        console.log('\n🛑 Stopping watch mode...');
+        await Promise.all(allContexts.map(ctx => ctx.dispose()));
+        process.exit(0);
+      });
+    } else {
+      console.log('🔨 Building extension...');
+      await Promise.all(allContexts.map(ctx => ctx.rebuild()));
+      await Promise.all(allContexts.map(ctx => ctx.dispose()));
+      console.log('✅ esbuild build complete!');
+    }
+  } catch (error) {
+    console.error('❌ Build failed:', error);
+    process.exit(1);
+  }
+};
+
+// Gestion des erreurs non capturées
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('❌ Unhandled Rejection at:', promise, 'reason:', reason);
+  process.exit(1);
+});
+
+// Démarrer le build
 await startBuilds();

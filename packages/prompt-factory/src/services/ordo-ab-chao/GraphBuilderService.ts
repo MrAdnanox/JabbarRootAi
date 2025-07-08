@@ -1,13 +1,13 @@
 // packages/prompt-factory/src/services/ordo-ab-chao/GraphBuilderService.ts
 // Assemble les résultats partiels en Graphe de Connaissance.
 import { SemanticAnalysisResult } from './types';
-import { ArchitecturalReport } from '../../schemas/ArchitecturalReport.schema';
-import * as path from 'path';
+import { ArchitecturalReportV2  } from '@jabbarroot/types';
+import * as path from 'path';   
 
 export class GraphBuilderService {
     constructor() {}
 
-    public buildGraph(analysisResults: SemanticAnalysisResult[], report: ArchitecturalReport): any {
+    public buildGraph(analysisResults: SemanticAnalysisResult[], report: ArchitecturalReportV2): any {
         console.log(`[GraphBuilderService] Construction du graphe sémantique à partir de ${analysisResults.length} résultats.`);
         
         const nodes: any[] = [];
@@ -121,7 +121,7 @@ export class GraphBuilderService {
             metadata: {
                 source: 'OrdoAbChaos-v2-Semantic',
                 confidence: report.confidence,
-                architectural_pattern: report.pattern,
+                architectural_pattern: report.pattern ?? 'N/A',
                 stack: report.stack,
                 metrics: report.metrics,
             },

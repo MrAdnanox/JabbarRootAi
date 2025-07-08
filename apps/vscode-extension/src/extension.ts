@@ -1,5 +1,4 @@
 import * as vscode from 'vscode';
-// CORRECTION : Ajouter l'extension .js aux imports relatifs.
 import { getProjectRootPath } from './utils/workspace.js';
 import { ExtensionBootstrapper } from './core/bootstrapper.js';
 

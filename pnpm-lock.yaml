@@ -53,6 +53,9 @@ importers:
       '@jabbarroot/types':
         specifier: workspace:*
         version: link:../../packages/types
+      '@jabbarroot/vector-engine':
+        specifier: workspace:*
+        version: link:../../packages/vector-engine
       '@jridgewell/trace-mapping':
         specifier: ^0.3.26
         version: 0.3.29
@@ -96,6 +99,12 @@ importers:
       '@types/vscode':
         specifier: ^1.70.0
         version: 1.101.0
+      '@typescript-eslint/eslint-plugin':
+        specifier: ^8.31.1
+        version: 8.35.1(@typescript-eslint/parser@8.35.1(eslint@9.30.1)(typescript@5.8.3))(eslint@9.30.1)(typescript@5.8.3)
+      '@typescript-eslint/parser':
+        specifier: ^8.31.1
+        version: 8.35.1(eslint@9.30.1)(typescript@5.8.3)
       '@vscode/test-cli':
         specifier: ^0.0.10
         version: 0.0.10
@@ -117,21 +126,27 @@ importers:
       esbuild-native-node-modules-plugin:
         specifier: ^1.0.3
         version: 1.0.3
+      eslint:
+        specifier: ^9.25.1
+        version: 9.30.1
+      rimraf:
+        specifier: ^6.0.1
+        version: 6.0.1
       sinon:
         specifier: ^21.0.0
         version: 21.0.0
       tsd:
         specifier: ^0.7.4
         version: 0.7.4
+      typescript:
+        specifier: ^5.8.3
+        version: 5.8.3
       xo:
         specifier: ^0.24.0
         version: 0.24.0(@typescript-eslint/parser@8.35.1(eslint@9.30.1)(typescript@5.8.3))
 
   packages/core:
     dependencies:
-      '@jabbarroot/prompt-factory':
-        specifier: workspace:^
-        version: link:../prompt-factory
       '@jabbarroot/types':
         specifier: workspace:^
         version: link:../types
@@ -211,6 +226,10 @@ importers:
         version: 5.8.3
 
   packages/types:
+    dependencies:
+      zod:
+        specifier: 3.25.75
+        version: 3.25.75
     devDependencies:
       typescript:
         specifier: ^5.5.2
@@ -4916,6 +4935,9 @@ packages:
 
   zod@3.25.74:
     resolution: {integrity: sha512-J8poo92VuhKjNknViHRAIuuN6li/EwFbAC8OedzI8uxpEPGiXHGQu9wemIAioIpqgfB4SySaJhdk0mH5Y4ICBg==}
+
+  zod@3.25.75:
+    resolution: {integrity: sha512-OhpzAmVzabPOL6C3A3gpAifqr9MqihV/Msx3gor2b2kviCgcb+HM9SEOpMWwwNp9MRunWnhtAKUoo0AHhjyPPg==}
 
 snapshots:
 
@@ -10345,3 +10367,5 @@ snapshots:
   yoga-layout@3.2.1: {}
 
   zod@3.25.74: {}
+
+  zod@3.25.75: {}

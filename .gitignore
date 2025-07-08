@@ -1,9 +1,106 @@
-out
-dist
-node_modules
+.jabbarroot
+# Dossiers de dépendances et de sortie
+**/node_modules
+**/dist
+**/out
+**/.next
+**/.nuxt
+**/.output
+**/.svelte-kit
+**/.vercel
+**/.netlify
+**/.cache
+**/.parcel-cache
+**/.turbo
+
+# Fichiers de build et de cache
+*.tsbuildinfo
+*.tsbuildinfo.*
+*.tsbuildinfo-*
+*.log
+*.log.*
+*.local
+*.local.*
+.DS_Store
+.idea
+.vscode
+.vscode/*
+!.vscode/extensions.json
+!.vscode/launch.json
+!.vscode/settings.json
+!.vscode/tasks.json
+
+# Fichiers de configuration locale
+.env
+.env.*
+!.env.example
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Fichiers de test et de couverture
+coverage
+**/coverage
+**/__tests__/__fixtures__
+**/__tests__/__snapshots__
+**/__tests__/__mocks__
+**/test-results
+**/test-results/**/*
+**/test-output
+**/test-output/**/*
+**/junit.xml
+**/coverage.lcov
+**/lcov.info
+
+# Fichiers de débogage
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Fichiers spécifiques à VS Code
 .vscode-test/
 *.vsix
+.vscode-test/**/*
+
+# Dossiers de documentation générée
+**/docs/api
+**/docs/generated
+**/docs/dist
+
+# Fichiers de déploiement
+*.zip
+*.tar.gz
+*.tgz
+
+# Dossiers de développement temporaires
+.temp
+.tmp
+.temp/**/*
+.tmp/**/*
+
+# Dossiers spécifiques au projet
 INSPIRATION/
 
-# TypeScript build info
-*.tsbuildinfo
+# Fichiers système
+Thumbs.db
+.DS_Store
+
+# Fichiers minifiés
+**/*.min.js
+**/*.min.css
+**/*.min.js.map
+**/*.min.css.map
+
+# Fichiers de lock
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# Fichiers de configuration spécifiques aux outils
+.eslintcache
+.stylelintcache
+.cache/
+.parcel-cache/
+.rts2_cache_*/

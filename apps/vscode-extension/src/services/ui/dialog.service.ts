@@ -1,7 +1,7 @@
 // apps/vscode-extension/src/services/ui/dialog.service.ts
 
 import * as vscode from 'vscode';
-import { JabbarProject, ProjectService } from '@jabbarroot/core';
+import { JabbarProject, ProjectService, BrickContext } from '@jabbarroot/core';
 import { IService } from '../../core/interfaces';
 
 // Interface pour les options de la boîte de dialogue
@@ -27,6 +27,17 @@ export interface QuickPickOptions<T> {
     title: string;
     placeholder?: string;
     items: QuickPickItem<T>[];
+}
+
+export type AnalysisScopeMode = 'surgical' | 'exploration' | 'exhaustive';
+
+export interface AnalysisScopeModeItem extends vscode.QuickPickItem {
+    mode: AnalysisScopeMode;
+}
+
+// Interface pour clarifier le type des items du QuickPick
+interface BrickQuickPickItem extends vscode.QuickPickItem {
+    data: BrickContext;
 }
 
 export class DialogService implements IService {
@@ -125,12 +136,88 @@ export class DialogService implements IService {
    * @returns La donnée de l'item sélectionné, ou undefined si annulé.
    */
   public async showQuickPick<T>(options: QuickPickOptions<T>): Promise<T | undefined> {
-    const picked = await vscode.window.showQuickPick(options.items, {
-        title: options.title,
-        placeHolder: options.placeholder,
-        matchOnDescription: true,
-        matchOnDetail: true
+    const selected = await vscode.window.showQuickPick(
+        options.items.map(item => ({
+            label: item.label,
+            description: item.description,
+            detail: item.detail,
+            picked: item.picked,
+            alwaysShow: item.alwaysShow,
+            data: item.data
+        })),
+        {
+            title: options.title,
+            placeHolder: options.placeholder,
+            ignoreFocusOut: true,
+            canPickMany: false
+        }
+    );
+
+    return selected?.data;
+  }
+
+  /**
+   * Affiche un dialogue de sélection du mode d'analyse.
+   * @returns Le mode d'analyse sélectionné, ou undefined si annulé.
+   */
+  public async showAnalysisScopePicker(): Promise<AnalysisScopeMode | undefined> {
+    const items: AnalysisScopeModeItem[] = [
+        {
+            label: '🎯 Mode Chirurgical',
+            description: 'Analyser uniquement les fichiers clés identifiés par l\'IA.',
+            mode: 'surgical',
+        },
+        {
+            label: '🧭 Mode Exploration',
+            description: 'Sélectionner manuellement les briques à inclure dans l\'analyse.',
+            mode: 'exploration',
+        },
+        {
+            label: '💥 Mode Exhaustif',
+            description: 'Analyser TOUS les fichiers du projet (peut être long et coûteux).',
+            mode: 'exhaustive',
+        },
+    ];
+
+    const picked = await vscode.window.showQuickPick(items, {
+        title: 'Ordo Ab Chaos - Étape 2/3 : Définir la Portée de l\'Analyse',
+        placeHolder: 'Choisissez la granularité de l\'analyse sémantique',
+        ignoreFocusOut: true,
     });
-    return picked?.data;
+
+    return picked?.mode;
+  }
+
+  /**
+   * Affiche un dialogue de sélection des briques pour le mode Exploration.
+   * @param project Le projet en cours.
+   * @param brickService Le service de gestion des briques.
+   * @returns Les chemins des fichiers sélectionnés, ou undefined si annulé.
+   */
+  // NOUVELLE MÉTHODE : Sélection des briques pour le mode Exploration
+  public async showBrickMultiPicker(project: JabbarProject, brickService: any): Promise<string[] | undefined> {
+    const bricks = await brickService.getBricksByProjectId(project.id);
+    // CORRECTION : Ajout du type explicite pour 'b'
+    const items: BrickQuickPickItem[] = bricks.map((b: BrickContext) => ({
+        label: b.name,
+        description: `${b.files_scope.length} fichier(s)`,
+        picked: !b.name.startsWith('[ARTEFACT]'),
+        data: b
+    }));
+
+    const selectedItems = await vscode.window.showQuickPick(items, {
+        title: 'Mode Exploration - Sélection des Briques',
+        placeHolder: 'Cochez les briques à inclure dans l\'analyse',
+        canPickMany: true,
+        ignoreFocusOut: true
+    });
+
+    if (!selectedItems || selectedItems.length === 0) {
+        return undefined;
+    }
+
+    // CORRECTION : Ajout du type explicite pour 'item'
+    const allFilePaths = selectedItems.flatMap((item: BrickQuickPickItem) => item.data.files_scope);
+    return [...new Set(allFilePaths)];
   }
 }
