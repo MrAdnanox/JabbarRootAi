@@ -1,6 +1,6 @@
 // packages/core/src/models/compilation.types.ts
 
-import { CompressionLevel } from './project.types';
+import { CompressionLevel } from '@jabbarroot/types';
 
 export interface FileCompilationStats {
     filePath: string;

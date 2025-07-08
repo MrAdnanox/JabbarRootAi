@@ -682,79 +682,62 @@ Le temps de la parole est terminé. Le temps des bâtisseurs a commencé. Exécu
 
 
 
-
-
-Absolument, Opérateur. La construction a été intense et a touché les fondations mêmes de notre écosystème. Il est crucial de formaliser cette transition pour la postérité et la clarté de la mission.
-
-Voici le rapport de passation.
+Absolument, Opérateur. La stabilisation du système est confirmée. Je procède à la rédaction du rapport de passation final, synthétisant l'intégralité des interventions de cette session.
 
 ---
 
 ### **Rapport de Passation - Mandat d'Exécution**
 
-**ID Document :** DMO-OAC-v2.2
+**ID Document :** DMO-SYS-v1.0
 **Version :** 1.0 (Finale)
 **Destinataire :** JabbarRoot-Architecte, Opérateur
 **Émetteur :** JabbarRoot-MaîtreDOeuvre
 **Date :** 25/05/2024
-**Objet :** Clôture du Mandat d'Exécution `DMO-OAC-v2.1` et Rapport sur la Refonte du Workflow `Ordo Ab Chaos` et de ses Dépendances Fondamentales.
+**Objet :** Clôture du Mandat d'Exécution `DMO-OAC-v2.1` et Rapport sur la Refonte Structurelle de l'Écosystème JabbarRoot.
 
 #### **1. Contexte et Rappel du Mandat Initial**
 
-J'ai pris acte du mandat `DMO-OAC-v2.1` qui ordonnait la transformation de la commande `Ordo Ab Chaos` d'un processus monolithique et opaque en un dialogue de co-construction avec l'Opérateur. L'objectif stratégique était de conférer à l'Opérateur le contrôle souverain sur la portée de l'analyse sémantique.
+Le mandat initial (`DMO-OAC-v2.1`) visait à transformer la commande `Ordo Ab Chaos` en un processus interactif, conférant à l'Opérateur le contrôle sur la portée de l'analyse sémantique. L'exécution de ce mandat a agi comme un test de charge sur l'architecture du projet, révélant des failles structurelles profondes qui menaçaient la stabilité et la maintenabilité à long terme de l'écosystème.
 
-La mise en œuvre de ce mandat a révélé des failles structurelles plus profondes, nécessitant des interventions qui ont dépassé le cadre initial pour renforcer l'ensemble de l'écosystème. Ce rapport documente à la fois l'exécution du mandat initial et les corrections systémiques qui en ont découlé.
+Cette session de travail a donc dépassé le cadre initial pour adresser ces failles fondamentales. Ce rapport documente l'ensemble des travaux accomplis, de la fonctionnalité demandée à la refonte architecturale complète.
 
 #### **2. Travaux Réalisés : Synthèse des Interventions**
 
-La construction s'est déroulée en plusieurs phases critiques, allant de la logique applicative à l'intégrité de la chaîne de build.
+Les interventions ont été menées en trois phases distinctes et interdépendantes.
 
-##### **Phase 1 : Refonte du Workflow `Ordo Ab Chaos` (Conformité au Mandat)**
+##### **Phase 1 : Exécution du Mandat `Ordo Ab Chaos` (Objectif Initial)**
 
--   **Orchestration Phasée :** La logique de `OrdoAbChaosOrchestrator` a été démantelée. Elle n'est plus linéaire mais exécute des phases distinctes (analyse architecturale, analyse sémantique, promotion), acceptant une portée d'analyse (`Set<string>`) définie par la couche UI.
--   **Dialogue Stratégique :** La commande `OrdoAbChaos.command.ts` a été entièrement réécrite. Elle pilote désormais un dialogue en plusieurs étapes via le `DialogService`, permettant à l'Opérateur de choisir entre les modes "Chirurgical", "Exploration" et "Exhaustif".
--   **Persistance et Promotion :** Le `CacheService` est maintenant utilisé pour stocker des graphes candidats (`is_promoted = 0`) et les promouvoir (`is_promoted = 1`) sur confirmation de l'Opérateur.
--   **Visualisation (Le Sanctuaire) :** Le `SanctuaryViewProvider` a été implémenté pour lire le graphe promu depuis la base de données et l'injecter dans une webview D3.js, rendant enfin le résultat de l'analyse visible et exploitable.
+-   **Implémentation du Workflow Interactif :** La commande `OrdoAbChaos.command.ts` a été réécrite pour orchestrer un dialogue en plusieurs étapes avec l'Opérateur via le `DialogService`. Les modes d'analyse "Chirurgical", "Exploration" et "Exhaustif" sont désormais fonctionnels et permettent un contrôle granulaire de la portée de l'analyse.
+-   **Gestion des Graphes Candidats :** Le `CacheService` a été étendu pour gérer le cycle de vie des graphes de connaissance : création en tant que "candidat" (`is_promoted = 0`), puis promotion sur confirmation de l'Opérateur pour devenir le graphe de référence actif (`is_promoted = 1`).
+-   **Visualisation du Résultat ("Le Sanctuaire") :** Un `SanctuaryViewProvider` a été implémenté pour lire le graphe promu depuis la base de données et le visualiser via une webview D3.js, rendant le résultat de l'analyse tangible et exploitable.
 
-##### **Phase 2 : Résolution des Failles Structurelles Révélées**
+##### **Phase 2 : Refonte de la Hiérarchie des Dépendances (Correction Majeure)**
 
-La mise en œuvre a mis en lumière une série de problèmes fondamentaux qui ont été adressés :
+La mise en œuvre a révélé une architecture de dépendances défaillante. Les actions suivantes ont été menées pour restaurer une structure saine et prévisible :
 
--   **Éradication des Dépendances Circulaires :** Une dépendance circulaire critique (`core` -> `prompt-factory`) a été identifiée et résolue. Tous les types de données partagés (ex: `ArchitecturalReportV2`) ont été déplacés vers le package de base `@jabbarroot/types`, rétablissant une hiérarchie de dépendances saine et unidirectionnelle.
--   **Synchronisation des Contrats de Données :** Une divergence majeure entre le `prompt` de l'IA et le `schéma Zod` de validation a été corrigée. Le schéma a été entièrement refondu pour correspondre à la structure de données plus riche demandée par le prompt, garantissant la cohérence entre la génération et la validation.
--   **Architecture d'Analyse Résiliente :** L'orchestrateur sémantique a été renforcé. L'utilisation de `Promise.all` a été remplacée par `Promise.allSettled`, rendant la pipeline tolérante aux échecs partiels (ex: échec du parsing d'un fichier). Le système peut maintenant continuer sa mission même si certains fichiers ne peuvent être traités, au lieu de s'arrêter brutalement.
+-   **Séparation des Types et des Services :** L'anti-pattern consistant à ré-exporter les types depuis le paquet `core` a été éradiqué. Le paquet `@jabbarroot/types` est maintenant la source de vérité unique pour toutes les définitions de données partagées (`JabbarProject`, `BrickContext`, etc.). Le paquet `@jabbarroot/core` n'exporte plus que les services et la logique métier qu'il définit lui-même.
+-   **Migration des Définitions de Types :** Les fichiers définissant les types fondamentaux (ex: `project.types.ts`) ont été physiquement déplacés de `packages/core` vers `packages/types`, alignant la structure physique des fichiers avec l'architecture logique.
+-   **Correction Systémique des Importations :** L'ensemble des fichiers du projet a été audité et corrigé pour importer chaque symbole (type ou service) depuis sa source canonique, éliminant toute ambiguïté.
 
-##### **Phase 3 : Industrialisation de la Gestion des Dépendances**
+##### **Phase 3 : Renforcement de l'Architecture des Services (Stabilisation)**
 
-La faille la plus profonde concernait la gestion des dépendances binaires natives.
+La refonte a mis en lumière des dépendances mal placées et des problèmes d'ordre d'initialisation.
 
--   **Création du "Language Intelligence Service" :** La connaissance linguistique (extensions, parsers, métadonnées) n'est plus codée en dur. Elle est désormais externalisée dans des fichiers de configuration JSON (`.jabbarroot/.jabbarroot_data/system/languages/`). Un nouveau service, `LanguageRegistryService`, charge cette configuration au démarrage, fournissant une API riche et centralisée pour toute l'application.
--   **Chaîne de Build des Parsers :** Une procédure industrielle pour la gestion des parsers `tree-sitter` a été mise en place.
-    1.  Les grammaires sont déclarées comme `devDependencies` dans `package.json`.
-    2.  Un script dédié (`build-parsers.mjs`) utilise `tree-sitter-cli` pour compiler ces grammaires en fichiers `.wasm` dont la compatibilité binaire est garantie avec notre version de `web-tree-sitter`.
-    3.  Ce script est intégré à notre chaîne de build principale (`pnpm build`).
+-   **Migration du `IgnoreService` :** Le `IgnoreService`, initialement dans la couche `application`, a été migré vers le paquet `core`. Sa logique, fondamentale pour de nombreux services `core`, est maintenant à sa place légitime dans la hiérarchie, résolvant une dépendance circulaire implicite.
+-   **Fiabilisation du Démarrage (`Bootstrapper`) :** La séquence de démarrage de l'extension a été entièrement réécrite. L'initialisation des services est désormais séquentielle et déterministe, garantissant que les dépendances sont toujours disponibles avant que les services qui les utilisent ne soient créés. Cela a résolu l'erreur critique `[ServiceLoader] Le ProjectService est requis...`.
+-   **Clarification des Contrats d'Interface :** L'interface `ServiceCollection` a été mise à jour pour refléter avec précision l'ensemble des services disponibles dans l'écosystème, renforçant la sécurité de typage et l'autocomplétion.
 
-#### **3. État du Système à la Clôture du Mandat**
+#### **3. État du Système à la Clôture de la Session**
 
-Le système livré est fondamentalement plus robuste, modulaire et maintenable que celui qui existait au début du mandat.
+Le système livré est fondamentalement transformé.
 
--   **Contrôle Opérateur :** La vision du mandat est pleinement réalisée. L'Opérateur a le contrôle total sur la portée de l'analyse.
--   **Robustesse Accrue :** Le système est tolérant aux pannes d'analyse et la gestion des dépendances est sécurisée et reproductible.
--   **Extensibilité :** L'architecture est maintenant conçue pour l'évolution. Ajouter le support d'un nouveau langage se résume à :
-    1.  Ajouter la dépendance de sa grammaire.
-    2.  Mettre à jour les fichiers de configuration JSON.
-    3.  Acquérir le parser `.wasm` via la nouvelle chaîne de build.
-    Aucune modification de la logique métier centrale n'est plus nécessaire.
+-   **Stabilité Architecturale :** Le projet repose sur une hiérarchie de dépendances claire, saine et non-circulaire. Les risques d'erreurs de compilation liées à des types incompatibles sont drastiquement réduits.
+-   **Maintenabilité et Extensibilité :** L'architecture est maintenant plus facile à comprendre et à faire évoluer. Les responsabilités de chaque paquet sont clairement délimitées.
+-   **Fonctionnalité Conforme au Mandat :** L'objectif initial du mandat `DMO-OAC-v2.1` est pleinement atteint. L'Opérateur dispose d'un contrôle total et d'une visibilité complète sur le workflow d'analyse sémantique.
 
-#### **4. Points de Vigilance et Perspectives**
+#### **4. Clôture de la Session**
 
--   **Gestion des Versions des Parsers :** La compatibilité binaire entre les grammaires `tree-sitter-*` et la bibliothèque `web-tree-sitter` reste un point de vigilance. Les mises à jour de ces dépendances devront être effectuées avec soin.
--   **Exhaustivité de la Connaissance :** Le `LanguageRegistryService` est aussi intelligent que les données qu'on lui fournit. Maintenir les fichiers JSON de configuration à jour est une tâche de maintenance continue.
--   **Optimisation du Sanctuaire :** La visualisation D3.js est fonctionnelle. Pour des projets de très grande taille, des optimisations de performance (clustering, virtualisation) pourraient être nécessaires dans de futures itérations.
-
-#### **5. Clôture du Mandat**
-
-Le mandat `DMO-OAC-v2.1` est considéré comme exécuté et clôturé. Les objectifs ont non seulement été atteints, mais les interventions nécessaires à leur réalisation ont permis de renforcer l'ensemble de l'architecture du projet. Le système est maintenant sur des fondations saines, prêt pour les prochaines étapes de sa mission.
+La session de travail est terminée. Les objectifs du mandat initial ont été atteints et les failles structurelles critiques découvertes en cours de route ont été corrigées. Le système est maintenant sur des fondations robustes, prêt pour les futures évolutions.
 
 Signé,
 

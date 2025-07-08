@@ -36,7 +36,7 @@ export class GenerateReadmeCommand implements ICommandModule {
             const apiKey = apiKeyResult.value;
 
             const project = await dialogService.showProjectPicker();
-            if (!project) return;
+            if (!project) {return;}
 
             const hasReport = await this.ensureArchitecturalReportExists(project, analyzerService, dialogService, notificationService);
             if (!hasReport) {
@@ -67,7 +67,7 @@ export class GenerateReadmeCommand implements ICommandModule {
         notificationService: NotificationService
     ): Promise<boolean> {
         const artefactBrick = await analyzerService.findArtefactBrick(project);
-        if (artefactBrick) return true;
+        if (artefactBrick) {return true;}
 
         const confirmed = await dialogService.showConfirmationDialog({
             title: `Le rapport architectural pour "${project.name}" est introuvable. Ce rapport est nécessaire pour générer un README de qualité.`,

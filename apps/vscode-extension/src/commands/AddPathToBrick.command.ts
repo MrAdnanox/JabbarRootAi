@@ -48,7 +48,7 @@ export class AddPathToBrickCommand implements ICommandModule {
                     title: 'Sélectionnez un projet',
                     items: projects.map(p => ({ label: p.name, description: p.projectRootPath, data: p }))
                 });
-                if (!project) return;
+                if (!project) {return;}
 
                 const bricksInProject = (await Promise.all(
                     project.brickContextIds.map(id => brickService.getBrick(id))
@@ -64,7 +64,7 @@ export class AddPathToBrickCommand implements ICommandModule {
                 });
             }
 
-            if (!targetBrick) return;
+            if (!targetBrick) {return;}
 
             const parentProject = await projectService.getProject(targetBrick.projectId);
             if (!parentProject) {

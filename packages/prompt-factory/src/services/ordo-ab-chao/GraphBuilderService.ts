@@ -35,7 +35,7 @@ export class GraphBuilderService {
             // Créer les nœuds Symbole et les arêtes CONTAINS si des symboles sont présents
             if (Array.isArray(result.symbols) && result.symbols.length > 0) {
                 for (const symbol of result.symbols) {
-                    if (!symbol?.name) continue; // Ignorer les symboles invalides
+                    if (!symbol?.name) {continue;} // Ignorer les symboles invalides
                     
                     const symbolId = `${result.filePath}#${symbol.name}`;
                     nodes.push({
@@ -62,14 +62,14 @@ export class GraphBuilderService {
         // 2ème passe : Créer les arêtes IMPORTS
         for (const result of analysisResults) {
             // Vérification de base du résultat (comme dans la 1ère passe)
-            if (!result || result.error || !result.filePath || !result.dependencies) continue;
+            if (!result || result.error || !result.filePath || !result.dependencies) {continue;}
 
             // Vérifier que nous avons bien un tableau de dépendances non vide
-            if (!Array.isArray(result.dependencies) || result.dependencies.length === 0) continue;
+            if (!Array.isArray(result.dependencies) || result.dependencies.length === 0) {continue;}
 
             for (const dep of result.dependencies) {
                 // Ignorer les dépendances vides ou invalides
-                if (typeof dep !== 'string' || !dep.trim()) continue;
+                if (typeof dep !== 'string' || !dep.trim()) {continue;}
 
                 let resolvedPath: string | undefined;
                 
@@ -135,7 +135,7 @@ export class GraphBuilderService {
         succeededFiles: number,
         failedFilesInfo: { path: string; isCritical: boolean }[]
     ): number {
-        if (totalFiles === 0) return 1.0;
+        if (totalFiles === 0) {return 1.0;}
 
         let baseScore = succeededFiles / totalFiles;
         

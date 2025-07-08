@@ -32,13 +32,13 @@ export class CreateProjectCommand implements ICommandModule {
                 prompt: 'Entrez le nom du nouveau projet',
                 placeHolder: 'MonProjetJabbarRoot'
             });
-            if (!projectName) return;
+            if (!projectName) {return;}
 
             const projectRootPath = await dialogService.showFolderPicker({
                 title: `Sélectionnez le dossier racine pour le projet "${projectName}"`
             });
 
-            if (!projectRootPath) return;
+            if (!projectRootPath) {return;}
 
             const newProject = await projectService.createProject(projectName, projectRootPath);
             await systemBrickManager.ensureSystemBricksExist(newProject);

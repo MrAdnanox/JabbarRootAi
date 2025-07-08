@@ -1,5 +1,5 @@
 import { CompactionInput, ICompactor } from './compaction/types';
-import { CompressionLevel } from '../models/project.types';
+import { CompressionLevel } from '@jabbarroot/types';
 import { getLanguageIdFromPath } from './compaction/utils';
 import { CleanCssCompactor } from './compaction/strategies/CleanCssCompactor';
 import { MinifyHtmlCompactor } from './compaction/strategies/MinifyHtmlCompactor';
@@ -42,10 +42,10 @@ export class CompactionService {
 
   private async processSingleFile(file: CompactionInput): Promise<CompactionInput> {
     const languageId = getLanguageIdFromPath(file.path);
-    if (!languageId) return file;
+    if (!languageId) {return file;}
 
     const strategy = this.registry.get(languageId);
-    if (!strategy) return file;
+    if (!strategy) {return file;}
 
     try {
       const compactedContent = await strategy.compact(file.content);

@@ -39,7 +39,7 @@ export class StructureAnalyzerCommand implements ICommandModule {
             const apiKey = apiKeyResult.value;
 
             const project = await dialogService.showProjectPicker();
-            if (!project) return;
+            if (!project) {return;}
 
             await notificationService.withProgress(`Analyse de la structure du projet "${project.name}"`, async () => {
                 const shouldIgnore = await ignoreService.createIgnorePredicate(project);

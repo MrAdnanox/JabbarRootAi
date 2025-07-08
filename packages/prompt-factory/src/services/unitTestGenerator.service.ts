@@ -4,9 +4,10 @@ import * as vscode from 'vscode';
 import { 
   BrickService, 
   FileContentService,
-  IFileSystem,
-  JabbarProject
 } from '@jabbarroot/core';
+import { IFileSystem } from '@jabbarroot/types';
+import { JabbarProject } from '@jabbarroot/types';
+
 import { GenericAgentExecutor } from '../executors/GenericAgent.executor';
 
 export class UnitTestGeneratorService {

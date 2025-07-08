@@ -30,7 +30,7 @@ export class ConcurrencyService {
                 // Gérer le cas où un worker meurt
             });
             worker.on('exit', (code) => {
-                if (code !== 0) console.error(`Worker stopped with exit code ${code}`);
+                if (code !== 0) {console.error(`Worker stopped with exit code ${code}`);}
                 // Retirer le worker du pool et potentiellement le remplacer
                 this.workers = this.workers.filter(w => w !== worker);
                 this.availableWorkers = this.availableWorkers.filter(w => w !== worker);
@@ -52,7 +52,7 @@ export class ConcurrencyService {
         // Tant qu'il y a des workers disponibles ET des tâches en attente
         while (this.availableWorkers.length > 0 && this.taskQueue.length > 0) {
             const worker = this.availableWorkers.shift(); // Prend un worker disponible
-            if (!worker) continue;
+            if (!worker) {continue;}
 
             const task = this.taskQueue.shift(); // Prend une tâche
             if (!task) {

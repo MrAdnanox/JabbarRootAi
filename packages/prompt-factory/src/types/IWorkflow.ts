@@ -4,7 +4,7 @@ export interface IWorkflow<T, U> {
   }
   
   // packages/prompt-factory/src/types/IAnalyzer.ts
-  import { JabbarProject } from '@jabbarroot/core';
+  import { JabbarProject } from '@jabbarroot/types';
   export interface IAnalyzer<T> {
     analyze(project: JabbarProject, ...args: any[]): Promise<T>;
   }

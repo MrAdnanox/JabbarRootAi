@@ -37,8 +37,8 @@ export class EditBrickOptionsCommand implements ICommandModule {
                 projectService.getProject(brickItem.brick.projectId)
             ]);
 
-            if (!brick) throw new Error(`Impossible de trouver la brique avec l'ID: ${brickId}`);
-            if (!project) throw new Error('Le projet parent de la brique est introuvable.');
+            if (!brick) {throw new Error(`Impossible de trouver la brique avec l'ID: ${brickId}`);}
+            if (!project) {throw new Error('Le projet parent de la brique est introuvable.');}
 
             const panel = vscode.window.createWebviewPanel(
                 'jabbarroot.brickOptions',

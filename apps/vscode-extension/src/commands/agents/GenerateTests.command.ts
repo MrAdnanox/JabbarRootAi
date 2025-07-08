@@ -33,7 +33,7 @@ export class GenerateTestsCommand implements ICommandModule {
       const apiKey = apiKeyResult.value;
 
       const project = await dialogService.showProjectPicker();
-      if (!project) return;
+      if (!project) {return;}
 
       await notificationService.withProgress(`Génération des tests pour "${project.name}"`, async () => {
           const testContent = await testGenerator.generateTests(project, apiKey);

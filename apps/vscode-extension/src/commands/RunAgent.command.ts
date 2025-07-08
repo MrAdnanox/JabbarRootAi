@@ -47,14 +47,14 @@ export class RunAgentCommand implements ICommandModule {
 
             // Étape 2b : Charger les définitions et laisser l'utilisateur choisir
             const agentDefs = await this.loadAgentDefinitions(notificationService);
-            if (!agentDefs.length) return;
+            if (!agentDefs.length) {return;}
             
             const pickedAgent = await this.pickAgent(agentDefs);
-            if (!pickedAgent) return;
+            if (!pickedAgent) {return;}
 
             // Étape 2c : Laisser l'utilisateur choisir le projet cible
             const selectedProject = await dialogService.showProjectPicker();
-            if (!selectedProject) return;
+            if (!selectedProject) {return;}
 
             // Étape 2d : Exécuter la tâche principale avec une notification de progression
             await notificationService.withProgress(

@@ -1,7 +1,7 @@
 // packages/core/src/services/brick.service.ts
 import { IStorage } from '@jabbarroot/types';
 import { v4 as uuidv4 } from 'uuid';
-import { BrickContext, BrickContextOptions } from '../models/project.types'; // Ajuster chemin
+import { BrickContext, BrickContextOptions } from '@jabbarroot/types'; // Ajuster chemin
 // IMPORTANT: Nécessitera ProjectService pour lier la brique au projet
 // import { ProjectService } from './project.service'; // Dépendance à gérer (injection ou passage en paramètre)
 
@@ -135,7 +135,7 @@ export class BrickService {
 
     async deleteBrick(brickId: string): Promise<void> {
         const brick = await this.getBrick(brickId); // Pour obtenir le projectId avant suppression
-        if (!brick) return;
+        if (!brick) {return;}
 
         await this.storage.update(this.getBrickKey(brickId), undefined); // Ou delete
 

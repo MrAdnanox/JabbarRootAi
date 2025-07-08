@@ -36,7 +36,7 @@ export class OrdoAbChaosCommand implements ICommandModule {
         try {
             // --- PHASE 0: SETUP ---
             const project = await dialogService.showProjectPicker();
-            if (!project) return notificationService.showInfo('Analyse annulée.');
+            if (!project) {return notificationService.showInfo('Analyse annulée.');}
 
             const apiKeyResult = await geminiConfigService.getApiKey();
             if (apiKeyResult.isFailure()) {
@@ -60,7 +60,7 @@ export class OrdoAbChaosCommand implements ICommandModule {
 
             // --- PHASE 2: SÉLECTION DE LA PORTÉE ---
             const mode = await dialogService.showAnalysisScopePicker();
-            if (!mode) return notificationService.showInfo('Analyse annulée.');
+            if (!mode) {return notificationService.showInfo('Analyse annulée.');}
 
             let filesToAnalyze: Set<string>;
             switch (mode) {
@@ -70,7 +70,7 @@ export class OrdoAbChaosCommand implements ICommandModule {
                     break;
                 case 'exploration':
                     const selectedFiles = await dialogService.showBrickMultiPicker(project, brickService);
-                    if (!selectedFiles) return notificationService.showInfo('Analyse annulée.');
+                    if (!selectedFiles) {return notificationService.showInfo('Analyse annulée.');}
                     filesToAnalyze = new Set(selectedFiles);
                     break;
                 case 'exhaustive':
@@ -79,7 +79,7 @@ export class OrdoAbChaosCommand implements ICommandModule {
                         detail: 'Cette action analysera tous les fichiers du projet, ce qui peut être très long et coûteux en tokens. Êtes-vous sûr ?',
                         confirmActionLabel: 'Oui, lancer l\'analyse exhaustive'
                     });
-                    if (!confirmed) return notificationService.showInfo('Analyse annulée.');
+                    if (!confirmed) {return notificationService.showInfo('Analyse annulée.');}
                     // Logique pour obtenir tous les fichiers (à implémenter si nécessaire, pour l'instant on simule)
                     const allBricks = await brickService.getBricksByProjectId(project.id);
                     filesToAnalyze = new Set(allBricks.flatMap(b => b.files_scope));

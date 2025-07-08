@@ -1,5 +1,5 @@
-import { JabbarProject, SystemBrickManager, FileContentService } from '@jabbarroot/core';
-import { IFileSystem } from '@jabbarroot/types';
+import { SystemBrickManager, FileContentService } from '@jabbarroot/core';
+import { IFileSystem, JabbarProject } from '@jabbarroot/types';
 import { ReadmeWorkflow } from '../workflows/readme.workflow';
 import { AnalyzerService } from './analyzer.service';
 

@@ -2,7 +2,7 @@ import * as path from 'path';
 import { BrickService } from './brick.service';
 import { IFileSystem } from '@jabbarroot/types';
 import { ProjectService } from './project.service';
-import { JabbarProject, BrickContext, BrickContextOptions } from '../models/project.types';
+import { JabbarProject, BrickContext, BrickContextOptions } from '@jabbarroot/types';
 
 export class SystemBrickManager {
   constructor(

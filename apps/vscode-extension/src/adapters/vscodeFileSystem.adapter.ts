@@ -2,7 +2,7 @@
 
 import * as vscode from 'vscode';
 import * as path from 'path';
-import { DirectoryEntry, IFileSystem } from '@jabbarroot/core';
+import { DirectoryEntry, IFileSystem } from '@jabbarroot/types';
 
 /**
  * Implémentation de IFileSystem utilisant l'API de VSCode.

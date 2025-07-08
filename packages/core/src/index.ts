@@ -1,44 +1,25 @@
-// packages/core/src/index.ts
+// Contenu final pour: packages/core/src/index.ts
 
-// --- Interfaces ---
-export * from '@jabbarroot/types';
-
-// --- Models ---
+// Exporter les modèles DÉFINIS dans le package 'core'
 export * from './models/programmableContext';
 export * from './models/contextStats';
-export * from './models/project.types';
+// 'project.types' a été déplacé vers @jabbarroot/types
 export * from './models/compilation.types';
 
-// --- Services ---
-// Exporter directement les services
-import { CacheService } from './services/cache/CacheService';
-import { ConcurrencyService } from './services/concurrency/ConcurrencyService';
-import { SecurityService } from './services/security/SecurityService';
-export { CacheService, ConcurrencyService, SecurityService };
+// Exporter les services DÉFINIS dans le package 'core'
+export { CacheService } from './services/cache/CacheService';
+export { ConcurrencyService } from './services/concurrency/ConcurrencyService';
+export { SecurityService } from './services/security/SecurityService';
+export { CompactionService } from './services/compaction.service';
+export { FileContentService } from './services/fileContent.service';
+export { StructureGenerationService, type StructureGenerationOptions, type GenerationReport } from './services/structureGeneration.service';
+export { BrickConstructorService } from './services/brickConstructor.service';
+export { StatisticsService } from './services/statistics.service';
+export { ProjectService } from './services/project.service';
+export { BrickService } from './services/brick.service';
+export { SystemBrickManager } from './services/SystemBrickManager.service';
+export { LanguageRegistryService } from './services/registry/language.registry.service';
+export { IgnoreService } from './services/ignore.service';
 
-// --- Services ---
-import { CompactionService } from './services/compaction.service';
-import { FileContentService } from './services/fileContent.service';
-import { StructureGenerationService, type StructureGenerationOptions } from './services/structureGeneration.service';
-import { BrickConstructorService } from './services/brickConstructor.service';
-import { StatisticsService } from './services/statistics.service';
-import { ProjectService } from './services/project.service';
-import { BrickService } from './services/brick.service';
-
-import { SystemBrickManager } from './services/SystemBrickManager.service';
-export { CompactionService };
-export { FileContentService };
-export { StructureGenerationService, type StructureGenerationOptions };
-export { BrickConstructorService };
-export { StatisticsService };
-export { ProjectService };
-export { BrickService };
-export { SystemBrickManager };
+// Exporter les types d'interfaces pour les services 'core'
 export { CompactionInput, ICompactor } from './services/compaction/types';
-export { CompressionLevel, BrickContextOptions } from './models/project.types';
-export { BrickContext, JabbarProject } from './models/project.types';
-export { BrickCompilationReport } from './models/compilation.types';
-export { FileCompilationStats } from './models/compilation.types';
-export { GenerationReport } from './services/structureGeneration.service';
-
-export * from './services/registry/language.registry.service';

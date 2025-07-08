@@ -1,6 +1,6 @@
 // packages/core/src/services/statistics.service.ts
 
-import { BrickContext, JabbarProject } from '../models/project.types';
+import { BrickContext, JabbarProject } from '@jabbarroot/types';
 import { BrickCompilationReport, FileCompilationStats } from '../models/compilation.types';
 import { StructureGenerationOptions } from './structureGeneration.service';
 import { CompactionService } from './compaction.service';
@@ -42,7 +42,7 @@ export class StatisticsService {
         try {
             for (const filePath of filesToProcess) {
                 const originalContent = await this.fileContentService.readFileContent(project.projectRootPath, filePath);
-                if (originalContent === null) continue; // Skip if file not readable
+                if (originalContent === null) {continue;} // Skip if file not readable
 
                 // Correction architecturale
                 const compactionPayload: CompactionInput[] = [{ path: filePath, content: originalContent }];

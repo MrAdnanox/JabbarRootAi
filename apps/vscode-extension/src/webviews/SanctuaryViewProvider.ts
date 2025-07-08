@@ -94,8 +94,8 @@ export class SanctuaryViewProvider implements IService {
                     "SELECT graph_data_blob FROM knowledge_graphs WHERE project_path = ? AND is_promoted = 1 ORDER BY created_at DESC LIMIT 1",
                     [project.projectRootPath],
                     (err, row) => {
-                        if (err) reject(err);
-                        else resolve(row as any);
+                        if (err) {reject(err);}
+                        else {resolve(row as any);}
                     }
                 );
             });
@@ -117,7 +117,7 @@ export class SanctuaryViewProvider implements IService {
     }
     
     private handleMessage(message: any) {
-        if (this._isDisposed) return;
+        if (this._isDisposed) {return;}
         // ... (implémentation de la gestion des messages)
     }
 
@@ -207,7 +207,7 @@ export class SanctuaryViewProvider implements IService {
     }
     
     public dispose() {
-        if (this._isDisposed) return;
+        if (this._isDisposed) {return;}
         this._isDisposed = true; // Marquer comme disposé
         SanctuaryViewProvider.currentPanel = undefined;
         this._panel.dispose();

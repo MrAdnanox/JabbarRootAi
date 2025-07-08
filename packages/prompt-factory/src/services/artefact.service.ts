@@ -1,10 +1,9 @@
 import { 
   BrickService, 
-  ProjectService, 
-  JabbarProject, 
-  BrickContext, 
-  BrickContextOptions 
+  ProjectService
 } from '@jabbarroot/core';
+import { BrickContext, JabbarProject, BrickContextOptions } from '@jabbarroot/types';
+
 // CORRECTION : S'assurer que l'import vient de la source de vérité
 import { ArchitecturalReportV2 } from '@jabbarroot/types';
 import * as path from 'path';
@@ -87,7 +86,7 @@ export class ArtefactService {
     artefactBrick: BrickContext
   ): Promise<ArchitecturalReportV2 | undefined> {
     const content = artefactBrick.options?.special_sections?.[ARCHITECTURAL_REPORT_FILENAME];
-    if (!content) return undefined;
+    if (!content) {return undefined;}
     try {
       return JSON.parse(content as string) as ArchitecturalReportV2;
     } catch (error) {

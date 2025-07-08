@@ -1,13 +1,13 @@
 // FICHIER : packages/prompt-factory/src/services/ordo-ab-chao/OrdoAbChaosOrchestrator.ts
 
 import * as path from 'path';
-import { CacheService, ConcurrencyService, FileContentService, JabbarProject } from '@jabbarroot/core';
+import { CacheService, ConcurrencyService, FileContentService } from '@jabbarroot/core';
 import { GraphBuilderService } from './GraphBuilderService';
 import { v4 as uuidv4 } from 'uuid';
 import { AnalysisJob, SemanticAnalysisResult } from './types';
 import * as crypto from 'crypto';
 // CORRECTION : Import du bon type de rapport et de ses sous-types
-import { ArchitecturalReportV2 } from '@jabbarroot/types';
+import { ArchitecturalReportV2, JabbarProject } from '@jabbarroot/types';
 import { LanguageRegistryService } from '@jabbarroot/core';
 
 export class OrdoAbChaosOrchestrator {
@@ -78,7 +78,7 @@ export class OrdoAbChaosOrchestrator {
         const analysisPromises = Array.from(filesToAnalyze).map(async (filePath: string): Promise<SemanticAnalysisResult | undefined> => {
             const ext = path.extname(filePath).toLowerCase();
             const language = this.languageRegistry.getLanguageFromFilename(filePath);
-            if (!language) return undefined;
+            if (!language) {return undefined;}
 
             const parserName = this.languageRegistry.getParserForLanguage(language);
             if (!parserName) {
@@ -87,13 +87,13 @@ export class OrdoAbChaosOrchestrator {
             }
             
             const fileContent = await this.fileContentService.readFileContent(project.projectRootPath, filePath);
-            if (!fileContent) return undefined;
+            if (!fileContent) {return undefined;}
 
             const contentHash = crypto.createHash('sha256').update(fileContent).digest('hex');
             const signature = crypto.createHash('sha256').update(fileContent + JSON.stringify(analysisConfig)).digest('hex');
             
             const cachedResult = await this.cacheService.get<SemanticAnalysisResult>(signature);
-            if (cachedResult) return cachedResult;
+            if (cachedResult) {return cachedResult;}
 
             const analysisResult = await this.concurrencyService.runTaskInWorker<SemanticAnalysisResult>({
                 filePath: path.join(project.projectRootPath, filePath),

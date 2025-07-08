@@ -55,7 +55,7 @@ export class CreateBrickCommand implements ICommandModule {
                     return undefined;
                 }
             });
-            if (!brickName) return; // Annulé par l'utilisateur
+            if (!brickName) {return;} // Annulé par l'utilisateur
 
             // --- LOGIQUE CORRIGÉE ---
             // 1. Créer la brique et capturer le résultat

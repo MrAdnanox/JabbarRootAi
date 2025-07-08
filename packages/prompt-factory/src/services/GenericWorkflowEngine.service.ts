@@ -1,6 +1,5 @@
-import { IFileSystem } from '@jabbarroot/types';
-import { 
-  JabbarProject, 
+import { IFileSystem, JabbarProject } from '@jabbarroot/types';
+import {  
   FileContentService, 
   SystemBrickManager 
 } from '@jabbarroot/core';

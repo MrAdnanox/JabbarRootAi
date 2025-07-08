@@ -1,7 +1,7 @@
 // packages/core/src/services/project.service.ts
 import { IStorage } from '@jabbarroot/types';
 import { v4 as uuidv4 } from 'uuid';
-import { JabbarProject, JabbarProjectOptions } from '../models/project.types'; // Ajuster chemin si besoin
+import { JabbarProject, JabbarProjectOptions } from '@jabbarroot/types'; // Ajuster chemin si besoin
 
 const PROJECTS_STORAGE_KEY_PREFIX = 'project_'; // Pour les clés individuelles
 const ALL_PROJECT_IDS_KEY = 'jabbarroot.project_ids'; // Pour lister tous les projets sans tout charger

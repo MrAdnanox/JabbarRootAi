@@ -41,7 +41,7 @@ export class RemoveFileFromBrickCommand implements ICommandModule {
             items: brick.files_scope.map(f => ({ label: f, data: f }))
         });
 
-        if (!fileToRemove) return;
+        if (!fileToRemove) {return;}
 
         try {
             await brickService.removePathFromBrick(brick.id, fileToRemove);

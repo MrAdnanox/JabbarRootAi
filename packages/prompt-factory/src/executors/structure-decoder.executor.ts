@@ -21,8 +21,8 @@ export class StructureDecoderExecutor {
     apiKey: string,
     private readonly systemPromptContent: string
   ) {
-    if (!apiKey) throw new Error("API Key for Gemini is required.");
-    if (!systemPromptContent) throw new Error("System prompt content is required.");
+    if (!apiKey) {throw new Error("API Key for Gemini is required.");}
+    if (!systemPromptContent) {throw new Error("System prompt content is required.");}
     this.genAI = new GoogleGenerativeAI(apiKey);
   }
 

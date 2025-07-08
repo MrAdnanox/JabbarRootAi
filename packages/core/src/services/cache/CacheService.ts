@@ -44,29 +44,29 @@ export class CacheService {
         // --- CORRECTION DE LA SYNTAXE DE PROMESSE ---
         this.dbRun = (sql: string, params: any[] = []) => new Promise((resolve, reject) => {
             this.l2Db.run(sql, params, (err) => {
-                if (err) reject(err);
-                else resolve();
+                if (err) {reject(err);}
+                else {resolve();}
             });
         });
 
         this.dbGet = <T>(sql: string, params: any[] = []) => new Promise<T | undefined>((resolve, reject) => {
             this.l2Db.get(sql, params, (err: Error | null, row: T) => {
-                if (err) reject(err);
-                else resolve(row);
+                if (err) {reject(err);}
+                else {resolve(row);}
             });
         });
 
         this.dbAll = <T>(sql: string, params: any[] = []) => new Promise<T[]>((resolve, reject) => {
             this.l2Db.all(sql, params, (err: Error | null, rows: T[]) => {
-                if (err) reject(err);
-                else resolve(rows);
+                if (err) {reject(err);}
+                else {resolve(rows);}
             });
         });
 
         this.dbExec = (sql: string) => new Promise<void>((resolve, reject) => {
             this.l2Db.exec(sql, (err: Error | null) => {
-                if (err) reject(err);
-                else resolve();
+                if (err) {reject(err);}
+                else {resolve();}
             });
         });
         // --- FIN DE LA CORRECTION ---

@@ -5,7 +5,7 @@ import {
     BrickContextOptions,
     JabbarProjectOptions,
     CompressionLevel
-} from '../models/project.types';
+} from '@jabbarroot/types';
 // Définition de l'interface CompactionService localement pour éviter les problèmes d'import
 export interface CompactionService {
     compact(text: string, level: CompressionLevel, filePath: string): Promise<string>;

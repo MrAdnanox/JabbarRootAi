@@ -1,32 +1,21 @@
+// Contenu final pour: apps/vscode-extension/src/core/interfaces.ts
 import * as vscode from 'vscode';
-
-// --- Importations des types de service concrets ---
+import { IFileSystem, IStorage } from '@jabbarroot/types';
 import {
     ProjectService, BrickService, BrickConstructorService, StatisticsService, StructureGenerationService,
-    FileContentService, CompactionService, SystemBrickManager
+    FileContentService, CompactionService, SystemBrickManager, IgnoreService, ConcurrencyService, LanguageRegistryService
 } from '@jabbarroot/core';
 import {
     AnalyzerService, DocumentationService, UnitTestGeneratorService, ArtefactService,
-    GenericWorkflowEngine, PromptTemplateService
+    GenericWorkflowEngine, PromptTemplateService, OrdoAbChaosOrchestrator
 } from '@jabbarroot/prompt-factory';
 import { ProjectTreeDataProvider } from '../providers/projectTreeDataProvider';
-import { IgnoreService } from '../services/ignore.service';
 import { DialogService } from '../services/ui/dialog.service';
 import { GeminiConfigService } from '../services/config/gemini.config.service';
 import { NotificationService } from '../services/ui/notification.service';
-import { ConcurrencyService } from '@jabbarroot/core';
-import { OrdoAbChaosOrchestrator } from '@jabbarroot/prompt-factory';
-import { SanctuaryViewProvider } from '../webviews/SanctuaryViewProvider';
-/**
- * Interface marqueur pour les services gérés par le ServiceRegistry.
- * La méthode dispose est optionnelle et sera appelée dynamiquement si elle existe.
- */
+
 export interface IService {}
 
-
-/**
- * Contrat pour tout module de commande découvrable par le ModuleRegistry.
- */
 export interface ICommandModule extends IService {
   readonly metadata: {
     readonly id: string;
@@ -37,12 +26,13 @@ export interface ICommandModule extends IService {
   execute(dependencies: Map<keyof ServiceCollection, IService>, ...args: any[]): Promise<void>; 
 }
 
-/**
- * Collection de tous les services de l'application, avec leurs types concrets.
- * C'est le manifeste central pour l'injection de dépendances.
- */
 export interface ServiceCollection {
-    // --- Core Services ---
+    // --- Services de base et adaptateurs ---
+    fileSystem: IFileSystem;
+    storage: IStorage;
+    extensionContext: vscode.ExtensionContext;
+    
+    // --- Services Core ---
     projectService: ProjectService;
     brickService: BrickService;
     brickConstructorService: BrickConstructorService;
@@ -51,24 +41,22 @@ export interface ServiceCollection {
     fileContentService: FileContentService;
     compactionService: CompactionService;
     systemBrickManager: SystemBrickManager;
-    // --- UI Services ---
+    ignoreService: IgnoreService;
+    concurrencyService: ConcurrencyService;
+    languageRegistryService: LanguageRegistryService; // <-- LIGNE AJOUTÉE
+
+    // --- Services UI ---
     notificationService: NotificationService;
     dialogService: DialogService;
-    // --- Config Services ---
     geminiConfigService: GeminiConfigService;
-    // --- Extension-specific Services ---
-    ignoreService: IgnoreService;
     treeDataProvider: ProjectTreeDataProvider;
-    // --- Prompt-Factory Services ---
+
+    // --- Services Prompt-Factory ---
     analyzerService: AnalyzerService;
     documentationService: DocumentationService;
     unitTestGeneratorService: UnitTestGeneratorService;
     artefactService: ArtefactService;
     genericWorkflowEngine: GenericWorkflowEngine;
     promptTemplateService: PromptTemplateService;
-    // --- Extension Context ---
-    extensionContext: vscode.ExtensionContext;
-
-    concurrencyService: ConcurrencyService;
     ordoAbChaosOrchestrator: OrdoAbChaosOrchestrator;
 }

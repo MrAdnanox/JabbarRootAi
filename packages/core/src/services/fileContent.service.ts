@@ -3,7 +3,7 @@
 import { IFileSystem } from '@jabbarroot/types';
 import * as path from 'path';
 import type { CompactionService } from './compaction.service';
-import type { CompressionLevel } from '../models/project.types';
+import type { CompressionLevel } from '@jabbarroot/types';
 
 /**
  * Service responsable de la lecture et de l'assemblage du contenu des fichiers

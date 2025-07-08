@@ -45,7 +45,7 @@ export class LanguageRegistryService {
   }
 
   public async initialize(): Promise<void> {
-    if (this.isInitialized) return;
+    if (this.isInitialized) {return;}
 
     const [extMap, parserMap, metadataModel, devToolsModel] = await Promise.all([
       this.loadJsonData<string>('extension-to-language.map.json'),
@@ -67,11 +67,11 @@ export class LanguageRegistryService {
 
   public getLanguageFromFilename(filename: string): string | null {
     const basename = filename.toLowerCase();
-    if (basename === 'dockerfile') return 'dockerfile';
-    if (basename === 'makefile') return 'makefile';
+    if (basename === 'dockerfile') {return 'dockerfile';}
+    if (basename === 'makefile') {return 'makefile';}
     
     const extension = path.extname(filename).toLowerCase();
-    if (!extension) return null;
+    if (!extension) {return null;}
     
     return this.extensionToLanguageMap.get(extension) || null;
   }
@@ -108,7 +108,7 @@ export class LanguageRegistryService {
         }
       }
     }
-    if (langCount.size === 0) return null;
+    if (langCount.size === 0) {return null;}
     return [...langCount.entries()].reduce((a, b) => b[1] > a[1] ? b : a)[0];
   }
 
@@ -117,8 +117,8 @@ export class LanguageRegistryService {
       .filter(([, lang]) => lang === language)
       .map(([ext]) => ext.substring(1));
     
-    if (extensions.length === 0) return null;
-    if (extensions.length === 1) return `**/*.${extensions[0]}`;
+    if (extensions.length === 0) {return null;}
+    if (extensions.length === 1) {return `**/*.${extensions[0]}`;}
     return `**/*.{${extensions.join(',')}}`;
   }
 

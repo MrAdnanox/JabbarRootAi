@@ -1,10 +1,12 @@
+// Contenu final pour: apps/vscode-extension/src/providers/projectTreeItem.factory.ts
 import * as vscode from 'vscode';
-import { JabbarProject, BrickContext } from '@jabbarroot/core';
+import { JabbarProject, BrickContext } from '@jabbarroot/types';
 
 export type ProjectViewTreeItem = ProjectTreeItem | BrickTreeItem | InfoTreeItem | StatTreeItem | GroupTreeItem | FileTreeItem;
 
 export class ProjectTreeItem extends vscode.TreeItem {
     public readonly contextValue = 'jabbarrootProject';
+
     constructor(
         public readonly project: JabbarProject,
         public readonly collapsibleState: vscode.TreeItemCollapsibleState = vscode.TreeItemCollapsibleState.Collapsed
@@ -23,10 +25,7 @@ export class GroupTreeItem extends vscode.TreeItem {
         children: (BrickTreeItem | InfoTreeItem)[] = []
     ) {
         super(label, vscode.TreeItemCollapsibleState.Expanded);
-        // --- CORRECTION : Initialisation de la propriété 'children' ---
         this.children = children;
-        // --- FIN DE LA CORRECTION ---
-
         this.tooltip = `Groupe: ${label}\n${children.length} élément(s)`;
         if (label === "Briques Utilisateur") {
             this.contextValue = 'jabbarrootUserBrickGroup';
@@ -55,6 +54,7 @@ export class BrickTreeItem extends vscode.TreeItem {
         super(brick.name, collapsibleState);
         this.brick = brick;
         this.parentProject = parentProject;
+
         let labelSuffix = '';
         let iconId = 'symbol-constant';
         let iconColorId;
@@ -63,14 +63,17 @@ export class BrickTreeItem extends vscode.TreeItem {
             iconId = 'target';
             labelSuffix += ' [CIBLE]';
         }
+
         if (brick.isActiveForProjectCompilation) {
             labelSuffix += ' (Active)';
             if (!brick.isDefaultTarget) {
                 iconId = 'zap';
             }
         }
+
         this.description = `${brick.files_scope.length} fichier(s)${labelSuffix}`;
         this.tooltip = `Brique: ${brick.name}\n${this.description}\nID: ${brick.id}`;
+        
         if (iconColorId) {
             this.iconPath = new vscode.ThemeIcon(iconId, iconColorId);
         } else {
@@ -108,10 +111,12 @@ export class FileTreeItem extends vscode.TreeItem {
         this.contextValue = 'jabbarrootFileInBrick';
         this.description = `(dans ${this.parentProject.name})`;
         this.iconPath = new vscode.ThemeIcon('file-code');
+
         const fileUri = vscode.Uri.joinPath(
             vscode.Uri.file(this.parentProject.projectRootPath),
             this.label
         );
+
         this.command = {
             command: 'vscode.open',
             title: 'Ouvrir le fichier',

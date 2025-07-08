@@ -6,7 +6,7 @@ export class GenericAgentExecutor {
   private readonly modelName: string = 'gemini-2.5-flash';
 
   constructor(apiKey: string) {
-    if (!apiKey) throw new Error("API Key for Gemini is required.");
+    if (!apiKey) {throw new Error("API Key for Gemini is required.");}
     this.genAI = new GoogleGenerativeAI(apiKey);
   }
 
