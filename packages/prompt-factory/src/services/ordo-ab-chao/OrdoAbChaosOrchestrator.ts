@@ -8,6 +8,7 @@ import { AnalysisJob, SemanticAnalysisResult } from './types';
 import * as crypto from 'crypto';
 // CORRECTION : Import du bon type de rapport et de ses sous-types
 import { ArchitecturalReportV2 } from '@jabbarroot/types';
+import { LanguageRegistryService } from '@jabbarroot/core';
 
 export class OrdoAbChaosOrchestrator {
     private cacheService: CacheService;
@@ -15,16 +16,19 @@ export class OrdoAbChaosOrchestrator {
     private readonly concurrencyService: ConcurrencyService;
     private readonly fileContentService: FileContentService;
     private readonly parsersPath: string;
+    private readonly languageRegistry: LanguageRegistryService;
 
     constructor(
         projectRootPath: string,
         concurrencyService: ConcurrencyService,
         fileContentService: FileContentService,
-        parsersPath: string
+        parsersPath: string,
+        languageRegistry: LanguageRegistryService
     ) {
         this.concurrencyService = concurrencyService;
         this.fileContentService = fileContentService;
         this.parsersPath = parsersPath;
+        this.languageRegistry = languageRegistry;
         this.cacheService = new CacheService(projectRootPath);
         this.graphBuilder = new GraphBuilderService();
     }
@@ -69,15 +73,19 @@ export class OrdoAbChaosOrchestrator {
         project: JabbarProject,
         filesToAnalyze: Set<string>
     ): Promise<SemanticAnalysisResult[]> {
-        const analysisConfig = { version: '1.2', parser: 'tree-sitter', source: 'ordo-ab-chao-v2' };
+        const analysisConfig = { version: '1.4', parser: 'tree-sitter', source: 'ordo-ab-chao-v2-polyglot-registry' };
         
         const analysisPromises = Array.from(filesToAnalyze).map(async (filePath: string): Promise<SemanticAnalysisResult | undefined> => {
             const ext = path.extname(filePath).toLowerCase();
-            let language: string | null = null;
-            if (['.ts', '.tsx'].includes(ext)) language = 'typescript';
-            else if (['.js', '.jsx', '.mjs', '.cjs'].includes(ext)) language = 'javascript';
+            const language = this.languageRegistry.getLanguageFromFilename(filePath);
             if (!language) return undefined;
 
+            const parserName = this.languageRegistry.getParserForLanguage(language);
+            if (!parserName) {
+                console.log(`[Orchestrator] Fichier '${filePath}' skippé (aucun parser sémantique pour le langage : ${language}).`);
+                return undefined;
+            }
+            
             const fileContent = await this.fileContentService.readFileContent(project.projectRootPath, filePath);
             if (!fileContent) return undefined;
 
@@ -90,7 +98,7 @@ export class OrdoAbChaosOrchestrator {
             const analysisResult = await this.concurrencyService.runTaskInWorker<SemanticAnalysisResult>({
                 filePath: path.join(project.projectRootPath, filePath),
                 fileContent: fileContent,
-                language: language,
+                language: parserName,
                 parsersPath: this.parsersPath
             });
             
@@ -100,7 +108,21 @@ export class OrdoAbChaosOrchestrator {
             return { ...analysisResult, filePath };
         });
 
-        return (await Promise.all(analysisPromises))
-            .filter((result): result is SemanticAnalysisResult => !!result && !result.error);
+        // CORRECTION ARCHITECTURALE : Remplacer Promise.all par Promise.allSettled
+        const settledResults = await Promise.allSettled(analysisPromises);
+        
+        const validResults: SemanticAnalysisResult[] = [];
+        settledResults.forEach(result => {
+            if (result.status === 'fulfilled' && result.value) {
+                // Si la promesse a réussi et a une valeur, on l'ajoute
+                validResults.push(result.value);
+            } else if (result.status === 'rejected') {
+                // Si la promesse a échoué, on log l'erreur mais on ne stoppe pas le processus
+                console.error(`[Orchestrator] Une tâche d'analyse a échoué :`, result.reason);
+            }
+            // Les cas 'fulfilled' mais avec `undefined` sont simplement ignorés.
+        });
+
+        return validResults;
     }
 }

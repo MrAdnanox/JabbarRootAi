@@ -5,7 +5,7 @@ import { ModuleRegistry } from './module.registry';
 import { ServiceCollection, IService } from './interfaces';
 import {
     ProjectService, BrickService, BrickConstructorService, StatisticsService, StructureGenerationService,
-    FileContentService, CompactionService, SystemBrickManager, ConcurrencyService
+    FileContentService, CompactionService, SystemBrickManager, ConcurrencyService, LanguageRegistryService
 } from '@jabbarroot/core';
 import { 
     AnalyzerService, DocumentationService, UnitTestGeneratorService, ArtefactService, 
@@ -40,6 +40,8 @@ export class ExtensionBootstrapper {
 
         // --- Instanciation de tous les services ---
         const fileSystemAdapter = new VscodeFileSystemAdapter();
+        const languageRegistryService = new LanguageRegistryService(fileSystemAdapter, projectRootPath);
+        await languageRegistryService.initialize();
         const storageAdapter = new FileSystemStorageAdapter(fileSystemAdapter, projectRootPath, '.jabbarroot_data/storage_v2');
         
         const projectService = new ProjectService(storageAdapter);
@@ -70,7 +72,8 @@ export class ExtensionBootstrapper {
             projectRootPath, 
             concurrencyService,
             fileContentService,
-            parsersPath
+            parsersPath,
+            languageRegistryService // L'argument manquant est ajouté ici
         );
 
         // CORRECTION : Instancier les services UI ici aussi
@@ -101,7 +104,8 @@ export class ExtensionBootstrapper {
             ordoAbChaosOrchestrator,
             notificationService,
             dialogService,
-            geminiConfigService
+            geminiConfigService,
+            languageRegistryService
             // Le service 'sanctuaryViewProvider' n'est plus enregistré au démarrage.
         };
 

@@ -1,0 +1,13 @@
+{
+  "type": "module",
+  "name": "tree-sitter-wasm-downloader",
+  "version": "1.0.0",
+  "description": "Download Tree-sitter WASM parsers",
+  "main": "fetch-wasm.js",
+  "scripts": {
+    "start": "node fetch-wasm.js"
+  },
+  "dependencies": {
+    "node-fetch": "^3.3.0"
+  }
+}

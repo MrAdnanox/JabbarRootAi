@@ -24,6 +24,7 @@ import { BrickConstructorService } from './services/brickConstructor.service';
 import { StatisticsService } from './services/statistics.service';
 import { ProjectService } from './services/project.service';
 import { BrickService } from './services/brick.service';
+
 import { SystemBrickManager } from './services/SystemBrickManager.service';
 export { CompactionService };
 export { FileContentService };
@@ -38,6 +39,6 @@ export { CompressionLevel, BrickContextOptions } from './models/project.types';
 export { BrickContext, JabbarProject } from './models/project.types';
 export { BrickCompilationReport } from './models/compilation.types';
 export { FileCompilationStats } from './models/compilation.types';
-export { GenerationReport } from './services/structureGeneration.service';      
+export { GenerationReport } from './services/structureGeneration.service';
 
-
+export * from './services/registry/language.registry.service';
