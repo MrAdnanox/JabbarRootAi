@@ -1,10 +1,4 @@
-// Contenu final pour: packages/core/src/index.ts
-
-// Exporter les modèles DÉFINIS dans le package 'core'
-export * from './models/programmableContext';
-export * from './models/contextStats';
-// 'project.types' a été déplacé vers @jabbarroot/types
-export * from './models/compilation.types';
+// packages/core/src/index.ts
 
 // Exporter les services DÉFINIS dans le package 'core'
 export { CacheService } from './services/cache/CacheService';

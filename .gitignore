@@ -1,5 +1,6 @@
 tree-sitter-wasm/
 .jabbarroot
+/apps/vscode-extension/parsers/
 # Dossiers de dépendances et de sortie
 **/node_modules
 **/dist
