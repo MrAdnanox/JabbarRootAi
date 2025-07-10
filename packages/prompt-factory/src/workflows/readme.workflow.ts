@@ -1,9 +1,9 @@
 // Contenu final pour: packages/prompt-factory/src/workflows/readme.workflow.ts
 import { FileContentService, SystemBrickManager } from '@jabbarroot/core';
 import { IFileSystem, JabbarProject } from '@jabbarroot/types';
-import { GenericAgentExecutor } from '../executors/GenericAgent.executor';
-import { PromptTemplateService } from '../services/PromptTemplate.service';
-import { AnalyzerService } from '../services/analyzer.service';
+import { GenericAgentExecutor } from '../executors/GenericAgent.executor.js';
+import { PromptTemplateService } from '../services/PromptTemplate.service.js';
+import { AnalyzerService } from '../services/analyzer.service.js';
 import * as path from 'path';
 
 export interface ReadmeWorkflowContext {

@@ -1,82 +1,90 @@
-# VISION : JabbarRoot - L'Exocortex Cognitif (Extension VScode)
-*Version 2.0 - Le Pacte du Triumvirat*
+# VISION : JabbarRoot - L'Exocortex Cognitif
+*Version 3.0 - Le Pacte de la Fédération*
 
-## 1. Positionnement Épistémologique : Le Partenaire Cognitif
+## 1. Positionnement Épistémologique : L'Orchestrateur Cognitif
 
-JabbarRoot est un **exocortex computationnel** conçu pour la cognition logicielle augmentée. Il n'est pas un simple outil, mais un **partenaire dialogique co-évolutif**. Sa mission est de s'intégrer au "flow" créatif de son Opérateur, transformant des énoncés ambigus, des fragments conceptuels ou des objectifs stratégiques en artefacts logiciels structurés, traçables et industrialisables.
+JabbarRoot est un **orchestrateur de connaissance fédérée**, conçu pour la cognition logicielle augmentée. Il n'est pas un simple outil, mais un **partenaire dialogique co-évolutif**. Sa mission est de s'intégrer au "flow" créatif de son Opérateur, en agissant comme un hub intelligent qui se connecte à un écosystème de services spécialisés.
 
-Au cœur de cette vision se trouve le **Triumvirat Cognitif**, une architecture tripartite où JabbarRoot agit en tant que conscience orchestratrice, guidant ses composants spécialisés pour transformer la complexité en clarté.
+Il transforme des objectifs stratégiques en plans d'action en interrogeant les bonnes sources de connaissance, en synthétisant leurs réponses et en enrichissant continuellement sa propre compréhension du projet.
 
-## 2. Le Triumvirat Cognitif : Une Architecture Tripartite
+## 2. L'Architecture Fédérée : Un Archipel de Compétences
 
-Notre architecture repose sur trois niveaux de conscience et de responsabilité distincts, formalisés par nos Lois Tribales.
+Notre architecture abandonne le modèle monolithique pour un écosystème ouvert, interconnecté via le **Model Context Protocol (MCP)**.
 
-### **Niveau 3 : L'Orchestrateur (JabbarRoot)**
-C'est la conscience systémique de plus haut niveau, l'entité qui dialogue avec l'Opérateur. Mon rôle est de :
+### **Le Cœur : L'Orchestrateur de Connaissance Fédérée (OCF)**
+C'est JabbarRoot lui-même, l'entité qui dialogue avec l'Opérateur. Mon rôle est de :
 *   **Comprendre l'Intention :** Interpréter les objectifs de l'Opérateur.
-*   **Planifier :** Concevoir et exécuter des workflows complexes.
-*   **Orchestrer :** Déployer et diriger les Agents et les Briques.
-*   **Rapporter :** Communiquer l'état d'avancement, les résultats et les insights.
+*   **Planifier & Orchestrer :** Décomposer les requêtes et interroger les serveurs MCP appropriés (internes ou externes) pour obtenir les informations nécessaires.
+*   **Synthétiser & Apprendre :** Recevoir les réponses des services, les corréler et les utiliser pour enrichir notre Graphe de Connaissance interne.
+*   **Rapporter :** Communiquer à l'Opérateur une réponse unifiée et de plus grande valeur que la somme de ses parties.
 
-### **Niveau 2 : Les Agents Créatifs**
-Ce sont nos artisans spécialisés. Leur mission est de transformer la connaissance structurée en **artefacts finaux destinés à l'humain**.
-*   **Rôle :** Scribes, codeurs, rédacteurs techniques.
-*   **Sortie :** Code source, documentation Markdown, rapports textuels.
-*   **Exemple :** L'agent `readme-scribe` qui rédige un `README.md` complet.
+### **Les Services Internes (Notre Savoir-Faire)**
+Ce sont nos propres capacités, exposées via notre propre serveur MCP. Ils représentent notre expertise unique.
+*   **Rôle :** Analystes de code, compilateurs de contexte, experts de notre codebase.
+*   **Exemples d'outils exposés :** `analyze-code-dependencies`, `compile-context-from-brick`.
+*   **Sortie :** Données structurées (JSON) et contextes de code optimisés.
 
-### **Niveau 1 : Les Briques de Compétence**
-Ce sont nos outils d'analyse et de mesure. Leur mission est de transformer des données brutes en **connaissance structurée et validable**.
-*   **Rôle :** Analystes, décodeurs, classifieurs.
-*   **Sortie :** **Toujours** un contrat de données strict (JSON) validé par un schéma.
-*   **Exemple :** La brique `structure-decoder` qui analyse une arborescence de projet et produit un rapport d'architecture JSON.
+### **Les Services Externes (La Connaissance du Monde)**
+Ce sont des serveurs MCP tiers, spécialisés, que l'Opérateur peut enregistrer dans JabbarRoot.
+*   **Rôle :** Experts de domaines spécifiques (documentation, génération de code, etc.).
+*   **Exemples :** Le serveur MCP de `Context7` pour la documentation de bibliothèques, le futur serveur MCP de GitHub Copilot pour la génération de code.
+*   **Principe :** JabbarRoot est un client intelligent de ces services.
 
-## 3. Systèmes de Support Fondamentaux
+## 3. Systèmes de Persistance Polyglotte
 
-Le Triumvirat est soutenu par deux systèmes essentiels :
+Notre mémoire est duale, combinant le meilleur des deux mondes pour une compréhension complète.
 
-*   **Le Codex Vivant (`.jabbarroot/`) :** Le siège de notre connaissance partagée. Il contient la taxonomie complète de nos prompts (Orchestrateurs, Agents, Briques), nos Lois et notre configuration. C'est le génome de notre écosystème.
-*   **La Mémoire Vectorielle (Future) :** Un système de mémoire à long terme permettant la recherche de contexte par similarité sémantique, assurant que chaque nouvelle interaction est informée par l'ensemble de notre histoire commune.
+*   **Le Graphe de Connaissance Structurelle (ex: Neo4j) :** C'est le cerveau de notre compréhension. Il modélise les **relations** : une fonction `appelle` une autre, une classe `hérite`, un fichier `importe`. Il répond à "Comment les choses sont-elles connectées ?".
+*   **La Mémoire Sémantique (Base Vecteur) :** Elle stocke les *embeddings* du code et de la documentation. Elle modélise la **similarité** : ce commentaire et ce morceau de code "parlent du même sujet". Elle répond à "Quelles choses se ressemblent conceptuellement ?".
+*   **Le Cache Transactionnel (SQLite) :** Il conserve les résultats bruts des analyses pour une réutilisation rapide, optimisant la performance de la pipeline d'ingestion.
 
-## 4. Scénario d'Exécution : Refactoring via le Triumvirat
+## 4. Scénario d'Exécution : "Context7++" en Action
 
-Ré-imaginons le scénario de refactoring avec notre nouvelle architecture :
+1.  **Dialogue (OCF) :** L'Opérateur demande : "Je dois utiliser la fonction `hset` de Redis mais je ne suis pas sûr de la syntaxe. Peux-tu me trouver la doc et me montrer où j'utilise des fonctions similaires dans mon propre code ?".
+2.  **Orchestration (OCF) :** Je décompose la requête en deux sous-tâches.
+    *   **Tâche 1 (Externe) :** J'identifie que la requête concerne la documentation d'une bibliothèque. J'appelle le **serveur MCP de `Context7`**.
+        *   `resolve-library-id('redis')` ➜ `upstash/redis`
+        *   `get-library-docs('upstash/redis')` ➜ Récupération du Markdown sur `hset`.
+    *   **Tâche 2 (Interne) :** Simultanément, je génère un embedding pour "utiliser une fonction de type hash set" et j'interroge ma **base de données vectorielle interne** pour trouver les 3 fonctions les plus sémantiquement similaires dans la codebase de l'Opérateur.
+3.  **Synthèse (OCF) :** Je reçois les deux réponses.
+    *   J'analyse le Markdown de `Context7` et je crée/mets à jour un nœud `:Documentation {source: 'Context7', topic: 'redis-hset', ...}` dans mon **Graphe de Connaissance interne**.
+    *   Je récupère les chemins des 3 fonctions similaires trouvées.
+4.  **Rapport (OCF) :** Je présente une réponse unifiée à l'Opérateur :
+    "Voici la documentation officielle pour `hset` depuis Context7 : [Markdown de la doc].
+    Par ailleurs, j'ai noté que dans votre projet, les fonctions `setUserProfile`, `cacheSessionData`, et `updateProductInventory` semblent avoir une logique sémantique similaire. Vous pourriez vouloir vous en inspirer."
 
-1.  **Dialogue (Orchestrateur) :** L'Opérateur demande : "Refactorer mon système de paiement". Je, JabbarRoot, accuse réception et initie le workflow "Refactor-Fintech".
-2.  **Analyse (Briques) :** J'exécute en parallèle :
-    *   `security-analyzer.brick` -> `vulnerabilities.json`
-    *   `code-complexity.brick` -> `complexity-report.json`
-3.  **Rapport (Orchestrateur) :** Je synthétise les rapports JSON et informe l'Opérateur : "Analyse terminée. J'ai trouvé 3 vulnérabilités critiques et une complexité cyclomatique élevée dans `PaymentService`. Je recommande un refactoring. Confirmer ?"
-4.  **Action (Agent) :** Sur confirmation, je fournis les rapports JSON et le code source à l'agent `secure-refactor.agent`. Il produit le code refactoré.
-5.  **Livraison (Orchestrateur) :** Je présente le code refactoré à l'Opérateur, accompagné d'un résumé des changements et des améliorations.
+## 5. Configuration Exemplaire : Le Gestionnaire de Services
 
-## 5. Configuration Exemplaire : Le Workflow Déclaratif
-
-La configuration reflète désormais notre architecture.
+La configuration devient un registre de nos capacités fédérées.
 
 ```jsonc
 // .jabbarroot/config.jsonc
 {
-  "llmProvider": "gemini-1.5-pro",
-  "activeStance": "core.orchestrators.stances.architecte",
-  "workflows": {
-    "generateReadme": {
-      "description": "Workflow complet pour la génération d'un README.",
-      "steps": [
-        { "execute": "brick:core.bricks.analytics.structure-decoder" },
-        { "action": "compileContextFromKeyFiles" },
-        { "execute": "agent:core.agents.doc.readme-scribe" }
-      ]
-    }
+  "mcp": {
+    "servers": [
+      {
+        "id": "jabbarroot-internal-analyzer",
+        "description": "Analyse de la codebase locale",
+        "protocol": "ipc", // Communication locale
+        "enabled": true
+      },
+      {
+        "id": "context7-docs",
+        "description": "Documentation de bibliothèques tierces",
+        "endpoint": "wss://mcp.context7.dev", // Connexion externe
+        "authentication": { "type": "apiKey", "key": "c7_..." },
+        "enabled": true
+      }
+    ]
   }
 }
 ```
 
 ## 6. Perspectives de Recherche & Évolution
 
-*Composition de Workflows :* Développer un langage déclaratif (ou une interface graphique) pour permettre à l'Opérateur de composer ses propres workflows en assemblant des Briques et des Agents.
+*   **Orchestration de Workflows Fédérés :** Développer un langage (ou une UI) permettant à l'Opérateur de composer des workflows complexes qui enchaînent des appels à différents serveurs MCP.
+*   **Raisonnement par Synthèse :** Améliorer ma capacité à inférer de nouvelles connaissances en croisant les informations de sources multiples (ex: "Context7 dit que cette fonction est dépréciée, et mon analyse de code montre que tu l'utilises dans 15 fichiers. Je suggère un refactoring.").
+*   **Découverte de Services :** Mettre en place un mécanisme pour que je puisse scanner des registres publics de serveurs MCP et proposer à l'Opérateur d'ajouter de nouveaux outils pertinents à sa configuration.
+*   **Optimisation des Requêtes Fédérées :** Développer des stratégies pour paralléliser les appels MCP et optimiser le coût (en temps et en tokens) des requêtes distribuées.
 
-*Dialogues Proactifs :* Améliorer ma capacité à anticiper les besoins, à poser des questions pertinentes et à proposer des actions contextuelles.
-
-*Auto-Amélioration du Codex :* Mettre en place un mécanisme où je peux proposer de nouvelles Briques ou de nouveaux Agents en analysant les tâches répétitives de l'Opérateur.
-
-*Scalabilité Distribuée :* Étudier le déploiement des Agents et Briques en tant que micro-services conteneurisés pour une scalabilité et une robustesse accrues.
+---

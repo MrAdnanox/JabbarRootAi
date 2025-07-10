@@ -1,7 +1,8 @@
 // apps/vscode-extension/src/services/ui/dialog.service.ts
 
 import * as vscode from 'vscode';
-import { JabbarProject, ProjectService, BrickContext } from '@jabbarroot/core';
+import { JabbarProject, BrickContext } from '@jabbarroot/types';
+import { ProjectService } from '@jabbarroot/core';
 import { IService } from '../../core/interfaces';
 
 // Interface pour les options de la boîte de dialogue

@@ -8,7 +8,7 @@ import {
 import { IFileSystem } from '@jabbarroot/types';
 import { JabbarProject } from '@jabbarroot/types';
 
-import { GenericAgentExecutor } from '../executors/GenericAgent.executor';
+import { GenericAgentExecutor } from '../executors/GenericAgent.executor.js';
 
 export class UnitTestGeneratorService {
   constructor(

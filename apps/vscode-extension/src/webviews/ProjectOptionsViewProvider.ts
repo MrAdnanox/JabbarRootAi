@@ -1,6 +1,6 @@
 // apps/vscode-extension/src/webviews/ProjectOptionsViewProvider.ts
 import * as vscode from 'vscode';
-import { JabbarProject, JabbarProjectOptions } from '@jabbarroot/core';
+import { JabbarProject, JabbarProjectOptions } from '@jabbarroot/types';
 
 // Le nonce est une fonction utilitaire que nous pourrions factoriser plus tard
 function getNonce() {

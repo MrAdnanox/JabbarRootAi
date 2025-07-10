@@ -1,0 +1,33 @@
+# JabbarRoot/infra/docker-compose.yml
+
+# version: '3.8'
+
+services:
+  neo4j:
+    image: neo4j:5-community
+    container_name: jabbarroot-neo4j-db
+    ports:
+      - "7474:7474"
+      - "7687:7687"
+    volumes:
+      - neo4j-data:/data
+      - neo4j-logs:/logs
+    environment:
+      - NEO4J_AUTH=neo4j/DevPassTemp
+      - NEO4J_ACCEPT_LICENSE_AGREEMENT=yes
+      - NEO4J_server_memory_heap_initial__size=256M
+      - NEO4J_server_memory_heap_max__size=512M
+      - NEO4J_server_memory_pagecache_size=256M
+    
+    # --- AJOUT DE LA LIMITE AU NIVEAU DU CONTENEUR ---
+    deploy:
+      resources:
+        limits:
+          # Limite totale pour le conteneur.
+          # Un peu plus que la somme heap+pagecache (512+256=768)
+          # pour l'overhead de la JVM et de l'OS.
+          memory: 770M 
+
+volumes:
+  neo4j-data:
+  neo4j-logs:

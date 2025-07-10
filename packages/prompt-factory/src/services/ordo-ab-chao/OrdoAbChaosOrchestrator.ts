@@ -2,9 +2,9 @@
 
 import * as path from 'path';
 import { CacheService, ConcurrencyService, FileContentService } from '@jabbarroot/core';
-import { GraphBuilderService } from './GraphBuilderService';
+import { GraphBuilderService } from './GraphBuilderService.js';
 import { v4 as uuidv4 } from 'uuid';
-import { AnalysisJob, SemanticAnalysisResult } from './types';
+import { AnalysisJob, SemanticAnalysisResult } from './types.js';
 import * as crypto from 'crypto';
 // CORRECTION : Import du bon type de rapport et de ses sous-types
 import { ArchitecturalReportV2, JabbarProject } from '@jabbarroot/types';

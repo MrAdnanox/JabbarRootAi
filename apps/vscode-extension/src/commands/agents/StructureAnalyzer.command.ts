@@ -1,7 +1,8 @@
 import * as vscode from 'vscode';
 import { ICommandModule, IService, ServiceCollection } from '../../core/interfaces';
 import { AnalyzerService } from '@jabbarroot/prompt-factory';
-import { StructureGenerationService, JabbarProject } from '@jabbarroot/core';
+import { StructureGenerationService } from '@jabbarroot/core';
+import { JabbarProject } from '@jabbarroot/types';
 import { IgnoreService } from '../../services/ignore.service';
 import { DialogService } from '../../services/ui/dialog.service';
 import { NotificationService } from '../../services/ui/notification.service';

@@ -1,6 +1,6 @@
 // apps/vscode-extension/src/webviews/BrickOptionsViewProvider.ts
 import * as vscode from 'vscode';
-import { BrickContext, JabbarProject, BrickContextOptions, JabbarProjectOptions, CompressionLevel } from '@jabbarroot/core';
+import { JabbarProject, BrickContext, BrickContextOptions, JabbarProjectOptions, CompressionLevel } from '@jabbarroot/types';
 
 // Interface pour clarifier les données passées à la webview
 interface WebviewState {

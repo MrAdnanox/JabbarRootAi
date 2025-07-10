@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
 import { ICommandModule, IService, ServiceCollection } from '../core/interfaces';
-import { JabbarProject } from '@jabbarroot/core';
+import { JabbarProject } from '@jabbarroot/types';
 import { VscodeFileSystemAdapter } from '../adapters/vscodeFileSystem.adapter';
 import { AgentDefinition } from '@jabbarroot/prompt-factory/dist/types/agent.types';
 import { GenericWorkflowEngine } from '@jabbarroot/prompt-factory/dist/services/GenericWorkflowEngine.service';

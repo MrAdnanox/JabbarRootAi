@@ -10,3 +10,22 @@ body {
 /* ... copier/coller les styles pertinents du prototype ... */
 .node circle { stroke: #fff; stroke-width: 1.5px; cursor: grab; }
 .link { stroke: #999; stroke-opacity: 0.6; }
+
+.node-label {
+    fill: #e0e0e0;
+    font-size: 10px;
+    font-family: var(--vscode-font-family);
+    pointer-events: none; /* Pour que le survol fonctionne sur le cercle */
+}
+
+div.graph-tooltip {
+    position: absolute;
+    text-align: left;
+    padding: 8px;
+    font: 12px sans-serif;
+    background: #252526;
+    border: 1px solid #3a3a3a;
+    border-radius: 4px;
+    pointer-events: none;
+    color: #ccc;
+}

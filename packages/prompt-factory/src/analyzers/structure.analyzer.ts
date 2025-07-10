@@ -1,6 +1,6 @@
 import { IFileSystem } from '@jabbarroot/types';
-import { PromptTemplateService } from '../services/PromptTemplate.service';
-import { StructureDecoderExecutor } from '../executors/structure-decoder.executor';
+import { PromptTemplateService } from '../services/PromptTemplate.service.js';
+import { StructureDecoderExecutor } from '../executors/structure-decoder.executor.js';
 import { ArchitecturalReportV2 as ArchitecturalReport } from '@jabbarroot/types';
 
 export class StructureAnalyzer {

@@ -1,6 +1,6 @@
 // packages/prompt-factory/src/services/ordo-ab-chao/GraphBuilderService.ts
 // Assemble les résultats partiels en Graphe de Connaissance.
-import { SemanticAnalysisResult } from './types';
+import { SemanticAnalysisResult } from './types.js';
 import { ArchitecturalReportV2  } from '@jabbarroot/types';
 import * as path from 'path';   
 

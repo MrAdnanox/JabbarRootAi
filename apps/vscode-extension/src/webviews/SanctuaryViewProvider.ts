@@ -4,7 +4,8 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { IService, ServiceCollection } from '../core/interfaces';
 import { ArtefactService, OrdoAbChaosOrchestrator } from '@jabbarroot/prompt-factory';
-import { ProjectService, CacheService, JabbarProject } from '@jabbarroot/core';
+import { ProjectService, CacheService } from '@jabbarroot/core';
+import { JabbarProject } from '@jabbarroot/types';
 import { DialogService } from '../services/ui/dialog.service';
 
 function getCacheFromOrchestrator(orchestrator: any): CacheService | undefined {
@@ -116,9 +117,24 @@ export class SanctuaryViewProvider implements IService {
         this._panel.webview.html = await this.getHtmlForWebview(project, report, graph);
     }
     
-    private handleMessage(message: any) {
-        if (this._isDisposed) {return;}
-        // ... (implémentation de la gestion des messages)
+    private async handleMessage(message: any) {
+        if (this._isDisposed) { return; }
+
+        switch (message.command) {
+            case 'openFile':
+                const filePath = message.path;
+                if (filePath) {
+                    try {
+                        const fileUri = vscode.Uri.file(filePath);
+                        const doc = await vscode.workspace.openTextDocument(fileUri);
+                        await vscode.window.showTextDocument(doc, { preview: false });
+                    } catch (error) {
+                        vscode.window.showErrorMessage(`Impossible d'ouvrir le fichier : ${filePath}`);
+                        console.error(error);
+                    }
+                }
+                return;
+        }
     }
 
     private getNonce() {

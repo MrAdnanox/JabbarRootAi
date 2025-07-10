@@ -5,8 +5,8 @@ import {
   ProjectService, 
   StatisticsService
 } from '@jabbarroot/core';
-import { StructureAnalyzer } from '../analyzers/structure.analyzer';
-import { ArtefactService } from './artefact.service';
+import { StructureAnalyzer } from '../analyzers/structure.analyzer.js';
+import { ArtefactService } from './artefact.service.js';
 import * as path from 'path';
 
 const ARCHITECTURAL_REPORT_TYPE = 'Architectural Report';

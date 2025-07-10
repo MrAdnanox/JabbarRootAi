@@ -14,7 +14,9 @@
     "@vscode/sqlite3": "5.1.8-vscode",
     "clean-css": "^5.3.3",
     "lru-cache": "^11.1.0",
+    "node-fetch": "^2.7.0",
     "tiktoken": "^1.0.21",
+    "undici": "^7.11.0",
     "uuid": "^11.1.0",
     "web-tree-sitter": "^0.24.7"
   },
@@ -24,6 +26,7 @@
     "@types/html-minifier-terser": "^7.0.2",
     "@types/minimatch": "^5.1.2",
     "@types/node": "^20.19.1",
+    "@types/node-fetch": "^2.6.12",
     "html-minifier-terser": "^7.2.0",
     "minimatch": "^10.0.3",
     "postcss": "^8.5.6",

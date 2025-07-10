@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 import { ICommandModule, IService, ServiceCollection } from '../../core/interfaces';
-import { JabbarProject } from '@jabbarroot/core';
+import { JabbarProject } from '@jabbarroot/types';
 import { DocumentationService, AnalyzerService } from '@jabbarroot/prompt-factory';
 import { DialogService } from '../../services/ui/dialog.service';
 import { GeminiConfigService } from '../../services/config/gemini.config.service';

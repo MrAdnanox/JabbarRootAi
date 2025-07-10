@@ -2,7 +2,7 @@
 import * as vscode from 'vscode';
 import { minimatch } from 'minimatch';
 import { VscodeFileSystemAdapter } from '../adapters/vscodeFileSystem.adapter';
-import { JabbarProject, BrickContext } from '@jabbarroot/core';
+import { JabbarProject, BrickContext } from '@jabbarroot/types';
 import * as path from 'path';
 
 /**

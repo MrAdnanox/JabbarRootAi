@@ -3,11 +3,11 @@
 import * as vscode from 'vscode';
 import { ICommandModule, IService, ServiceCollection } from '../../core/interfaces';
 import { OrdoAbChaosOrchestrator, AnalyzerService } from '@jabbarroot/prompt-factory';
-import { ArchitecturalReportV2, KeyFileV2 } from '@jabbarroot/types';
+import { ArchitecturalReportV2, KeyFileV2, JabbarProject } from '@jabbarroot/types';
 import { NotificationService } from '../../services/ui/notification.service';
 import { DialogService } from '../../services/ui/dialog.service';
 import { GeminiConfigService } from '../../services/config/gemini.config.service';
-import { StructureGenerationService, JabbarProject, BrickService } from '@jabbarroot/core';
+import { StructureGenerationService, BrickService } from '@jabbarroot/core';
 import { IgnoreService } from '../../services/ignore.service';
 
 export class OrdoAbChaosCommand implements ICommandModule {
