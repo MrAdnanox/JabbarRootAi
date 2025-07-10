@@ -1,6 +1,6 @@
 // packages/core/src/services/compaction/strategies/RegexCompactor.ts
 
-import { ICompactor } from '../types';
+import { ICompactor } from '../types.js';
 
 /**
  * Une stratégie de compactage "sûre" qui utilise des expressions régulières.

@@ -1,5 +1,4 @@
 // packages/prompt-factory/src/services/orchestration/resilience/CircuitBreaker.ts
-
 type CircuitState = 'CLOSED' | 'OPEN' | 'HALF_OPEN';
 
 export class CircuitBreaker {
@@ -9,15 +8,14 @@ export class CircuitBreaker {
   private resetTimer: NodeJS.Timeout | null = null;
 
   constructor(
-    private readonly failureThreshold: number = 3, // 3 échecs pour ouvrir
-    private readonly resetTimeout: number = 10000 // 10 secondes avant de passer à HALF_OPEN
+    private readonly failureThreshold: number = 3, 
+    private readonly resetTimeout: number = 10000 // 10 seconds
   ) {}
 
   public async execute<T>(asyncFunction: () => Promise<T>): Promise<T> {
     switch (this.state) {
       case 'OPEN':
         throw new Error('Circuit Breaker is open. Call blocked.');
-      
       case 'HALF_OPEN':
         try {
           const result = await asyncFunction();
@@ -27,7 +25,6 @@ export class CircuitBreaker {
           this.open();
           throw error;
         }
-
       case 'CLOSED':
       default:
         try {
@@ -45,8 +42,6 @@ export class CircuitBreaker {
     this.state = 'OPEN';
     this.lastFailureTime = Date.now();
     console.warn(`[CircuitBreaker] State changed to OPEN. Blocking calls for ${this.resetTimeout}ms.`);
-    
-    // Planifie le passage à HALF_OPEN
     this.resetTimer = setTimeout(() => {
       this.state = 'HALF_OPEN';
       console.log('[CircuitBreaker] State changed to HALF_OPEN. Allowing one test call.');
@@ -74,7 +69,7 @@ export class CircuitBreaker {
       this.open();
     }
   }
-
+  
   public getState(): CircuitState {
     return this.state;
   }

@@ -1,7 +1,7 @@
 // packages/core/src/services/context.service.ts
 import { IStorage } from '@jabbarroot/types';
 import { v4 as uuidv4 } from 'uuid';
-import { ProgrammableContext } from '../models/programmableContext';
+import { ProgrammableContext } from '../models/programmableContext.js';
 
 const CONTEXTS_STORAGE_KEY = 'jabbarroot.contexts';
 

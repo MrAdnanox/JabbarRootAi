@@ -1,12 +1,11 @@
 // packages/prompt-factory/src/services/orchestration/resilience/RetryWithBackoff.ts
-
 const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
 export class RetryWithBackoff {
   constructor(
     private readonly maxRetries: number = 3,
-    private readonly initialDelay: number = 100, // 100ms
-    private readonly factor: number = 2 // Double le délai à chaque fois
+    private readonly initialDelay: number = 100, // ms
+    private readonly factor: number = 2 // exponential backoff
   ) {}
 
   public async execute<T>(asyncFunction: () => Promise<T>): Promise<T> {
@@ -23,7 +22,6 @@ export class RetryWithBackoff {
         currentDelay *= this.factor;
       }
     }
-
     throw new Error(`[Retry] Operation failed after ${this.maxRetries} attempts. Last error: ${lastError?.message}`);
   }
 }

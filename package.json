@@ -10,13 +10,17 @@
     "url": "https://github.com/MrAdnanox/JabbarRootAi.git"
   },
   "scripts": {
+    "clean": "pnpm -r exec rimraf dist tsconfig.tsbuildinfo",
     "build:parsers": "node scripts/build-parsers.mjs",
     "watch:ext": "pnpm --filter ./apps/vscode-extension watch",
     "build:packages": "tsc -b tsconfig.solution.json",
     "build:extension": "pnpm --filter ./apps/vscode-extension build",
     "build": "pnpm run build:packages && pnpm run build:parsers && pnpm run build:extension",
     "lint": "eslint packages/**/*.ts apps/**/*.ts",
-    "test": "pnpm run build && pnpm --filter ./apps/vscode-extension test"
+    "test:core": "pnpm --filter @jabbarroot/core test",
+    "test:prompt-factory": "pnpm --filter @jabbarroot/prompt-factory test",
+    "test:extension": "pnpm --filter './apps/vscode-extension' test",
+    "test": "pnpm test:packages && pnpm test:extension"
   },
   "devDependencies": {
     "@types/brace-expansion": "^1.1.2",

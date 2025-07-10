@@ -1,7 +1,7 @@
 import { SystemBrickManager, FileContentService } from '@jabbarroot/core';
 import { IFileSystem, JabbarProject } from '@jabbarroot/types';
-import { ReadmeWorkflow } from '../workflows/readme.workflow.js';
-import { AnalyzerService } from './analyzer.service.js';
+import { ReadmeWorkflow } from '../workflows/readme.workflow';
+import { AnalyzerService } from './analyzer.service';
 
 export class DocumentationService {
   private readmeWorkflow: ReadmeWorkflow;

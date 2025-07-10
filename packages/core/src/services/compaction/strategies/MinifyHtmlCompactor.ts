@@ -1,6 +1,6 @@
 // packages/core/src/services/compaction/strategies/MinifyHtmlCompactor.ts
 
-import { ICompactor } from '../types';
+import { ICompactor } from '../types.js';
 import { minify } from 'html-minifier-terser';
 
 /**

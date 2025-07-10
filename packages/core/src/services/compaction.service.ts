@@ -1,9 +1,9 @@
-import { CompactionInput, ICompactor } from './compaction/types';
+import { CompactionInput, ICompactor } from './compaction/types.js';
 import { CompressionLevel } from '@jabbarroot/types';
-import { getLanguageIdFromPath } from './compaction/utils';
-import { CleanCssCompactor } from './compaction/strategies/CleanCssCompactor';
-import { MinifyHtmlCompactor } from './compaction/strategies/MinifyHtmlCompactor';
-import { RegexCompactor } from './compaction/strategies/RegexCompactor';
+import { getLanguageIdFromPath } from './compaction/utils.js';
+import { CleanCssCompactor } from './compaction/strategies/CleanCssCompactor.js';
+import { MinifyHtmlCompactor } from './compaction/strategies/MinifyHtmlCompactor.js';
+import { RegexCompactor } from './compaction/strategies/RegexCompactor.js';
 
 export class CompactionService {
   private readonly registry = new Map<string, ICompactor>();

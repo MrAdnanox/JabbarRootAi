@@ -1,4 +1,4 @@
-// packages/prompt-factory/tsconfig.json (Version ESM finale)
+// packages/prompt-factory/tsconfig.json
 {
   "extends": "../../tsconfig.base.json",
   "references": [
@@ -7,11 +7,14 @@
   ],
   "compilerOptions": {
     "outDir": "dist",
-    "module": "NodeNext", // Cible les modules ESM modernes de Node
-    "moduleResolution": "NodeNext", // Utilise le nouvel algorithme de résolution
     "composite": true,
-    "declaration": true
+    "declaration": true,
+    "baseUrl": ".",
+    "paths": {
+      "@jabbarroot/core": ["../core/src"],
+      "@jabbarroot/types": ["../types/src"]
+    }
   },
-  "include": ["src/**/*", "test/**/*"], // Inclut les sources et les tests
+  "include": ["src/**/*", "__tests__/**/*"],
   "exclude": ["node_modules"]
 }

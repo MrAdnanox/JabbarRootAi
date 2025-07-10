@@ -1,3 +1,4 @@
+// apps/vscode-extension/tsconfig.json
 {
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
@@ -19,17 +20,8 @@
     "resolveJsonModule": true,
     "allowJs": true,
     "checkJs": false,
-    "noEmit": true,
-    "paths": {
-      "@jabbarroot/core": ["../../packages/core/src/index.ts"],
-      "@jabbarroot/core/*": ["../../packages/core/src/*"],
-      "@jabbarroot/prompt-factory": ["../../packages/prompt-factory/src/index.ts"],
-      "@jabbarroot/prompt-factory/*": ["../../packages/prompt-factory/src/*"],
-      "@jabbarroot/types": ["../../packages/types/src/index.ts"],
-      "@jabbarroot/types/*": ["../../packages/types/src/*"],
-      "@jabbarroot/vector-engine": ["../../packages/vector-engine/src/index.ts"],
-      "@jabbarroot/vector-engine/*": ["../../packages/vector-engine/src/*"]
-    }
+    "noEmit": true
+    // "paths": { ... } <-- SUPPRIMER CE BLOC ENTIER
   },
   "include": [
     "src/**/*",

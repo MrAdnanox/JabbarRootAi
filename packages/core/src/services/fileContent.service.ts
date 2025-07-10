@@ -2,7 +2,7 @@
 
 import { IFileSystem } from '@jabbarroot/types';
 import * as path from 'path';
-import type { CompactionService } from './compaction.service';
+import type { CompactionService } from './compaction.service.js';
 import type { CompressionLevel } from '@jabbarroot/types';
 
 /**

@@ -3,10 +3,10 @@ import {
   FileContentService, 
   SystemBrickManager 
 } from '@jabbarroot/core';
-import { ArtefactService } from './artefact.service.js';
-import { PromptTemplateService } from './PromptTemplate.service.js';
-import { GenericAgentExecutor } from '../executors/GenericAgent.executor.js';
-import { AgentManifest, AgentDefinition } from '../types/agent.types.js';
+import { ArtefactService } from './artefact.service';
+import { PromptTemplateService } from './PromptTemplate.service';
+import { GenericAgentExecutor } from '../executors/GenericAgent.executor';
+import { AgentManifest, AgentDefinition } from '../types/agent.types';
 import * as path from 'path';
 
 export class GenericWorkflowEngine {

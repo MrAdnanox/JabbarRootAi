@@ -14,8 +14,8 @@ import {
     StructureGenerationService,
     StructureGenerationOptions,
     GenerationReport
-} from './structureGeneration.service';
-import { FileContentService } from './fileContent.service';
+} from './structureGeneration.service.js';
+import { FileContentService } from './fileContent.service.js';
 
 export class BrickConstructorService {
     constructor(

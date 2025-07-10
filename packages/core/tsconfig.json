@@ -1,3 +1,4 @@
+// packages/core/tsconfig.json
 {
   "extends": "../../tsconfig.base.json",
   "references": [
@@ -5,11 +6,15 @@
   ],
   "compilerOptions": {
     "outDir": "dist",
-    "rootDir": "src",
     "composite": true,
     "sourceMap": true,
-    "declaration": true
+    "declaration": true,
+    "types": ["node"],
+    "baseUrl": ".",
+    "paths": {
+      "@jabbarroot/types": ["../types/src"]
+    }
   },
-  "include": ["src/**/*"],
+  "include": ["src/**/*", "__tests__/**/*"],
   "exclude": ["node_modules", "dist"]
 }

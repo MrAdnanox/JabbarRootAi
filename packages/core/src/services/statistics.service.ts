@@ -1,19 +1,19 @@
 // packages/core/src/services/statistics.service.ts
 
 import { BrickContext, JabbarProject } from '@jabbarroot/types';
-import { BrickCompilationReport, FileCompilationStats } from '../models/compilation.types';
-import { StructureGenerationOptions } from './structureGeneration.service';
-import { CompactionService } from './compaction.service';
-import { FileContentService } from './fileContent.service';
-import { BrickConstructorService } from './brickConstructor.service';
+import { BrickCompilationReport, FileCompilationStats } from '../models/compilation.types.js';
+import { StructureGenerationOptions } from './structureGeneration.service.js';
+import { CompactionService } from './compaction.service.js';
+import { FileContentService } from './fileContent.service.js';
+import { BrickConstructorService } from './brickConstructor.service.js';
 import * as path from 'path';
 import { IFileSystem } from '@jabbarroot/types';
 
 // Configuration du chemin pour le cache de tiktoken
 process.env.TIKTOKEN_CACHE_DIR = path.join(__dirname, '..', '..', 'dist');
 import { encoding_for_model } from 'tiktoken';
-import { getMotivationMessage } from './statistics/statistics.formatter';
-import { CompactionInput } from './compaction/types';
+import { getMotivationMessage } from './statistics/statistics.formatter.js';
+import { CompactionInput } from './compaction/types.js';
 import { ProjectStructureStats } from '@jabbarroot/types';
 
 export class StatisticsService {

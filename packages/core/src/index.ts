@@ -1,6 +1,4 @@
 // packages/core/src/index.ts
-
-// Exporter les services DÉFINIS dans le package 'core'
 export { CacheService } from './services/cache/CacheService';
 export { ConcurrencyService } from './services/concurrency/ConcurrencyService';
 export { SecurityService } from './services/security/SecurityService';
@@ -14,6 +12,8 @@ export { BrickService } from './services/brick.service';
 export { SystemBrickManager } from './services/SystemBrickManager.service';
 export { LanguageRegistryService } from './services/registry/language.registry.service';
 export { IgnoreService } from './services/ignore.service';
-
-// Exporter les types d'interfaces pour les services 'core'
+export { MCPClient } from './services/mcp/MCPClient.service';
+export { MCPConnectionPool } from './services/mcp/MCPConnectionPool';
+export { MCPResponseCache } from './services/mcp/MCPResponseCache';
+export { MCPServerRegistry } from './services/mcp/MCPServerRegistry.manager';
 export { CompactionInput, ICompactor } from './services/compaction/types';

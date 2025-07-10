@@ -1,9 +1,10 @@
+// packages/types/tsconfig.json
 {
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
     "outDir": "dist",
     "rootDir": "src",
-    "composite": true, // <-- LA CORRECTION CRITIQUE
+    "composite": true,
     "declaration": true
   },
   "include": ["src/**/*"],

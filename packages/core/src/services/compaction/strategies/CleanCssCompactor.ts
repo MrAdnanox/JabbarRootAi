@@ -1,6 +1,6 @@
 // packages/core/src/services/compaction/strategies/CleanCssCompactor.ts
 
-import { ICompactor } from '../types';
+import { ICompactor } from '../types.js';
 import CleanCSS from 'clean-css';
 
 // Interface pour le résultat de la minification

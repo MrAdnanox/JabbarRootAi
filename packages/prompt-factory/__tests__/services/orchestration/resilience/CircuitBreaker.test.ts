@@ -1,7 +1,9 @@
-// packages/prompt-factory/test/services/orchestration/resilience/CircuitBreaker.spec.ts
-import { expect } from 'chai';
+// packages/prompt-factory/__tests__/services/orchestration/resilience/CircuitBreaker.test.ts
+
+// import { expect } from 'chai'; // Supprimé
 import * as sinon from 'sinon';
 import { CircuitBreaker } from '../../../../src/services/orchestration/resilience/CircuitBreaker.js';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 
 describe('CircuitBreaker', () => {
   let clock: sinon.SinonFakeTimers;
@@ -23,21 +25,21 @@ describe('CircuitBreaker', () => {
   it('should remain CLOSED after successful calls', async () => {
     const breaker = new CircuitBreaker();
     const successfulFunction = () => Promise.resolve('SUCCESS');
-    
     await breaker.execute(successfulFunction);
     await breaker.execute(successfulFunction);
-
     expect(breaker.getState()).to.equal('CLOSED');
   });
 
   it('should transition to OPEN state after reaching failure threshold', async () => {
-    const breaker = new CircuitBreaker(2, 10000); // 2 échecs pour ouvrir
+    const breaker = new CircuitBreaker(2, 10000); 
     const failingFunction = () => Promise.reject(new Error('Failure'));
-
-    await expect(breaker.execute(failingFunction)).to.be.rejected;
+    
+    // CORRECTION
+    await expect(breaker.execute(failingFunction)).rejects.toThrow('Failure');
     expect(breaker.getState()).to.equal('CLOSED');
-
-    await expect(breaker.execute(failingFunction)).to.be.rejected;
+    
+    // CORRECTION
+    await expect(breaker.execute(failingFunction)).rejects.toThrow('Failure');
     expect(breaker.getState()).to.equal('OPEN');
   });
 
@@ -45,45 +47,50 @@ describe('CircuitBreaker', () => {
     const breaker = new CircuitBreaker(1);
     const failingFunction = () => Promise.reject(new Error('Failure'));
     const successfulFunction = sinon.stub().resolves('SUCCESS');
-
-    await expect(breaker.execute(failingFunction)).to.be.rejected; // Ouvre le circuit
+    
+    // CORRECTION
+    await expect(breaker.execute(failingFunction)).rejects.toThrow('Failure'); 
     expect(breaker.getState()).to.equal('OPEN');
-
-    await expect(breaker.execute(successfulFunction)).to.be.rejectedWith('Circuit Breaker is open');
-    expect(successfulFunction.called).to.be.false; // La fonction n'a même pas été appelée
+    
+    // CORRECTION
+    await expect(breaker.execute(successfulFunction)).rejects.toThrow('Circuit Breaker is open');
+    expect(successfulFunction.called).to.be.false; 
   });
 
   it('should transition to HALF_OPEN after reset timeout', async () => {
     const breaker = new CircuitBreaker(1, 5000);
     const failingFunction = () => Promise.reject(new Error('Failure'));
-
-    await expect(breaker.execute(failingFunction)).to.be.rejected;
+    
+    // CORRECTION
+    await expect(breaker.execute(failingFunction)).rejects.toThrow('Failure');
     expect(breaker.getState()).to.equal('OPEN');
-
-    await clock.tickAsync(5000); // Avance le temps du timeout
-
+    
+    await clock.tickAsync(5000); 
     expect(breaker.getState()).to.equal('HALF_OPEN');
   });
 
   it('should transition from HALF_OPEN to CLOSED on success', async () => {
     const breaker = new CircuitBreaker(1, 5000);
-    await expect(breaker.execute(() => Promise.reject(new Error('Failure')))).to.be.rejected;
+    
+    // CORRECTION
+    await expect(breaker.execute(() => Promise.reject(new Error('Failure')))).rejects.toThrow('Failure');
     await clock.tickAsync(5000);
     expect(breaker.getState()).to.equal('HALF_OPEN');
-
-    await breaker.execute(() => Promise.resolve('SUCCESS'));
     
+    await breaker.execute(() => Promise.resolve('SUCCESS'));
     expect(breaker.getState()).to.equal('CLOSED');
   });
 
   it('should transition from HALF_OPEN to OPEN on failure', async () => {
     const breaker = new CircuitBreaker(1, 5000);
-    await expect(breaker.execute(() => Promise.reject(new Error('Failure')))).to.be.rejected;
+    
+    // CORRECTION
+    await expect(breaker.execute(() => Promise.reject(new Error('Failure')))).rejects.toThrow('Failure');
     await clock.tickAsync(5000);
     expect(breaker.getState()).to.equal('HALF_OPEN');
-
-    await expect(breaker.execute(() => Promise.reject(new Error('Another Failure')))).to.be.rejected;
-
+    
+    // CORRECTION
+    await expect(breaker.execute(() => Promise.reject(new Error('Another Failure')))).rejects.toThrow('Another Failure');
     expect(breaker.getState()).to.equal('OPEN');
   });
 });

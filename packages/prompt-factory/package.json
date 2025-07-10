@@ -1,33 +1,32 @@
 {
   "name": "@jabbarroot/prompt-factory",
   "version": "0.1.0",
-  "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
     "build": "tsc -b",
     "watch": "tsc -b -w",
-    "test": "NODE_OPTIONS='--loader ts-node/esm' mocha --require test/helper.ts 'test/**/*.spec.ts'"
+    "test": "vitest",
+    "test:ui": "vitest --ui",
+    "test:run": "vitest run"
   },
   "dependencies": {
     "@google/generative-ai": "^0.15.0",
     "@jabbarroot/core": "workspace:*",
     "@jabbarroot/types": "workspace:*",
+    "neo4j-driver": "^5.28.1",
     "uuid": "^9.0.1",
     "zod": "^3.25.67"
   },
   "devDependencies": {
-    "@types/chai": "^5.2.2",
-    "@types/chai-as-promised": "^8.0.2",
-    "@types/mocha": "^10.0.10",
+    "@types/neo4j": "^2.0.6",
+    "@types/node": "^24.0.12",
     "@types/sinon": "^17.0.4",
     "@types/uuid": "^9.0.8",
     "@types/vscode": "^1.95.0",
-    "chai": "^5.2.0",
-    "chai-as-promised": "^8.0.1",
-    "mocha": "^11.7.1",
+    "@vitest/ui": "^3.2.4",
     "sinon": "^21.0.0",
-    "ts-node": "^10.9.2",
-    "typescript": "^5.5.2"
+    "typescript": "^5.5.2",
+    "vitest": "^3.2.4"
   }
 }
