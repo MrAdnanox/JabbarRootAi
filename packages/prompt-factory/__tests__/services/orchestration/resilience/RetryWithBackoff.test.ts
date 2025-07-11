@@ -78,7 +78,9 @@ describe('RetryWithBackoff', () => {
     // Attendre l'erreur
     const caughtError = await errorPromise;
     expect(caughtError).toBeInstanceOf(Error);
-    expect(caughtError.message).toContain('Operation failed after 4 attempts');
+    if (caughtError instanceof Error) {
+      expect(caughtError.message).toContain('Operation failed after 4 attempts');
+    }
     
     // Vérifier que la fonction a été appelée le bon nombre de fois
     expect(failingFunction).toHaveBeenCalledTimes(maxRetries);
@@ -125,7 +127,9 @@ describe('RetryWithBackoff', () => {
     // Attendre l'erreur et vérifier (inclure le préfixe [Retry])
     const caughtError = await errorPromise;
     expect(caughtError).toBeInstanceOf(Error);
-    expect((caughtError as Error).message).toBe('[Retry] Operation failed after 2 attempts. Last error: Specific failure reason');
+    if (caughtError instanceof Error) {
+      expect(caughtError.message).toBe('[Retry] Operation failed after 2 attempts. Last error: Specific failure reason');
+    }
     expect(failingFunction).toHaveBeenCalledTimes(2);
   });
 });

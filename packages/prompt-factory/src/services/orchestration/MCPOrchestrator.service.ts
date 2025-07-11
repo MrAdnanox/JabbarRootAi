@@ -57,7 +57,6 @@ export class MCPOrchestrator {
     params: object
   ): Promise<OrchestrationResult> {
     const finalResult: OrchestrationResult = { successful: [], failed: [] };
-
     for (const result of results) {
       if (result.status === 'fulfilled') {
         finalResult.successful.push(result.value);
@@ -66,21 +65,25 @@ export class MCPOrchestrator {
       }
     }
 
+    // Persister les réponses réussies dans le graphe
     for (const success of finalResult.successful) {
       const serverConfig = this.registry.getServerConfig(success.serverId);
-      if (serverConfig && success.response.documentation) { 
-        await this.knowledgeGraph.addResponseNode(
-          serverConfig,
-          { responseId: uuidv4() },
-          {
-            nodeId: `doc:${capability}:${JSON.stringify(params)}`,
-            nodeType: 'Documentation',
-            properties: { content: success.response.documentation },
-          }
-        );
+      if (serverConfig && success.response) {
+        // Exemple simple : si la réponse contient un champ 'documentation'
+        if (success.response.documentation) {
+            await this.knowledgeGraph.addResponseNode(
+                serverConfig,
+                { responseId: uuidv4(), capability, params },
+                {
+                    nodeId: `doc:${capability}:${JSON.stringify(params)}`,
+                    nodeType: 'Documentation',
+                    properties: { content: success.response.documentation },
+                }
+            );
+        }
       }
     }
-    
+
     console.log(`[Orchestrator] Synthèse terminée: ${finalResult.successful.length} succès, ${finalResult.failed.length} échecs.`);
     return finalResult;
   }

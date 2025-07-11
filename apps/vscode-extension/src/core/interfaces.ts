@@ -1,13 +1,13 @@
 // Contenu final pour: apps/vscode-extension/src/core/interfaces.ts
 import * as vscode from 'vscode';
-import { IFileSystem, IStorage } from '@jabbarroot/types';
+import { IFileSystem, IStorage, ISecureStorage } from '@jabbarroot/types';
 import {
     ProjectService, BrickService, BrickConstructorService, StatisticsService, StructureGenerationService,
     FileContentService, CompactionService, SystemBrickManager, IgnoreService, ConcurrencyService, LanguageRegistryService
 } from '@jabbarroot/core';
 import {
     AnalyzerService, DocumentationService, UnitTestGeneratorService, ArtefactService,
-    GenericWorkflowEngine, PromptTemplateService, OrdoAbChaosOrchestrator
+    GenericWorkflowEngine, PromptTemplateService, OrdoAbChaosOrchestrator, MCPOrchestrator
 } from '@jabbarroot/prompt-factory';
 import { ProjectTreeDataProvider } from '../providers/projectTreeDataProvider';
 import { DialogService } from '../services/ui/dialog.service';
@@ -48,6 +48,10 @@ export interface ServiceCollection {
     // --- Services UI ---
     notificationService: NotificationService;
     dialogService: DialogService;
+    
+    // --- Services MCP ---
+    secureStorage: ISecureStorage;
+    mcpOrchestrator: MCPOrchestrator;
     geminiConfigService: GeminiConfigService;
     treeDataProvider: ProjectTreeDataProvider;
 

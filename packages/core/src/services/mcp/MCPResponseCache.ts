@@ -1,4 +1,4 @@
-// packages/core/src/services/mcp/MCPResponseCache.service.ts
+// packages/core/src/services/mcp/MCPResponseCache.ts
 import { LRUCache } from 'lru-cache';
 
 export class MCPResponseCache {
@@ -12,6 +12,7 @@ export class MCPResponseCache {
   }
 
   private generateKey(serverId: string, toolName: string, params: object): string {
+    // Trie les clés des paramètres pour une clé de cache stable
     const stableParams = JSON.stringify(Object.keys(params).sort().reduce(
       (obj, key) => { 
         obj[key as keyof typeof params] = params[key as keyof typeof params]; 
@@ -30,14 +31,5 @@ export class MCPResponseCache {
   public set(serverId: string, toolName: string, params: object, response: any): void {
     const key = this.generateKey(serverId, toolName, params);
     this.cache.set(key, response);
-  }
-
-  public invalidate(serverId: string, toolName: string, params: object): void {
-    const key = this.generateKey(serverId, toolName, params);
-    this.cache.delete(key);
-  }
-
-  public clear(): void {
-    this.cache.clear();
   }
 }

@@ -3,8 +3,12 @@ import { MCPServerRegistry } from './MCPServerRegistry.manager.js';
 import { MCPResponseCache } from './MCPResponseCache.js';
 import { MCPConnectionPool } from './MCPConnectionPool.js';
 import { MCPServerConfig } from '@jabbarroot/types';
+import { MCPAuthService } from './MCPAuth.service.js'; // Ajouter cet import
 
-// Mock de la réponse de l'API pour la structure
+// Note: L'authentification est laissée en placeholder pour une implémentation future (Tâche 1.2)
+// import { MCPAuthService } from './MCPAuth.service.js';
+
+// Placeholder pour la réponse du SDK
 interface MCPApiResponse {
   result?: any;
   error?: { message: string };
@@ -14,7 +18,8 @@ export class MCPClient {
   constructor(
     private readonly registry: MCPServerRegistry,
     private readonly cache: MCPResponseCache,
-    private readonly connectionPool: MCPConnectionPool
+    private readonly connectionPool: MCPConnectionPool,
+    private readonly authService: MCPAuthService
   ) {}
 
   public async call(
@@ -35,6 +40,7 @@ export class MCPClient {
       throw new Error(`Aucun serveur MCP disponible pour la capacité : '${capability}'`);
     }
 
+    // 1. Vérifier le cache
     if (!options.forceRefresh) {
       const cachedResponse = this.cache.get(serverConfig.id, capability, params);
       if (cachedResponse) {
@@ -44,11 +50,13 @@ export class MCPClient {
 
     const startTime = Date.now();
     try {
-      // Le 'toolName' est la capacité pour l'instant
+      // Le nom de l'outil est la capacité elle-même dans ce modèle simple
       const toolName = capability; 
+      
+      // 2. Exécuter l'appel
       const response = await this.executeHttpCall(serverConfig, toolName, params);
+      
       const duration = Date.now() - startTime;
-
       this.registry.updateServerMetrics(serverConfig.id, {
         responseTime: duration,
         successRate: 1.0,
@@ -56,8 +64,10 @@ export class MCPClient {
         status: 'UP',
       });
 
+      // 3. Mettre en cache la réponse
       this.cache.set(serverConfig.id, toolName, params, response);
       return response;
+
     } catch (error) {
       const duration = Date.now() - startTime;
       this.registry.updateServerMetrics(serverConfig.id, {
@@ -71,16 +81,21 @@ export class MCPClient {
   }
 
   private async executeHttpCall(serverConfig: MCPServerConfig, toolName: string, params: object): Promise<any> {
-    // Note: Utilisation d'une URL mock pour l'instant. Sera remplacée par serverConfig.endpoint
-    const baseUrl = 'http://localhost:3000'; // MOCK
+    const baseUrl = serverConfig.endpoint;
     const path = `/mcp/call/${toolName}`;
-
     const pool = this.connectionPool.getPool(baseUrl);
+
+    // Obtenir les en-têtes d'authentification
+    const authHeaders = await this.authService.getHeaders(serverConfig.auth);
+    const headers = {
+        'content-type': 'application/json',
+        ...authHeaders
+    };
 
     const { statusCode, body } = await pool.request({
       path: path,
       method: 'POST',
-      headers: { 'content-type': 'application/json' },
+      headers: headers,
       body: JSON.stringify({ params }),
     });
 

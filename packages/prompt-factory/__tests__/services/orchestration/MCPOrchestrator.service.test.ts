@@ -24,11 +24,8 @@ describe('MCPOrchestrator', () => {
     mockRegistry.getServerConfig.withArgs('server1').returns(server1);
     mockRegistry.getServerConfig.withArgs('server2').returns(server2);
 
-    orchestrator = new MCPOrchestrator(
-      mockMcpClient,
-      mockRegistry,
-      mockKnowledgeGraph
-    );
+    orchestrator = new MCPOrchestrator(mockMcpClient, mockRegistry, mockKnowledgeGraph);
+
   });
 
   afterEach(() => {
@@ -41,14 +38,33 @@ describe('MCPOrchestrator', () => {
     expect(result.failed).to.be.empty;
   });
 
-  it('should call all relevant servers for a given capability', async () => {
-    // CORRECTION : Fournir un objet avec la propriété attendue
-    mockMcpClient.call.resolves({ documentation: 'Success' });
-    await orchestrator.query('doc', { topic: 'test' });
-    expect(mockMcpClient.call.calledWith('doc', { topic: 'test' }, { serverId: 'server1' })).to.be.true;
-    expect(mockMcpClient.call.calledWith('doc', { topic: 'test' }, { serverId: 'server2' })).to.be.true;
+  it('should call all relevant servers and persist successful responses to knowledge graph', async () => {
+    // Arrange
+    const capability = 'doc:search';
+    const params = { query: 'test' };
+    const responseFromServer1 = { data: 'response1' };
+    const responseFromServer2 = { data: 'response2', documentation: 'This is a doc.' }; // Une réponse avec de la connaissance
+
+    mockRegistry.findServersByCapability.withArgs(capability).returns([server1, server2]);
+    mockMcpClient.call.withArgs(capability, params, { serverId: 'server1' }).resolves(responseFromServer1);
+    mockMcpClient.call.withArgs(capability, params, { serverId: 'server2' }).resolves(responseFromServer2);
+    mockRegistry.getServerConfig.withArgs('server2').returns(server2); // Pour la persistance
+
+    // Act
+    const result = await orchestrator.query(capability, params);
+
+    // Assert
+    // Vérifie que les appels ont été faits
+    expect(result.successful).to.have.lengthOf(2);
+    expect(result.failed).to.have.lengthOf(0);
     expect(mockMcpClient.call.callCount).to.equal(2);
-  });
+
+    // AJOUTÉ : Vérifie que le service de graphe a été appelé pour la réponse contenant de la "connaissance"
+    expect(mockKnowledgeGraph.addResponseNode.calledOnce).to.be.true;
+    expect(mockKnowledgeGraph.addResponseNode.getCall(0).args[0]).to.equal(server2);
+    expect(mockKnowledgeGraph.addResponseNode.getCall(0).args[1]).to.include({ capability });
+    expect(mockKnowledgeGraph.addResponseNode.getCall(0).args[2].nodeType).to.equal('Documentation');
+});
 
   it('should synthesize successful responses correctly', async () => {
     // CORRECTION : Fournir des objets avec la propriété attendue

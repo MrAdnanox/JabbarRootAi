@@ -7,8 +7,8 @@ export class MCPConnectionPool {
   public getPool(baseUrl: string): Pool {
     if (!this.pools.has(baseUrl)) {
       const newPool = new Pool(baseUrl, {
-        connections: 50, // Configurable
-        keepAliveTimeout: 10 * 1000, // 10 seconds
+        connections: 50, // Nombre élevé de connexions pour la parallélisation
+        keepAliveTimeout: 10 * 1000, // 10 secondes
       });
       this.pools.set(baseUrl, newPool);
     }

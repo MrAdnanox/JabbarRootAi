@@ -12,10 +12,12 @@
   },
   "dependencies": {
     "@jabbarroot/types": "workspace:^",
+    "@modelcontextprotocol/sdk": "1.13.1",
     "@swc/core": "^1.12.7",
     "@types/uuid": "^10.0.0",
     "@vscode/sqlite3": "5.1.8-vscode",
     "clean-css": "^5.3.3",
+    "get-port": "^7.1.0",
     "lru-cache": "^11.1.0",
     "node-fetch": "^2.7.0",
     "tiktoken": "^1.0.21",

@@ -2,14 +2,17 @@
 import neo4j, { Driver, Session, ManagedTransaction } from 'neo4j-driver';
 import { MCPServerConfig } from '@jabbarroot/types';
 
+// Interfaces pour structurer les données
 interface ResponseMetadata {
-  responseId: string; // UUID unique pour cette réponse spécifique
+  responseId: string; // Un UUID pour cette réponse spécifique
+  capability: string;
+  params: object;
 }
 
 interface KnowledgeNodeData {
-  nodeId: string; // ID unique et stable pour le contenu (ex: doc:redis:hset)
+  nodeId: string; // Un ID stable pour le noeud de connaissance, ex: "doc:typescript:v4.8.0"
   nodeType: string; // Ex: "Documentation", "CodeSample"
-  properties: Record<string, any>; // Les données elles-mêmes
+  properties: Record<string, any>; // Les données à stocker sur le noeud
 }
 
 export class KnowledgeGraphService {
@@ -31,11 +34,15 @@ export class KnowledgeGraphService {
 
         // 2. Créer le noeud de réponse unique
         await tx.run(
-          `MERGE (r:MCPResponse {id: $responseId})`,
-          { responseId: responseMeta.responseId }
+          `CREATE (r:MCPResponse {id: $responseId, capability: $capability, params: $params, timestamp: datetime()})`,
+          { 
+            responseId: responseMeta.responseId,
+            capability: responseMeta.capability,
+            params: JSON.stringify(responseMeta.params)
+          }
         );
 
-        // 3. Créer/mettre à jour le noeud de connaissance
+        // 3. Assurer l'existence du noeud de connaissance
         await tx.run(
           `MERGE (k:${knowledgeNode.nodeType} {id: $nodeId}) SET k += $properties`,
           { nodeId: knowledgeNode.nodeId, properties: knowledgeNode.properties }
@@ -58,20 +65,11 @@ export class KnowledgeGraphService {
       console.error('[KnowledgeGraph] Échec de l\'écriture dans le graphe :', error);
       throw new Error(`Failed to add response node: ${error instanceof Error ? error.message : String(error)}`);
     } finally {
-      try {
-        await session.close();
-      } catch (closeError) {
-        console.error('[KnowledgeGraph] Erreur lors de la fermeture de la session :', closeError);
-      }
+      await session.close();
     }
   }
 
   public async close(): Promise<void> {
-    try {
-      await this.driver.close();
-    } catch (error) {
-      console.error('[KnowledgeGraph] Erreur lors de la fermeture du driver Neo4j :', error);
-      throw new Error(`Failed to close Neo4j driver: ${error instanceof Error ? error.message : String(error)}`);
-    }
+    await this.driver.close();
   }
 }

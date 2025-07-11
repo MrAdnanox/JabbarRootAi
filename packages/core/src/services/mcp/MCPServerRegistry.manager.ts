@@ -5,10 +5,11 @@ export class MCPServerRegistry {
   private configs: Map<string, MCPServerConfig> = new Map();
   private metrics: Map<string, MCPServerMetrics> = new Map();
 
-  constructor() {
-    // Potentiellement charger les configs depuis un fichier ici
-  }
-
+  // ==================== MÉTHODE PRÉCÉDEMMENT MANQUANTE ====================
+  /**
+   * Enregistre un nouveau serveur MCP ou met à jour sa configuration.
+   * @param config La configuration complète du serveur.
+   */
   public registerServer(config: MCPServerConfig): void {
     this.configs.set(config.id, config);
     if (!this.metrics.has(config.id)) {
@@ -17,43 +18,52 @@ export class MCPServerRegistry {
         responseTime: -1,
         successRate: 1.0,
         lastSuccessfulCall: new Date(0).toISOString(),
-        status: 'UP', 
+        status: 'UP',
       });
     }
   }
+  // =====================================================================
 
+  // ==================== MÉTHODE PRÉCÉDEMMENT MANQUANTE ====================
+  /**
+   * Met à jour les métriques de performance et de santé d'un serveur.
+   * @param serverId L'ID du serveur à mettre à jour.
+   * @param newMetrics Un objet partiel contenant les nouvelles métriques.
+   */
   public updateServerMetrics(serverId: string, newMetrics: Partial<Omit<MCPServerMetrics, 'serverId'>>): void {
     const currentMetrics = this.metrics.get(serverId);
     if (currentMetrics) {
       this.metrics.set(serverId, { ...currentMetrics, ...newMetrics });
     }
   }
+  // =====================================================================
 
   public findBestServer(capability: string): MCPServerConfig | undefined {
-    const candidates = Array.from(this.configs.values()).filter(config => {
-      const serverMetrics = this.metrics.get(config.id);
-      return (
-        config.capabilities.includes(capability) &&
-        serverMetrics?.status === 'UP'
-      );
-    });
+    const candidates = this.findServersByCapability(capability);
 
     if (candidates.length === 0) {
       return undefined;
     }
 
-    // Tri par priorité (plus haute en premier)
-    candidates.sort((a, b) => b.priority - a.priority);
+    candidates.sort((a, b) => {
+      if (b.priority !== a.priority) {
+        return b.priority - a.priority;
+      }
+      const metricsA = this.metrics.get(a.id)!;
+      const metricsB = this.metrics.get(b.id)!;
+      return metricsA.responseTime - metricsB.responseTime;
+    });
+
     return candidates[0];
   }
-  
+
   public findServersByCapability(capability: string): MCPServerConfig[] {
     return Array.from(this.configs.values()).filter(config => {
-    const serverMetrics = this.metrics.get(config.id);
-        return (
-            config.capabilities.includes(capability) &&
-            serverMetrics?.status === 'UP'
-        );
+      const serverMetrics = this.metrics.get(config.id);
+      return (
+        config.capabilities.includes(capability) &&
+        serverMetrics?.status === 'UP'
+      );
     });
   }
 
@@ -63,9 +73,5 @@ export class MCPServerRegistry {
 
   public getServerMetrics(serverId: string): MCPServerMetrics | undefined {
     return this.metrics.get(serverId);
-  }
-  
-  public getAllServerIds(): string[] {
-    return Array.from(this.configs.keys());
   }
 }

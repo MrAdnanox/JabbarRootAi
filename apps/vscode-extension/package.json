@@ -47,8 +47,12 @@
         }
       ]
     },
-
     "commands": [
+      {
+        "command": "jabbarroot.orchestration.AskMcpOrchestrator",
+        "title": "JabbarRoot: Interroger l'Orchestrateur MCP...",
+        "category": "jabbarroot"
+      },
       {
         "command": "jabbarroot.orchestration.OrdoAbChaos",
         "title": "JabbarRoot: Ordo Ab Chaos",
@@ -327,7 +331,10 @@
           "description": "Show or hide the 'Motivation' line."
         },
         "jabbarroot.activeContextId": {
-          "type": ["string", "null"],
+          "type": [
+            "string",
+            "null"
+          ],
           "default": null,
           "description": "DO NOT EDIT MANUALLY. The ID of the currently active context."
         },
@@ -371,6 +378,7 @@
     "d3": "^7.9.0",
     "lru-cache": "^11.1.0",
     "minimatch": "^10.0.3",
+    "neo4j-driver": "^5.28.1",
     "tiktoken": "^1.0.21",
     "tree-sitter": "^0.25.0",
     "web-tree-sitter": "^0.24.7"

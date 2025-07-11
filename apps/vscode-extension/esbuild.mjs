@@ -23,7 +23,8 @@ const nativeExternals = [
   'tree-sitter',
   'web-tree-sitter',
   'tiktoken',
-  '@vscode/sqlite3'
+  '@vscode/sqlite3',
+  'neo4j-driver'
 ];
 
 // Plugin pour résoudre les packages workspace

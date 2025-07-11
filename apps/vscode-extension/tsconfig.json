@@ -5,27 +5,22 @@
     "outDir": "dist",
     "baseUrl": ".",
     "types": ["node", "mocha", "vscode"],
-    "module": "commonjs",
-    "moduleResolution": "node",
-    "esModuleInterop": true,
-    "allowSyntheticDefaultImports": true,
-    "skipLibCheck": true,
-    "forceConsistentCasingInFileNames": true,
-    "declaration": false,
-    "sourceMap": true,
-    "removeComments": false,
-    "preserveConstEnums": true,
-    "experimentalDecorators": true,
-    "emitDecoratorMetadata": true,
-    "resolveJsonModule": true,
-    "allowJs": true,
-    "checkJs": false,
-    "noEmit": true
-    // "paths": { ... } <-- SUPPRIMER CE BLOC ENTIER
+    // ... autres options
+    "noEmit": true,
+    // ==================== AJOUTER CE BLOC ====================
+    "paths": {
+      "@jabbarroot/core": ["../../packages/core/src"],
+      "@jabbarroot/core/*": ["../../packages/core/src/*"],
+      "@jabbarroot/prompt-factory": ["../../packages/prompt-factory/src"],
+      "@jabbarroot/prompt-factory/*": ["../../packages/prompt-factory/src/*"],
+      "@jabbarroot/types": ["../../packages/types/src"],
+      "@jabbarroot/types/*": ["../../packages/types/src/*"]
+    }
+    // =========================================================
   },
   "include": [
-    "src/**/*",
-    "../../packages/*/src/**/*"
+    "src/**/*"
+    // NE PLUS INCLURE LES PACKAGES ICI, 'paths' S'EN CHARGE
   ],
   "exclude": [
     "node_modules",
@@ -36,7 +31,6 @@
   "references": [
     { "path": "../../packages/types" },
     { "path": "../../packages/core" },
-    { "path": "../../packages/prompt-factory" },
-    { "path": "../../packages/vector-engine" }
+    { "path": "../../packages/prompt-factory" }
   ]
 }

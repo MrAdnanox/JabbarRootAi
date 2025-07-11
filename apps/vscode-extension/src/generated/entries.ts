@@ -21,8 +21,9 @@ import * as cmd16 from '../commands/SetAsDefaultTargetBrick.command';
 import * as cmd17 from '../commands/agents/GenerateReadme.command';
 import * as cmd18 from '../commands/agents/GenerateTests.command';
 import * as cmd19 from '../commands/agents/StructureAnalyzer.command';
-import * as cmd20 from '../commands/orchestration/OrdoAbChaos.command';
-import * as cmd21 from '../commands/showSanctuary.command';
+import * as cmd20 from '../commands/orchestration/AskMcpOrchestrator.command';
+import * as cmd21 from '../commands/orchestration/OrdoAbChaos.command';
+import * as cmd22 from '../commands/showSanctuary.command';
 
 // Exporter toutes les commandes
 export const commands = [
@@ -47,5 +48,6 @@ export const commands = [
   cmd18.default,
   cmd19.default,
   cmd20.default,
-  cmd21.default
+  cmd21.default,
+  cmd22.default
 ];

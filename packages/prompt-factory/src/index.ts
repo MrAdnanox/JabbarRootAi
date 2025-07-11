@@ -10,3 +10,5 @@ export * from './services/artefact.service';
 export * from './services/PromptTemplate.service';
 export * from './analyzers/structure.analyzer';
 export * from './services/ordo-ab-chao/OrdoAbChaosOrchestrator';
+export * from './services/orchestration/MCPOrchestrator.service';
+export * from './services/knowledge/KnowledgeGraph.service';
