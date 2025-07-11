@@ -100,6 +100,11 @@
         "icon": "$(add)"
       },
       {
+        "command": "jabbarroot.diagnostics.testContext7Sequence",
+        "title": "JabbarRoot (Diag): Test de la séquence Context7",
+        "category": "jabbarroot"
+      },
+      {
         "command": "jabbarroot.RemoveFileFromBrick",
         "title": "jabbarroot: Remove Files from Brick...",
         "category": "jabbarroot",
@@ -376,6 +381,7 @@
     "@jridgewell/trace-mapping": "^0.3.26",
     "@vscode/sqlite3": "5.1.8-vscode",
     "d3": "^7.9.0",
+    "dotenv": "^17.2.0",
     "lru-cache": "^11.1.0",
     "minimatch": "^10.0.3",
     "neo4j-driver": "^5.28.1",

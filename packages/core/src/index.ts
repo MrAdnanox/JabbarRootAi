@@ -14,9 +14,7 @@ export { LanguageRegistryService } from './services/registry/language.registry.s
 export { IgnoreService } from './services/ignore.service';
 export { CompactionInput, ICompactor } from './services/compaction/types';
 // --- Exports MCP ---
-export { MCPClient } from './services/mcp/MCPClient.service';
-export { MCPConnectionPool } from './services/mcp/MCPConnectionPool';
-export { MCPResponseCache } from './services/mcp/MCPResponseCache';
 export { MCPServerRegistry } from './services/mcp/MCPServerRegistry.manager';
-export { MCPAuthService } from './services/mcp/MCPAuth.service';
+export { ProcessManagerService } from './services/mcp/ProcessManager.service';
+export { MCPStdioClient } from './services/mcp/MCPStdioClient.service';
 // --- Fin Exports MCP ---

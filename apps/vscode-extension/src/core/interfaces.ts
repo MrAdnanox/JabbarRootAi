@@ -1,18 +1,23 @@
-// Contenu final pour: apps/vscode-extension/src/core/interfaces.ts
+// apps/vscode-extension/src/core/interfaces.ts
+
 import * as vscode from 'vscode';
 import { IFileSystem, IStorage, ISecureStorage } from '@jabbarroot/types';
 import {
     ProjectService, BrickService, BrickConstructorService, StatisticsService, StructureGenerationService,
-    FileContentService, CompactionService, SystemBrickManager, IgnoreService, ConcurrencyService, LanguageRegistryService
+    FileContentService, CompactionService, SystemBrickManager, IgnoreService, ConcurrencyService, LanguageRegistryService, 
+    // JUSTIFICATION : PortManagerService a été supprimé car inutile dans l'architecture stdio.
+    ProcessManagerService, 
+    MCPServerRegistry
 } from '@jabbarroot/core';
 import {
     AnalyzerService, DocumentationService, UnitTestGeneratorService, ArtefactService,
-    GenericWorkflowEngine, PromptTemplateService, OrdoAbChaosOrchestrator, MCPOrchestrator
+    GenericWorkflowEngine, PromptTemplateService, OrdoAbChaosOrchestrator, MCPOrchestrator, KnowledgeGraphService
 } from '@jabbarroot/prompt-factory';
 import { ProjectTreeDataProvider } from '../providers/projectTreeDataProvider';
 import { DialogService } from '../services/ui/dialog.service';
 import { GeminiConfigService } from '../services/config/gemini.config.service';
 import { NotificationService } from '../services/ui/notification.service';
+import { McpManagerService } from '../services/mcpManager.service';
 
 export interface IService {}
 
@@ -27,12 +32,9 @@ export interface ICommandModule extends IService {
 }
 
 export interface ServiceCollection {
-    // --- Services de base et adaptateurs ---
     fileSystem: IFileSystem;
     storage: IStorage;
     extensionContext: vscode.ExtensionContext;
-    
-    // --- Services Core ---
     projectService: ProjectService;
     brickService: BrickService;
     brickConstructorService: BrickConstructorService;
@@ -43,19 +45,18 @@ export interface ServiceCollection {
     systemBrickManager: SystemBrickManager;
     ignoreService: IgnoreService;
     concurrencyService: ConcurrencyService;
-    languageRegistryService: LanguageRegistryService; // <-- LIGNE AJOUTÉE
-
-    // --- Services UI ---
+    languageRegistryService: LanguageRegistryService; 
     notificationService: NotificationService;
     dialogService: DialogService;
-    
-    // --- Services MCP ---
     secureStorage: ISecureStorage;
     mcpOrchestrator: MCPOrchestrator;
     geminiConfigService: GeminiConfigService;
     treeDataProvider: ProjectTreeDataProvider;
-
-    // --- Services Prompt-Factory ---
+    mcpManagerService: McpManagerService;
+    // JUSTIFICATION : PortManagerService a été supprimé.
+    // portManager: PortManagerService;
+    processManager: ProcessManagerService;
+    mcpRegistry: MCPServerRegistry;
     analyzerService: AnalyzerService;
     documentationService: DocumentationService;
     unitTestGeneratorService: UnitTestGeneratorService;
@@ -63,4 +64,5 @@ export interface ServiceCollection {
     genericWorkflowEngine: GenericWorkflowEngine;
     promptTemplateService: PromptTemplateService;
     ordoAbChaosOrchestrator: OrdoAbChaosOrchestrator;
+    knowledgeGraphService: KnowledgeGraphService;
 }

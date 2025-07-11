@@ -1,11 +1,19 @@
 // packages/core/src/services/mcp/MCPAuth.service.ts
 import { AuthConfig, ISecureStorage } from '@jabbarroot/types';
 
-// Utilisation de Headers de 'undici' ou 'node-fetch'
 type HttpHeaders = Record<string, string>;
 
 export interface IMcpAuthStrategy {
     getHeaders(authConfig: AuthConfig): Promise<HttpHeaders>;
+}
+
+// JUSTIFICATION : Nouvelle stratégie qui ne fait rien. Elle retourne simplement
+// un objet d'en-têtes vide, ce qui est le comportement correct pour une
+// requête non authentifiée.
+class NoAuthStrategy implements IMcpAuthStrategy {
+    async getHeaders(authConfig: AuthConfig): Promise<HttpHeaders> {
+        return {};
+    }
 }
 
 class ApiKeyAuthStrategy implements IMcpAuthStrategy {
@@ -31,6 +39,8 @@ export class MCPAuthService {
 
     constructor(secureStorage: ISecureStorage) {
         this.strategies = new Map();
+        // JUSTIFICATION : Enregistrement de la nouvelle stratégie.
+        this.strategies.set('none', new NoAuthStrategy());
         this.strategies.set('api-key', new ApiKeyAuthStrategy(secureStorage));
     }
 

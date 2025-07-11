@@ -10,17 +10,23 @@ export class AskMcpOrchestratorCommand implements ICommandModule {
         title: 'JabbarRoot: Interroger l\'Orchestrateur MCP...',
         category: 'jabbarroot' as const,
     };
-
     public readonly dependencies = ['mcpOrchestrator', 'notificationService'] as const;
 
     public async execute(services: Map<keyof ServiceCollection, IService>): Promise<void> {
         const orchestrator = services.get('mcpOrchestrator') as MCPOrchestrator;
         const notificationService = services.get('notificationService') as NotificationService;
 
-        const capability = await vscode.window.showInputBox({ prompt: 'Entrez la capacité à appeler (ex: documentation:search)' });
+        const capability = await vscode.window.showInputBox({ 
+            prompt: 'Capacité (ex: resolve-library-id, get-library-docs)' 
+        });
         if (!capability) return;
 
-        const paramsStr = await vscode.window.showInputBox({ prompt: 'Entrez les paramètres en JSON (ex: {"query": "react"})' });
+        // JUSTIFICATION : L'invite est mise à jour pour refléter les SEULS paramètres valides,
+        // tels qu'établis par l'Opérateur. Zéro place à l'erreur.
+        const paramsStr = await vscode.window.showInputBox({ 
+            prompt: 'Paramètres JSON. Exemples:',
+            placeHolder: `Pour resolve-library-id: {"libraryName": "zod"} | Pour get-library-docs: {"context7CompatibleLibraryID": "/colinhacks/zod", "tokens": 4000}`
+        });
         if (!paramsStr) return;
 
         let params: object;
@@ -34,20 +40,19 @@ export class AskMcpOrchestratorCommand implements ICommandModule {
         await notificationService.withProgress(`Appel à l'orchestrateur pour "${capability}"`, async () => {
             try {
                 const result = await orchestrator.query(capability, params);
-                
                 const outputChannel = vscode.window.createOutputChannel("JabbarRoot - Réponse MCP");
                 outputChannel.clear();
                 outputChannel.appendLine(`--- Résultats pour ${capability} ---`);
                 outputChannel.appendLine(`\n✅ Succès: ${result.successful.length}`);
                 outputChannel.append(JSON.stringify(result.successful, null, 2));
                 outputChannel.appendLine(`\n\n❌ Échecs: ${result.failed.length}`);
-                outputChannel.append(JSON.stringify(result.failed.map((f: { serverId: string; error: Error }) => ({ serverId: f.serverId, error: f.error.message })), null, 2));
+                outputChannel.append(JSON.stringify(result.failed.map((f: any) => ({ serverId: f.serverId, error: f.error.message })), null, 2));
                 outputChannel.show();
-
             } catch (error) {
                 notificationService.showError("L'orchestrateur a rencontré une erreur fatale", error);
             }
         });
     }
 }
+
 export default new AskMcpOrchestratorCommand();

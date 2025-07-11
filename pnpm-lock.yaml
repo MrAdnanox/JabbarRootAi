@@ -213,6 +213,9 @@ importers:
       d3:
         specifier: ^7.9.0
         version: 7.9.0
+      dotenv:
+        specifier: ^17.2.0
+        version: 17.2.0
       lru-cache:
         specifier: ^11.1.0
         version: 11.1.0
@@ -2386,6 +2389,10 @@ packages:
   dot-prop@4.2.1:
     resolution: {integrity: sha512-l0p4+mIuJIua0mhxGoh4a+iNL9bmeK5DvnSVQa6T0OhrVmaEa1XScX5Etc673FePCJOArq/4Pa2cLGODUWTPOQ==}
     engines: {node: '>=4'}
+
+  dotenv@17.2.0:
+    resolution: {integrity: sha512-Q4sgBT60gzd0BB0lSyYD3xM4YxrXA9y4uBDof1JNYGzOXrQdQ6yX+7XIAqoFOGQFOTK1D3Hts5OllpxMDZFONQ==}
+    engines: {node: '>=12'}
 
   dunder-proto@1.0.1:
     resolution: {integrity: sha512-KIN/nDJBQRcXw0MLVhZE9iQHmG68qAVIBg9CqmUYjmQIhgij9U5MFvrqkUL5FbtyyzZuOeOt0zdeRe4UY7ct+A==}
@@ -8205,6 +8212,8 @@ snapshots:
   dot-prop@4.2.1:
     dependencies:
       is-obj: 1.0.1
+
+  dotenv@17.2.0: {}
 
   dunder-proto@1.0.1:
     dependencies:
